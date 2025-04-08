@@ -15,7 +15,7 @@ Matrix &Matrix::identity() {
   return *this;
 }  
 
-Matrix &Matrix::set(int x, int y, float v) {
+Matrix &Matrix::set(int x, int y, double v) {
   m[x+y*4]=v;
   return *this;
 }
@@ -25,7 +25,7 @@ Matrix &Matrix::set(const Matrix &a) {
   return *this;
 }
 
-float Matrix::get(int x, int y) const {
+double Matrix::get(int x, int y) const {
   return m[x+y*4];
 }
 
@@ -89,7 +89,7 @@ Matrix &Matrix::mul(const Matrix &a) {
   Matrix result;
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
-      float v = 0.f;
+      double v = 0.0;
       for (int k = 0; k < 4; k++) {
         v += get(i,k) * a.get(k,j);
       }
@@ -104,7 +104,7 @@ Matrix &Matrix::mul3x3(const Matrix &a) {
   Matrix result;
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 3; j++) {
-      float v = 0.f;
+      double v = 0.0;
       for (int k = 0; k < 3; k++) {
         v += get(i,k) * a.get(k,j);
       }
@@ -119,7 +119,7 @@ Matrix &Matrix::mulTransposed(const Matrix &a) {
   Matrix result;
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
-      float v = 0.f;
+      double v = 0.0;
       for (int k = 0; k < 4; k++) {
         v += a.get(i,k) * get(k,j);
       }
@@ -134,7 +134,7 @@ Matrix &Matrix::mul3x3Transposed(const Matrix &a) {
   Matrix result;
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 3; j++) {
-      float v = 0.f;
+      double v = 0.0;
       for (int k = 0; k < 3; k++) {
         v += a.get(i,k) * get(k,j);
       }
@@ -155,7 +155,6 @@ Matrix &Matrix::operator/=(const Matrix &a) {
   return *this;
 }
 
-#define SWAP_ROWS_FLOAT(a, b) { float *_tmp = a; (a)=(b); (b)=_tmp; }
 #define SWAP_ROWS_DOUBLE(a, b) { double *_tmp = a; (a)=(b); (b)=_tmp; }
 #define MAT(m,r,c) (m)[(c)*4+(r)]
 
@@ -324,24 +323,24 @@ bool Matrix::invert() {
    return true;
 }
 
-Matrix rotationMatrixX(float a) {
+Matrix rotationMatrixX(double a) {
   return rotationMatrixAngleAxis(a,1,0,0);
 }
 
-Matrix rotationMatrixY(float a) {
+Matrix rotationMatrixY(double a) {
   return rotationMatrixAngleAxis(a,0,1,0);
 }
                  
-Matrix rotationMatrixZ(float a) {
+Matrix rotationMatrixZ(double a) {
   return rotationMatrixAngleAxis(a,0,0,1);
 }
 
-Matrix rotationMatrixAngleAxis(float a, float x, float y, float z) {
-  float m[16];
-  float OneMinusCosAngle, CosAngle, SinAngle;
-  float A_OneMinusCosAngle, C_OneMinusCosAngle;
+Matrix rotationMatrixAngleAxis(double a, double x, double y, double z) {
+  double m[16];
+  double OneMinusCosAngle, CosAngle, SinAngle;
+  double A_OneMinusCosAngle, C_OneMinusCosAngle;
   CosAngle = cos(a);
-  OneMinusCosAngle = 1.f - CosAngle;
+  OneMinusCosAngle = 1.0 - CosAngle;
   SinAngle = sin(a);
   A_OneMinusCosAngle = x*OneMinusCosAngle;
   C_OneMinusCosAngle = z*OneMinusCosAngle;
@@ -371,7 +370,7 @@ Matrix rotationMatrixAngleAxis(float a, float x, float y, float z) {
   return matrix;
 }
 
-Matrix rotationMatrixAngleAxis(float a, const Vector &b) {
+Matrix rotationMatrixAngleAxis(double a, const Vector &b) {
   return rotationMatrixAngleAxis(a, b.x, b.y, b.z);
 }
 

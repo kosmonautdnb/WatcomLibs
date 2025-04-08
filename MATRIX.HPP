@@ -5,18 +5,18 @@
 
 class Matrix {
 public:
-  float m[4*4];
+  double m[4*4];
 
   Matrix() {
-    for (int i = 0; i < 16; i++) m[i]=0.f;
+    for (int i = 0; i < 16; i++) m[i]=0.0;
   }
 
   Matrix &zero();
   Matrix &identity();
 
-  Matrix &set(int x, int y, float v);
+  Matrix &set(int x, int y, double v);
   Matrix &set(const Matrix &a);
-  float get(int x, int y) const;
+  double get(int x, int y) const;
   
   Matrix &setRow(int y, const Vector &b);
   Vector getRow(int y) const;
@@ -37,11 +37,11 @@ public:
   bool invert();
 };
 
-Matrix rotationMatrixX(float a);
-Matrix rotationMatrixY(float a);
-Matrix rotationMatrixZ(float a);
-Matrix rotationMatrixAngleAxis(float a, float x, float y, float z);
-Matrix rotationMatrixAngleAxis(float a, const Vector &b);
+Matrix rotationMatrixX(double a);
+Matrix rotationMatrixY(double a);
+Matrix rotationMatrixZ(double a);
+Matrix rotationMatrixAngleAxis(double a, double x, double y, double z);
+Matrix rotationMatrixAngleAxis(double a, const Vector &b);
 
 Matrix inverse(const Matrix &a);
 

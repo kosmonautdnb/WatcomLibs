@@ -2,15 +2,14 @@
 #include "matrix.hpp"
 #include <math.h>
 
-
-Vector &Vector::set(float _x, float _y, float _z) {
+Vector &Vector::set(double _x, double _y, double _z) {
   x = _x; 
   y = _y; 
   z = _z; 
   return *this;
 }
 
-Vector &Vector::set(float v) {
+Vector &Vector::set(double v) {
   x = v; 
   y = v; 
   z = v; 
@@ -31,28 +30,28 @@ Vector &Vector::zero() {
   return *this;
 }
 
-Vector &Vector::add(float _x, float _y, float _z) {
+Vector &Vector::add(double _x, double _y, double _z) {
   x += _x; 
   y += _y; 
   z += _z; 
   return *this;
 }
 
-Vector &Vector::sub(float _x, float _y, float _z) {
+Vector &Vector::sub(double _x, double _y, double _z) {
   x -= _x; 
   y -= _y; 
   z -= _z; 
   return *this;
 }
 
-Vector &Vector::div(float _x, float _y, float _z) {
+Vector &Vector::div(double _x, double _y, double _z) {
   x /= _x; 
   y /= _y; 
   z /= _z; 
   return *this;
 }
 
-Vector &Vector::mul(float _x, float _y, float _z) {
+Vector &Vector::mul(double _x, double _y, double _z) {
   x *= _x;
   y *= _y;
   z *= _z; 
@@ -74,9 +73,9 @@ Vector &Vector::sub(const Vector &b) {
 }
 
 Vector &Vector::div(const Vector &b) {
-  x /= b.x; 
-  y /= b.y; 
-  z /= b.z; 
+  x = x/b.x; 
+  y = y/b.y; 
+  z = z/b.z; 
   return *this;
 }
 
@@ -87,31 +86,31 @@ Vector &Vector::mul(const Vector &b) {
   return *this;
 }
 
-Vector &Vector::add(float v) {
+Vector &Vector::add(double v) {
   x += v; 
   y += v; 
   z += v; 
   return *this;
 }
 
-Vector &Vector::sub(float v) {
+Vector &Vector::sub(double v) {
   x -= v; 
   y -= v; 
   z -= v; 
   return *this;
 }
 
-Vector &Vector::div(float v) {
-  x /= v; 
-  y /= v; 
-  z /= v; 
+Vector &Vector::div(double v) {
+  x = x/v; 
+  y = y/v; 
+  z = z/v; 
   return *this;
 }                                   
 
-Vector &Vector::mul(float v) {
-  x *= v; 
-  y *= v; 
-  z *= v; 
+Vector &Vector::mul(double v) {
+  x = x*v; 
+  y = y*v; 
+  z = z*v; 
   return *this;
 }
 
@@ -239,18 +238,25 @@ Vector Vector::zzz() const {
   return Vector(z,z,z);
 }
 
-float Vector::length() const {
+double Vector::length() const {
   return sqrt(x*x+y*y+z*z);
 }
 
-float Vector::lengthSqr() const {
+double Vector::lengthSqr() const {
   return x*x+y*y+z*z;
 }
 
 Vector &Vector::normalize() {
-  float l = length(); 
+  double l = length(); 
   if (l>0) 
     div(l); 
+  return *this;
+}
+
+Vector &Vector::operator-() {
+  x = -x;
+  y = -y;
+  z = -z;
   return *this;
 }
 
@@ -270,19 +276,19 @@ Vector &Vector::operator/=(const Vector &b) {
   return div(b);
 }
 
-Vector &Vector::operator+=(const float &b) {
+Vector &Vector::operator+=(const double &b) {
   return add(b);
 }
 
-Vector &Vector::operator-=(const float &b) {
+Vector &Vector::operator-=(const double &b) {
   return sub(b);
 }
 
-Vector &Vector::operator*=(const float &b) {
+Vector &Vector::operator*=(const double &b) {
   return mul(b);
 }
 
-Vector &Vector::operator/=(const float &b) {
+Vector &Vector::operator/=(const double &b) {
   return div(b);
 }
 
@@ -294,15 +300,15 @@ Vector &Vector::operator/=(const Matrix &b) {
   return div(b);
 }
 
-float length(const Vector &a) {
+double length(const Vector &a) {
   return a.length();
 }
 
-float lengthSqr(const Vector &a) {
+double lengthSqr(const Vector &a) {
   return a.lengthSqr();
 }
 
-float dot(const Vector &a, const Vector &b) {
+double dot(const Vector &a, const Vector &b) {
   return a.x*b.x + a.y*b.y + a.z*b.z;
 }
 
@@ -345,73 +351,73 @@ Vector div(const Vector &a, const Vector &b) {
   return r;
 }
 
-Vector add(const Vector &a, float v) {
+Vector add(const Vector &a, double v) {
   Vector r;
   r.set(a).add(v);
   return r;
 }
 
-Vector sub(const Vector &a, float v) {
+Vector sub(const Vector &a, double v) {
   Vector r;
   r.set(a).sub(v);
   return r;
 }
 
-Vector mul(const Vector &a, float v) {
+Vector mul(const Vector &a, double v) {
   Vector r;
   r.set(a).mul(v);
   return r;
 }
 
-Vector div(const Vector &a, float v) {
+Vector div(const Vector &a, double v) {
   Vector r;
   r.set(a).div(v);
   return r;
 }
 
-Vector add(float v, const Vector &a) {
+Vector add(double v, const Vector &a) {
   Vector r;
   r.set(a).add(v);
   return r;
 }
 
-Vector sub(float v, const Vector &a) {
+Vector sub(double v, const Vector &a) {
   Vector r;
   r.set(a).sub(v);
   return r;
 }
 
-Vector mul(float v, const Vector &a) {
+Vector mul(double v, const Vector &a) {
   Vector r;
   r.set(a).mul(v);
   return r;
 }
 
-Vector div(float v, const Vector &a) {
+Vector div(double v, const Vector &a) {
   Vector r;
   r.set(a).div(v);
   return r;
 }
 
-Vector add(const Vector &a, float x, float y, float z) {
+Vector add(const Vector &a, double x, double y, double z) {
   Vector r;
   r.set(a).add(x,y,z);
   return r;
 }
 
-Vector sub(const Vector &a, float x, float y, float z) {
+Vector sub(const Vector &a, double x, double y, double z) {
   Vector r;
   r.set(a).sub(x,y,z);
   return r;
 }
 
-Vector mul(const Vector &a, float x, float y, float z) {
+Vector mul(const Vector &a, double x, double y, double z) {
   Vector r;
   r.set(a).mul(x,y,z);
   return r;
 }
 
-Vector div(const Vector &a, float x, float y, float z) {
+Vector div(const Vector &a, double x, double y, double z) {
   Vector r;
   r.set(a).div(x,y,z);
   return r;
@@ -454,19 +460,19 @@ Vector operator/(const Vector &a, const Vector &b) {
 }
 
 
-Vector operator*(const Vector &a, const float &b) {
+Vector operator*(const Vector &a, const double &b) {
   return mul(a,b);
 }
 
-Vector operator/(const Vector &a, const float &b) {
+Vector operator/(const Vector &a, const double &b) {
   return div(a,b);
 }
 
-Vector operator*(const float &a, const Vector &b) {
+Vector operator*(const double &a, const Vector &b) {
   return mul(a,b);
 }
 
-Vector operator/(const float &a, const Vector &b) {
+Vector operator/(const double &a, const Vector &b) {
   return div(a,b);
 }
 

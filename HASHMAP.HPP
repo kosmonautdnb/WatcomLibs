@@ -199,6 +199,15 @@ public:
 };
 
 int getHash(const class String &v);
-int getHash(const int v);
+int getHash(const uint64_t &v);
+int getHash(const int64_t &v);
+int getHash(const unsigned int &v);
+int getHash(const int &v);
+int getHash(const unsigned char &v);
+int getHash(const char &v);
+int getHash(const unsigned short &v);
+int getHash(const short &v);
+int getHash(const float &v);
+int getHash(const double &v);
 
 #endif //__HASHMAP_HPP__
