@@ -5,8 +5,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "types.hpp"
+#include "object.hpp"
 
-class String {
+class String : public Object {
 public:
   char *data;
   int64_t dataLength;
@@ -15,7 +16,7 @@ public:
     data = NULL;
     dataLength = 0;
   }
-  
+
   const String &operator=(const String &b) {
     if (&b == this) return *this;
     if (b.data != NULL) {
@@ -107,7 +108,7 @@ public:
     b.resize(32);
     uint64_t va = v;
     if (v < 0) va = -v;
-    int i = b.length();
+    int32_t i = b.length();
     do {
       i--;
       b[i]=(va % 10)+'0';
@@ -119,9 +120,13 @@ public:
     memcpy(data,b.data+i,dataLength);
   }
   
-  ~String() {
+  virtual ~String() {
     if (data != NULL) delete[] data;
   }
+
+  virtual int32_t hash() const;
+  virtual bool equals(Object *a) const;
+  virtual String toString() const;
 
   void clear() {
     if (data != NULL) delete[] data;

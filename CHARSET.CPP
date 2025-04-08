@@ -20,7 +20,7 @@ static bool newXYZ = false;
 static bool isVisible = false;
 static bool shouldClip = false;
 
-void glDrawText2(float scale, float xp, float yp, float zp, int xa, int ya, const char *text, unsigned int color, float anchorX, float anchorY) {
+void glDrawText2(float scale, float xp, float yp, float zp, int xa, int ya, const char *text, uint32_t color, float anchorX, float anchorY) {
   if (text == NULL || (!isVisible)) 
     return;
   int width2 = 0;
@@ -76,7 +76,7 @@ void glDrawText2(float scale, float xp, float yp, float zp, int xa, int ya, cons
   }
 }
 
-void glDrawText(bool clip,float xp, float yp, float zp, const float scale, const char *text, unsigned int color, float anchorX, float anchorY) {
+void glDrawText(bool clip,float xp, float yp, float zp, const float scale, const char *text, uint32_t color, float anchorX, float anchorY) {
   newXYZ = true;
   isVisible = true;
   shouldClip = clip;

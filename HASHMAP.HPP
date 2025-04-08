@@ -1,8 +1,9 @@
 #ifndef __HASHMAP_HPP__
 #define __HASHMAP_HPP__
 
-#include "array.hpp"
 #include "types.hpp"
+#include "object.hpp"
+#include "array.hpp"
 
 #define HashMap_ELEMENTCOUNT 509 // prime number
 
@@ -24,13 +25,13 @@ class HashMap {
 public:
   ElementLink<KEY,VALUE> *elements[HashMap_ELEMENTCOUNT];
   HashMap() {
-    for (int i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       elements[i] = NULL;
     }
   }
 
   virtual ~HashMap() {
-    for (int i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {
         ElementLink<KEY,VALUE> *d = t;
@@ -41,7 +42,7 @@ public:
   }
 
   void clear() {
-    for (int i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {
         ElementLink<KEY,VALUE> *d = t;
@@ -53,7 +54,7 @@ public:
   }
 
   bool empty() {
-    for (int i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       if (elements[i] != NULL) 
         return false;
     }
@@ -61,10 +62,10 @@ public:
   }
 
   const VALUE at(const KEY& key) const {
-    int hash = getHash(key) % HashMap_ELEMENTCOUNT;
+    int32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
     while(t != NULL)  {
-      if (t->key == key) {
+      if (equals(t->key,key)) {
         return t->value;
       }
       t = t->next;
@@ -77,11 +78,11 @@ public:
   }
 
   VALUE &at(const KEY& key) {
-    int hash = getHash(key) % HashMap_ELEMENTCOUNT;
+    int32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
     ElementLink<KEY,VALUE> *f = NULL;
     while(t != NULL)  {
-      if (t->key == key) {
+      if (equals(t->key,key)) {
         f = t;
         return t->value;
       }
@@ -117,10 +118,10 @@ public:
   }
 
   bool has(const KEY& key) const {
-    int hash = getHash(key) % HashMap_ELEMENTCOUNT;
+    int32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
     while(t != NULL)  {
-      if (t->key == key) {
+      if (equals(t->key,key)) {
         return true;
       }
       t = t->next;
@@ -129,10 +130,10 @@ public:
   }
 
   bool erase(const KEY& key) {
-    int hash = getHash(key) % HashMap_ELEMENTCOUNT;
+    int32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
     while(t != NULL)  {
-      if (t->key == key) {
+      if (equals(t->key, key)) {
         if (t->last != NULL) t->last->next = t->next;
         if (t->next != NULL) t->next->last = t->last;
         delete t;
@@ -147,10 +148,10 @@ public:
     Array<KEY> r;
     KEY lastKey = KEY();
     bool first = true;
-    for (int i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {
-        if ((t->key != lastKey) || first) {
+        if ((!equals(t->key,lastKey)) || first) {
           r.push_back(t->key);
           lastKey = t->key;
           first = false;
@@ -163,7 +164,7 @@ public:
 
   Array<VALUE> values() {
     Array<VALUE> r;
-    for (int i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {
         r.push_back(t->value);
@@ -175,7 +176,7 @@ public:
 
   Array<ElementLink<KEY,VALUE> *> entries() {
     Array<ElementLink<KEY,VALUE> *> r;
-    for (int i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {
         r.push_back(t);
@@ -187,7 +188,7 @@ public:
 
   int64_t size() {
     int64_t r = 0;
-    for (int i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {
         r++;
@@ -197,17 +198,5 @@ public:
     return r;
   }
 };
-
-int getHash(const class String &v);
-int getHash(const uint64_t &v);
-int getHash(const int64_t &v);
-int getHash(const unsigned int &v);
-int getHash(const int &v);
-int getHash(const unsigned char &v);
-int getHash(const char &v);
-int getHash(const unsigned short &v);
-int getHash(const short &v);
-int getHash(const float &v);
-int getHash(const double &v);
 
 #endif //__HASHMAP_HPP__

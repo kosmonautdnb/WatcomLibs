@@ -1,5 +1,24 @@
 #include "string.hpp"
 
+int32_t String::hash() const {
+  int32_t hash = 0;
+  for (int32_t i = 0; i < length(); i++) {
+    hash += (*this)[i]*((i%547)+1);
+  }
+  hash += length();
+  return hash;
+}
+
+bool String::equals(Object *a) const {
+  String *v = dynamic_cast<String*>(a);
+  if (v == NULL) return false;
+  return *v == *this;
+}
+
+String String::toString() const {
+  return *this;
+}
+
 String String::add(const String &a, const String &b) {
         if (a.data == NULL) return b.data == NULL ? String("") : String(b);
         if (b.data == NULL) return String(a);
