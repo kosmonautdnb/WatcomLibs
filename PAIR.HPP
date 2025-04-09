@@ -4,6 +4,27 @@
 #include "object.hpp"
 #include "string.hpp"
 
+template<class KEY, class VALUE>
+class KeyValue {
+public: 
+  KEY key;
+  VALUE value;
+
+  KeyValue() {
+  }
+
+  KeyValue(const KEY &key, const VALUE &value) {
+    this->key = key;
+    this->value = value;
+  }
+
+  KeyValue(const KeyValue &a) {
+    this->key = a.key;
+    this->value = a.value;
+  }
+};
+
+
 template<class FIRST, class SECOND>
 class Pair : public Object {
 public:
@@ -13,9 +34,25 @@ public:
   Pair() {
   }
 
-  Pair(const FIRST &_a,const SECOND &_b) {
-    first = _a;
-    second = _b;
+  Pair(const FIRST &first,const SECOND &second) {
+    this->first = first;
+    this->second = second;
+  }
+
+  Pair(const KeyValue<FIRST,SECOND> &a) {
+    first = a.key;
+    second = a.value;
+  }
+
+  Pair(const Pair<FIRST,SECOND> &a) {
+    first = a.first;
+    second = a.second;
+  }
+
+  const Pair<FIRST,SECOND> &operator=(const KeyValue<FIRST,SECOND> &a) {
+    first = a.key;
+    second = a.value;
+    return *this;
   }
 
   virtual ~Pair() {}

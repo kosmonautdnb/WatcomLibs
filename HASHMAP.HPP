@@ -191,12 +191,12 @@ public:
     return r;
   }
 
-  Array<Pair<KEY,VALUE> > entries() {
-    Array<Pair<KEY,VALUE> > r;
+  Array<KeyValue<KEY,VALUE> > entries() {
+    Array<KeyValue<KEY,VALUE> > r;
     for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {
-        r.push_back(Pair<KEY,VALUE>(t->key,t->value));
+        r.push_back(KeyValue<KEY,VALUE>(t->key,t->value));
         t = t->next;
       }
     }

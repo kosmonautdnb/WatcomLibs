@@ -70,6 +70,11 @@ public:
     add(b);
     return *this;
   }
+
+  const String &operator+=(const Object &b) {
+    add(::toString(b));
+    return *this;
+  }
   
   const String &operator+=(const char *b) {
     add(String(b));
@@ -87,6 +92,18 @@ public:
       dataLength = b.dataLength;
       data = new char[dataLength];
       memcpy(data,b.data,dataLength);
+    } else {
+      data = NULL;
+    }
+  }
+
+  String(const Object &b) {
+    String c = ::toString(b);
+    if (c.data != NULL)
+    {
+      dataLength = c.dataLength;
+      data = new char[dataLength];
+      memcpy(data,c.data,dataLength);
     } else {
       data = NULL;
     }
@@ -338,6 +355,8 @@ public:
 };
 
 String operator+(const String &a, const String &b);
+String operator+(const Object &a, const String &b);
+String operator+(const String &a, const Object &b);
 String operator+(const char *a, const String &b);
 String operator+(const String &a, const char *b);
 String operator+(const int64_t a, const String &b);

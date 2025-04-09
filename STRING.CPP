@@ -33,6 +33,14 @@ String operator+(const String &a, const String &b) {
         return String::add(a,b);
 }
 
+String operator+(const Object &a, const String &b) {
+        return String(a) + b;
+}
+
+String operator+(const String &a, const Object &b) {
+        return a + String(b);
+}
+
 String operator+(const char *a, const String &b) {
         return String(a) + b;
 }
