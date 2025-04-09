@@ -3,11 +3,13 @@
 
 #include "types.hpp"
 
+// keep small virtual function table in mind
 class Object {
 public:
   virtual int32_t hash() const = 0;
   virtual bool equals(Object *a) const = 0;
   virtual class String toString() const = 0;
+  virtual bool serialize(class Serializer *ser) {return false;}
 };
 
 int32_t getHash(const class Object &v);

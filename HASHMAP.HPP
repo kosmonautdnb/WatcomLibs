@@ -4,6 +4,7 @@
 #include "types.hpp"
 #include "object.hpp"
 #include "array.hpp"
+#include "pair.hpp"
 
 #define HashMap_ELEMENTCOUNT 509 // prime number
 
@@ -28,6 +29,18 @@ public:
     for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       elements[i] = NULL;
     }
+  }
+
+  const HashMap<KEY,VALUE> &operator=(const HashMap<KEY,VALUE> &b) {
+    clear();
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+      ElementLink<KEY,VALUE> *t = b.elements[i];
+      while(t != NULL) {
+        insert(t->key, t->value);
+        t = t->next;
+      }
+    }
+    return *this;
   }
 
   virtual ~HashMap() {
@@ -117,6 +130,10 @@ public:
     (*this)[key] = value;
   }
 
+  void insert(const Pair<KEY, VALUE> &entry) {
+    (*this)[entry.first] = entry.second;
+  }
+
   bool has(const KEY& key) const {
     int32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
@@ -174,12 +191,12 @@ public:
     return r;
   }
 
-  Array<ElementLink<KEY,VALUE> *> entries() {
-    Array<ElementLink<KEY,VALUE> *> r;
+  Array<Pair<KEY,VALUE> > entries() {
+    Array<Pair<KEY,VALUE> > r;
     for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {
-        r.push_back(t);
+        r.push_back(Pair<KEY,VALUE>(t->key,t->value));
         t = t->next;
       }
     }

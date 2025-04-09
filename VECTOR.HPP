@@ -1,9 +1,13 @@
 #ifndef __VECTOR_HPP__
 #define __VECTOR_HPP__
 
+#include "object.hpp"
+#include "string.hpp"
+#include <stdlib.h>
+
 class Matrix;
 
-class Vector {
+class Vector : public Object {
 public:
   double x,y,z;
   double w;
@@ -20,6 +24,23 @@ public:
     y = _y;
     z = _z;
     w = _w;
+  }
+
+
+  virtual ~Vector() {}
+
+  virtual int32_t hash() const {
+    return getHash(x)+getHash(y)*3+getHash(z)*7+getHash(w)*11;
+  }
+  
+  virtual bool equals(Object *a) const {
+    Vector *v = dynamic_cast<Vector*>(a);
+    if (v == NULL) return false;
+    return ::equals(x,v->x) && ::equals(y,v->y) && ::equals(z,v->z);
+  }
+  
+  virtual String toString() const {
+    return "[" + ::toString(x) + "," + ::toString(y) + "," + ::toString(z) + "," + ::toString(w) + "]";
   }
    
   Vector &set(double _x, double _y, double _z);

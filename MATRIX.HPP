@@ -2,13 +2,37 @@
 #define __MATRIX_HPP__
 
 #include "vector.hpp"
+#include "object.hpp"
 
-class Matrix {
+class Matrix : public Object {
 public:
   double m[4*4];
 
   Matrix() {
-    for (int i = 0; i < 16; i++) m[i]=0.0;
+    for (int32_t i = 0; i < 16; i++) m[i]=0.0;
+  }
+
+  virtual ~Matrix() {
+  }
+
+  virtual int32_t hash() const {
+    int32_t hash = 0;
+    for (int32_t i = 0; i < 16; i++) hash += getHash(m[i]);
+    return hash;
+  }
+  
+  virtual bool equals(Object *a) const {
+    Matrix *v = dynamic_cast<Matrix*>(a);
+    if (v == NULL) return false;
+    for (int32_t i = 0; i < 16; i++) if (!(::equals(m[i],v->m[i]))) return false;
+    return true;
+  }
+  
+  virtual String toString() const {
+    String r = "[";
+    for (int32_t i = 0; i < 16; i++) {if (i != 0) r += ","; r += ::toString(m[i]);}
+    r += "]";
+    return r;
   }
 
   Matrix &zero();
