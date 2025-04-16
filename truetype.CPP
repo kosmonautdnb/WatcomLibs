@@ -7,22 +7,28 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stbttf.hpp"
 
-unsigned char ttf_buffer[1<<20];
-unsigned char temp_bitmap[512*512];
+#define GLYPH_START 32
+#define GLYPH_COUNT 96
 
-stbtt_bakedchar cdata[96]; // ASCII 32..126 is 95 glyphs
-GLuint ftex;
+stbtt_bakedchar cdata[GLYPH_COUNT]; // ASCII 32..126 is 95 glyphs
+GLuint ftex = 0;
 
-void stb_initfont(const char *ttf_file_name, float fontHeight)
+GLuint stb_initfont(const char *ttf_file_name, float fontHeight)
 {
-   fread(ttf_buffer, 1, 1<<20, fopen(ttf_file_name, "rb"));
-   stbtt_BakeFontBitmap(ttf_buffer,0, fontHeight, temp_bitmap,512,512, 32,96, cdata); // no guarantee this fits!
-   // can free ttf_buffer at this point
-   glGenTextures(1, &ftex);
-   glBindTexture(GL_TEXTURE_2D, ftex);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 512,512, 0, GL_ALPHA, GL_UNSIGNED_BYTE, temp_bitmap);
-   // can free temp_bitmap at this point
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  int width = 512;
+  int height = 512;
+  int ttf_buffer_size = 1<<20;
+  unsigned char *temp_bitmap = new unsigned char[width*height];
+  unsigned char *ttf_buffer = new unsigned char[ttf_buffer_size];
+  fread(ttf_buffer,1,ttf_buffer_size,fopen(ttf_file_name, "rb"));
+  stbtt_BakeFontBitmap(ttf_buffer,0,fontHeight,temp_bitmap,width,height,GLYPH_START,GLYPH_COUNT,cdata); // no guarantee this fits!
+  delete[] ttf_buffer;
+  glGenTextures(1, &ftex);
+  glBindTexture(GL_TEXTURE_2D, ftex);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 512,512, 0, GL_ALPHA, GL_UNSIGNED_BYTE, temp_bitmap);
+  delete[] temp_bitmap;
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  return ftex;
 }
 
 void stb_print(float x, float y, const char *text, uint32_t color, float anchorX, float anchorY)
