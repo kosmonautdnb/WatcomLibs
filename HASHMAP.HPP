@@ -130,8 +130,8 @@ public:
     (*this)[key] = value;
   }
 
-  void insert(const Pair<KEY, VALUE> &entry) {
-    (*this)[entry.first] = entry.second;
+  void insert(const KeyValue<KEY, VALUE> &entry) {
+    (*this)[entry.key] = entry.value;
   }
 
   bool has(const KEY& key) const {
