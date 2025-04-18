@@ -3,6 +3,10 @@
 
 #include "types.hpp"
 
+#include "stbimgwr.hpp"
+#include "stbimage.hpp"
+#include "stbimgrs.hpp"
+
 class RGBAImage {
 public:
   int32_t width;

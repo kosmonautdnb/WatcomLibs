@@ -119,6 +119,17 @@ public:
       data = NULL;
     }
   }
+
+  String(const char *_data, int _dataLength) {
+    if (_data != NULL)
+    {
+      dataLength = _dataLength;
+      data = new  char[dataLength];
+      memcpy(data,_data,dataLength);
+    } else {
+      data = NULL;
+    }
+  }
   
   String(const int64_t v) {
     String b;
