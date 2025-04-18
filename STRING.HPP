@@ -303,6 +303,7 @@ public:
   
   String substr(int64_t firstIndex) const {
     if (firstIndex == -1) return "";
+    if (firstIndex >= length()) return String(*this);
     String r;
     r.resize(length()-firstIndex);
     memcpy(&(r[0]),&((*this)[firstIndex]),r.length());
@@ -312,6 +313,7 @@ public:
   String substr(int64_t firstIndex, int64_t lastIndex) const {
     if (lastIndex == -1) return substr(firstIndex);
     if (firstIndex == -1) return "";
+    if (firstIndex >= length()) return String(*this);
     String r;
     r.resize(lastIndex-firstIndex);
     memcpy(&(r[0]),&((*this)[firstIndex]),r.length());

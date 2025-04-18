@@ -145,22 +145,41 @@ static void ImImpl_RenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_c
       {
         case ImDrawCmdType_DrawTriangleList:
         {
+          float *k = (float*)&clip_rect_stack.back();
           if (clip_rect_dirty)
           {
             //glUniform4fv(uniClipRect, 1, (float*)&clip_rect_stack.back());
             // here we need glScissor
-            float *k = (float*)&clip_rect_stack.back();
             glScissor(k[0],viewPort[3]-k[3],k[2]-k[0],k[3]-k[1]);
             clip_rect_dirty = false;
           }
           //glDrawArrays(GL_TRIANGLES, vtx_consumed, cmd.vtx_count);
           glBegin(GL_TRIANGLES);
-          for (int i = vtx_consumed; i < vtx_consumed + cmd.vtx_count; i++) {
-            ImDrawVert &a = vtx[i];
-            glColor4ubv((GLubyte*)&a.col);
-            glTexCoord2f(a.uv.x, a.uv.y);
-            if (a.uv.x==0&&a.uv.y==0) glDisable(GL_TEXTURE_2D); else glEnable(GL_TEXTURE_2D);
-            glVertex2f(a.pos.x,a.pos.y);
+          for (int j = vtx_consumed; j < vtx_consumed + cmd.vtx_count; j+=3) {
+            int i;
+            bool noTexture = false;
+            int flags = 1 | 2 | 4 | 8;
+            for (i = j; i < j + 3; i++) {
+              ImDrawVert &a = vtx[i];
+              if (a.uv.x==0&&a.uv.y==0) noTexture = true;
+              if (a.pos.x >= k[0]) flags &= 15-1;
+              if (a.pos.y >= k[1]) flags &= 15-2;
+              if (a.pos.x < k[2]) flags &= 15-4;
+              if (a.pos.y < k[3]) flags &= 15-8;
+            }
+            if (flags == 0) {
+              if (noTexture) 
+                glDisable(GL_TEXTURE_2D); 
+              else 
+                glEnable(GL_TEXTURE_2D);
+  
+              for (i = j; i < j + 3; i++) {
+                ImDrawVert &a = vtx[i];
+                glColor4ubv((GLubyte*)&a.col);
+                glTexCoord2f(a.uv.x, a.uv.y);
+                glVertex2f(a.pos.x,a.pos.y);
+              }
+            }
           }
           glEnd();
           vtx_consumed += cmd.vtx_count;
@@ -251,7 +270,14 @@ void InitImGui(int w, int h)
   stbi_image_free(tex_data);
   
   ImGui::GetStyle().WindowRounding = 5.f;
+  ImGui::GetStyle().FramePadding = ImVec2(2,1);
+  ImGui::GetStyle().ItemSpacing = ImVec2(3,3);
+  ImGui::GetStyle().WindowPadding = ImVec2(3,3);
   io.IniSavingRate = -1; // disable ini saving, because we are on usb sticks which may wear out
+  ImGuiStyle &s = ImGui::GetStyle();
+  s.Colors[ImGuiCol_TitleBg] = ImVec4(0xff/255.f,0,0x40/255.f,0x38/255.f);
+  s.Colors[ImGuiCol_CloseButton] = ImVec4(0xff/255.f*0.15f,0,0x40/255.f*0.0f,0xff/255.f);
+  s.Colors[ImGuiCol_Button] = ImVec4(0xff/255.f*0.45f,0,0x40/255.f*0.2f,0xff/255.f);
 }
 
 static void ImGuiKeyBoardInput() {
@@ -330,17 +356,14 @@ void ImGuiDemo() {
     
     if (show_another_window)
     {
-      
-      __BEGINWINDOW("Another Window")
-      //ImGui::Begin("Another Window", &show_another_window, ImVec2(200,100));
+      ImGui::Begin("Another Window", &show_another_window, ImVec2(200,100));
       ImGui::Text("Hello");
       static char buffer[100];
       ImGui::InputText("Hello", buffer, 100);
-      //ImGui::End();
-      __ENDWINDOW
+      ImGui::End();
     }
 
-    glClearColor(0.2f,0.4f,0.6f,1.f);
+    glClearColor(10.f/255.f,40.f/255.f,30.f/255.f,1.f);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui::Render();
     glRefresh();
