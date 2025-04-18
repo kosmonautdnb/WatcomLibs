@@ -159,6 +159,7 @@ static void ImImpl_RenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_c
             ImDrawVert &a = vtx[i];
             glColor4ubv((GLubyte*)&a.col);
             glTexCoord2f(a.uv.x, a.uv.y);
+            if (a.uv.x==0&&a.uv.y==0) glDisable(GL_TEXTURE_2D); else glEnable(GL_TEXTURE_2D);
             glVertex2f(a.pos.x,a.pos.y);
           }
           glEnd();
