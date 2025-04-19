@@ -4,6 +4,8 @@
 #include "array.hpp"
 #include "dos.hpp"
 
+typedef void(*FileCallback)(const char *);
+
 class FileDialog {
 public:
   bool doDisplay;
@@ -24,10 +26,11 @@ public:
   char folderText[100];
   char saveFileName[100];
   Array<char> driveLetters;
+  FileCallback fileCallback;
 
   FileDialog();
 
-  void open(bool loadInsteadOfSave, const char *items = "*.*\0\0"); //\0\0 is terminator, \0 is next section
+  void open(bool loadInsteadOfSave, const char *items = "*.*\0\0",const FileCallback &callback=NULL); //\0\0 is terminator, \0 is next section
   bool display(); // mainloop function returns true if finished
   String getSelectedFileName(); // the fileName to load save is returned here
   void close();

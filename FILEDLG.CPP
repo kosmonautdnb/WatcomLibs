@@ -10,8 +10,9 @@ FileDialog::FileDialog()
   init();
 }
 
-void FileDialog::open(bool loadInsteadOfSave, const char *items) {
+void FileDialog::open(bool loadInsteadOfSave, const char *items, const FileCallback &callback) {
   init();
+  fileCallback = callback;
   doDisplay = true;
   doLoad = loadInsteadOfSave;
   currentPath = getCWD();
@@ -86,6 +87,7 @@ bool FileDialog::display() {
         String fileName = files[i].name.name + files[i].name.extension;
         strcpy(saveFileName,fileName.c_str());
         currentSelectedFile = currentPath + fileName;
+        if (fileCallback!=NULL) fileCallback(dosFileName(currentSelectedFile).c_str());
       }
       else {
         strcpy(saveFileName,"");
@@ -171,6 +173,7 @@ void FileDialog::init() {
   strcpy(folderText,"FOLDER");
   strcpy(saveFileName,"");
   driveLetters.clear();
+  fileCallback = NULL;
 }
 
 void FileDialog::checkDriveLetters() {

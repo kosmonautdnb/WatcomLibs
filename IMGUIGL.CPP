@@ -48,6 +48,7 @@ static void drawMouseArrow(int mouseX, int mouseY) {
 
 static void ImImpl_RenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count)
 { 
+  glPushAttrib(0xffff);
   size_t total_vtx_count = 0;
   int n;
   for (n = 0; n < cmd_lists_count; n++)
@@ -206,6 +207,7 @@ static void ImImpl_RenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_c
   glPopMatrix();
   glMatrixMode(GL_PROJECTION);
   glPopMatrix();
+  glPopAttrib();
 }
 
 static const char* ImImpl_GetClipboardTextFn()
