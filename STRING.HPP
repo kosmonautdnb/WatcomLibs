@@ -32,7 +32,7 @@ public:
     return *this;
   }
   
-  const bool operator==(const String &b) {
+  const bool operator==(const String &b) const {
     if (b.length() != length())
       return false;
     for (int64_t i = 0; i < length(); i++) {
@@ -42,11 +42,11 @@ public:
     return true;
   }
   
-  const bool operator!=(const String &b) {
+  const bool operator!=(const String &b) const {
     return !(*this == b);
   }
   
-  const bool operator<(const String &b) {
+  const bool operator<(const String &b) const {
     int64_t l = length();
     if (b.length()<l) l = b.length();
     for (int64_t i = 0; i < l; i++) {
@@ -56,7 +56,7 @@ public:
     return b.length()<length();
   }
   
-  const bool operator>(const String &b) {
+  const bool operator>(const String &b) const {
     int64_t l = length();
     if (b.length()<l) l = b.length();
     for (int64_t i = 0; i < l; i++) {

@@ -2,6 +2,9 @@
 #include "imguigl.hpp"
 #include "hashmap.hpp"
 
+extern int glFrameBufferWidth;
+extern int glFrameBufferHeight;
+
 FileDialog::FileDialog() 
 {
   init();
@@ -24,7 +27,8 @@ bool FileDialog::display() {
   bool ready = false;
   int i;
   if (!doDisplay) return ready;
-  ImGui::Begin(doLoad ? "Load File##File Dialog" : "Save File##File Dialog", NULL, ImVec2(340,420), -1, ImGuiWindowFlags_NoResize);
+  ImGui::SetNewWindowDefaultPos(ImVec2((glFrameBufferWidth-340)/2,(glFrameBufferHeight-430)/2));
+  ImGui::Begin(doLoad ? "Load File##File Dialog" : "Save File##File Dialog", NULL, ImVec2(340,430), -1, ImGuiWindowFlags_NoResize);
 
   Array<String> pathComponents;
   const char *t = currentPath.c_str();
@@ -105,12 +109,22 @@ bool FileDialog::display() {
   }
   ImGui::EndChild();
 
+  for (i = 0; i < driveLetters.size(); i++) {
+    if (i != 0) ImGui::SameLine();
+    int a = driveLetters[i];
+    if (ImGui::Button((String::fromChar(a)+":##DriveLetterButton"+toString(i)).c_str())) {
+      currentPath = String::fromChar(a) + ":/";
+      currentSelectedFile = "";
+      strcpy(saveFileName,"");
+      syncFileData();
+    }
+  }
+
+  ImGui::Separator();
 
   if (doLoad) {
-    ImGui::Separator();
     ImGui::Text(currentSelectedFile.last(40).c_str());
   } else {
-    ImGui::Separator();
     ImGui::InputText("FileName##SAVEFILENAME",saveFileName,100);
   }
 
@@ -156,9 +170,19 @@ void FileDialog::init() {
   currentSelectedFile = "";
   strcpy(folderText,"FOLDER");
   strcpy(saveFileName,"");
+  driveLetters.clear();
+}
+
+void FileDialog::checkDriveLetters() {
+  driveLetters.clear();
+  for (int i = 'A'; i <= 'Z'; i++) {
+    if (dosHasDrive(i))
+      driveLetters.push_back(i);
+  }
 }
 
 void FileDialog::syncFileData() {
+  checkDriveLetters();
   files = dosGetFiles(currentPath);
   filter();
   sort();

@@ -23,6 +23,7 @@ public:
   String currentSelectedFile;
   char folderText[100];
   char saveFileName[100];
+  Array<char> driveLetters;
 
   FileDialog();
 
@@ -32,6 +33,7 @@ public:
   void close();
 
   void init();
+  void checkDriveLetters();
   void syncFileData();
   void oneFolderUp();
   void filter();

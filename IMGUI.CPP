@@ -2223,6 +2223,7 @@ void SetWindowPos(ImVec2 pos)
 {
 	ImGuiWindow* window = GetCurrentWindow();
 	window->Pos = pos;
+	window->PosFloat = pos; // :mad:
 }
 
 ImVec2 GetWindowSize()

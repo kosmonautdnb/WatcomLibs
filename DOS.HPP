@@ -51,6 +51,7 @@ public:
 
 Array<File> dosGetFiles(const String &filePath);
 FileTime dosGetFileTime(const String &filePath);
+bool dosHasDrive(const char driveLetter);
 
 void dosCreateFolder(const String &folderName);
 void dosDeleteFolder(const String &folderName);

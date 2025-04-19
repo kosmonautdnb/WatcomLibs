@@ -158,14 +158,15 @@ static void ImImpl_RenderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_c
           for (int j = vtx_consumed; j < vtx_consumed + cmd.vtx_count; j+=3) {
             int i;
             bool noTexture = false;
-            int flags = 1 | 2 | 4 | 8;
+            int flags = 1 | 2 | 4 | 8 | 16;
             for (i = j; i < j + 3; i++) {
               ImDrawVert &a = vtx[i];
               if (a.uv.x==0&&a.uv.y==0) noTexture = true;
-              if (a.pos.x >= k[0]) flags &= 15-1;
-              if (a.pos.y >= k[1]) flags &= 15-2;
-              if (a.pos.x < k[2]) flags &= 15-4;
-              if (a.pos.y < k[3]) flags &= 15-8;
+              if (a.pos.x >= k[0]) flags &= 31-1;
+              if (a.pos.y >= k[1]) flags &= 31-2;
+              if (a.pos.x < k[2]) flags &= 31-4;
+              if (a.pos.y < k[3]) flags &= 31-8;
+              if (((a.col>>24)&255) > 0) flags &= 31 - 16;
             }
             if (flags == 0) {
               if (noTexture) 

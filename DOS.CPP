@@ -116,6 +116,20 @@ FileTime dosGetFileTime(const String &filePath) {
   return r;
 }
 
+bool dosHasDrive(const char driveLetter) {
+  int d = -1;
+  if (driveLetter >= 'A' && driveLetter <= 'Z') d = driveLetter - 'A' + 1;
+  if (driveLetter >= 'a' && driveLetter <= 'z') d = driveLetter - 'a' + 1;
+  if (d < 0) return false;
+
+  union REGS r;
+  r.h.ah = 0x44;
+  r.h.al = 0x08;
+  r.h.bl = d & 255;
+  int386(0x21,&r,&r);
+  return (r.w.ax==0x00)||(r.w.ax==0x01);
+}
+
 void dosCreateFolder(const String &folderName) {
   mkdir(dosFileName(folderName).c_str());
 }

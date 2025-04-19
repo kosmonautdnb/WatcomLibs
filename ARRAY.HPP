@@ -88,15 +88,19 @@ public:
     usedSize = 0;
   }
   
-  int64_t size() {
+  int64_t size() const {
     return usedSize;
   }
   
-  bool empty() {
+  bool empty() const {
     return size()==0;
   }
   
   T &operator[](int64_t index) {
+    return data[index];
+  }
+
+  const T &operator[](int64_t index) const {
     return data[index];
   }
   
