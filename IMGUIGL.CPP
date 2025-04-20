@@ -4,7 +4,6 @@
 
 extern int glFrameBufferWidth;
 extern int glFrameBufferHeight;
-extern double glMonitorAspectRatio;
 
 double mouseX = 60, mouseY = 60;
 double mouseDeltaX = 0, mouseDeltaY = 0;
@@ -27,7 +26,7 @@ static void drawMouseArrow(int mouseX, int mouseY) {
   "00989000"
   "00099000"
   ;
-  mouseX -= glFrameBufferWidth*0.5f-glFrameBufferWidth*0.5f*glMonitorAspectRatio;
+  mouseX -= glFrameBufferWidth*0.5f-glFrameBufferWidth*0.5f*glGetZoomX();
   bool first = true;
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
@@ -321,7 +320,6 @@ static int YRES = 480;
 
 void ImGuiDemo() {
   glVesa(XRES,YRES,32);
-  //glSetMonitorAspectRatio(16.0/9.0);
 
   InitImGui(XRES, YRES);
 
