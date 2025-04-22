@@ -28,7 +28,6 @@ bool FileDialog::display() {
   bool ready = false;
   int i;
   if (!doDisplay) return ready;
-  ImGui::SetNewWindowDefaultPos(ImVec2((glFrameBufferWidth-340)/2,(glFrameBufferHeight-430)/2));
   ImGui::Begin(doLoad ? "Load File##File Dialog" : "Save File##File Dialog", NULL, ImVec2(340,430), -1, ImGuiWindowFlags_NoResize);
 
   Array<String> pathComponents;

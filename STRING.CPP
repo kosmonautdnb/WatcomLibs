@@ -1,5 +1,6 @@
 #include "string.hpp"
 
+
 int32_t String::hash() const {
   int32_t hash = 0;
   for (int32_t i = 0; i < length(); i++) {

@@ -113,4 +113,5 @@ public:
       usedSize--;
   }
 };
+
 #endif //__ARRAY_HPP__
