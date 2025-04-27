@@ -161,6 +161,11 @@ Vector operator+(const Vector &a, const Vector &b);
 Vector operator*(const Vector &a, const Vector &b);
 Vector operator/(const Vector &a, const Vector &b);
 
+Vector operator+(const Vector &a, const double &b);
+Vector operator-(const Vector &a, const double &b);
+Vector operator+(const double &a, const Vector &b);
+Vector operator-(const double &a, const Vector &b);
+
 Vector operator*(const Vector &a, const double &b);
 Vector operator/(const Vector &a, const double &b);
 Vector operator*(const double &a, const Vector &b);
@@ -170,5 +175,17 @@ Vector operator*(const Vector &a, const Matrix &b);
 Vector operator/(const Vector &a, const Matrix &b);
 Vector operator*(const Matrix &a, const Vector &b);
 Vector operator/(const Matrix &a, const Vector &b);
+
+Vector abs(const Vector &a);
+Vector sin(const Vector &a);
+Vector cos(const Vector &a);
+Vector pow(const Vector &a, const double &b);
+Vector pow(const Vector &a, const Vector &b);
+Vector sign(const Vector &a);
+Vector scalar(const double &a);
+Vector clamp(const Vector &a, const double &b, const double &c);
+Vector saturate(const Vector &a);
+Vector lerp(const Vector &a, const Vector &b, const double &c);
+Vector mix(const Vector &a, const Vector &b, const double &c);
 
 #endif //__VECTOR_HPP__

@@ -459,6 +459,21 @@ Vector operator/(const Vector &a, const Vector &b) {
   return div(a,b);
 }
 
+Vector operator+(const Vector &a, const double &b) {
+  return add(a,b);
+}
+
+Vector operator-(const Vector &a, const double &b) {
+  return sub(a,b);
+}
+
+Vector operator+(const double &a, const Vector &b) {
+  return add(a,b);
+}
+
+Vector operator-(const double &a, const Vector &b) {
+  return sub(a,b);
+}
 
 Vector operator*(const Vector &a, const double &b) {
   return mul(a,b);
@@ -490,4 +505,93 @@ Vector operator*(const Matrix &a, const Vector &b) {
 
 Vector operator/(const Matrix &a, const Vector &b) {
   return div(a,b);
+}
+
+Vector abs(const Vector &a) {
+  Vector r;
+  r.x = fabs(a.x);
+  r.y = fabs(a.y);
+  r.z = fabs(a.z);
+  r.w = a.w;
+  return r;
+}
+
+Vector sin(const Vector &a) {
+  Vector r;
+  r.x = sin(a.x);
+  r.y = sin(a.y);
+  r.z = sin(a.z);
+  r.w = a.w;
+  return r;
+}
+
+Vector cos(const Vector &a) {
+  Vector r;
+  r.x = cos(a.x);
+  r.y = cos(a.y);
+  r.z = cos(a.z);
+  r.w = a.w;
+  return r;
+}
+
+Vector pow(const Vector &a, const double &b) {
+  Vector r;
+  r.x = pow(a.x,b);
+  r.y = pow(a.y,b);
+  r.z = pow(a.z,b);
+  r.w = a.w;
+  return r;
+}
+
+Vector pow(const Vector &a, const Vector &b) {
+  Vector r;
+  r.x = pow(a.x,b.x);
+  r.y = pow(a.y,b.y);
+  r.z = pow(a.z,b.z);
+  r.w = a.w;
+  return r;
+}
+
+Vector sign(const Vector &a) {
+  Vector r;
+  r.x = a.x < 0 ? -1 : (a.x > 0 ? 1 : 0);
+  r.y = a.y < 0 ? -1 : (a.y > 0 ? 1 : 0);
+  r.z = a.z < 0 ? -1 : (a.z > 0 ? 1 : 0);
+  r.w = a.w;
+  return r;
+}
+
+Vector scalar(const double &a) {
+  Vector r;
+  r.x = a;
+  r.y = a;
+  r.z = a;
+  r.w = a;
+  return r;
+}
+
+Vector clamp(const Vector &a, const double &b, const double &c) {
+  Vector r;
+  r.x = a.x < b ? b : (a.x > c ? c : a.x);
+  r.y = a.y < b ? b : (a.y > c ? c : a.y);
+  r.z = a.z < b ? b : (a.z > c ? c : a.z);
+  r.w = a.w;
+  return r;
+}
+
+Vector saturate(const Vector &a) {
+  return clamp(a,0,1);
+}
+
+Vector lerp(const Vector &a, const Vector &b, const double &c) {
+  Vector r;
+  r.x = (b.x - a.x) * c + a.x;
+  r.y = (b.y - a.y) * c + a.y;
+  r.z = (b.z - a.z) * c + a.z;
+  r.w = (b.w - a.w) * c + a.w;
+  return r;
+}
+
+Vector mix(const Vector &a, const Vector &b, const double &c) {
+  return lerp(a,b,c);
 }
