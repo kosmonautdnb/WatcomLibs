@@ -9,6 +9,6 @@ PMODE/W config sys:
 DEVICE=C:\_DOS_\BIN\HIMEMX.exe
 DEVICE=C:\_DOS_\BIN\JEMM386.exe  /SB /MAX=262144
 
-pmwsetup.exe to patch your pmodew program:
+pmwsetup.exe to patch your PMODE/W program (V64 and A64 are maximum and mean 256 MB memory accessible):
 pmwsetup.exe /M1 /B0 /A64 /V64 /P1024 myprg.exe
 
