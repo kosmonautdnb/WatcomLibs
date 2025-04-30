@@ -5,7 +5,7 @@ Some parts may need https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git
 
 ## ImGui v1.43 included and working
 
-IMGUI.CPP, IMGUI.H, IMGUIGL.CPP, IMGUIGL.HPP
+IMGUI.CPP, IMGUI.H, IMGUIGL.CPP, IMGUIGL.HPP (needs OpenGLForDos)
 
 ### WatcomC with 256 MB of memory instead of the 32 MB with Dos4gw
 
