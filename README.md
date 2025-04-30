@@ -7,7 +7,7 @@ Some parts may need https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git
 
 Maybe use PMODE/W (you can utilize around 256MB of memory this way)
 
-PMODE/W is public domain since manyears.
+PMODE/W is public domain since many years.
 
 PMODE/W config.sys:
 
