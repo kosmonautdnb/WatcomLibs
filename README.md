@@ -3,7 +3,7 @@ A very very basic and reduced STL like library for WatcomC
 
 Some parts may need https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git
 
-# WatcomC with 256 MB of memory instead of the 32 MB with Dos4gw
+### WatcomC with 256 MB of memory instead of the 32 MB with Dos4gw
 
 Maybe use PMODE/W (you can utilize around 256MB of memory this way)
 
