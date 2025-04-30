@@ -3,7 +3,7 @@ A very very basic and reduced STL like library for WatcomC
 
 Some parts may need https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git
 
-# ImGui v1.43 included and working
+## ImGui v1.43 included and working
 
 ### WatcomC with 256 MB of memory instead of the 32 MB with Dos4gw
 
