@@ -28,7 +28,7 @@ bool FileDialog::display() {
   bool ready = false;
   int i;
   if (!doDisplay) return ready;
-  ImGui::Begin(doLoad ? "Load File##File Dialog" : "Save File##File Dialog", NULL, ImVec2(340,430), -1, ImGuiWindowFlags_NoResize);
+  ImGui::Begin(doLoad ? "Load File##File Dialog" : "Save File##File Dialog", NULL, ImVec2(340,434), -1, ImGuiWindowFlags_NoResize);
 
   Array<String> pathComponents;
   const char *t = currentPath.c_str();

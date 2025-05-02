@@ -10,6 +10,7 @@ String getCWD();
 void disableControlBreak();
   // read real time clock(rtc) (with register nr)
 int rtcRead(int reg);
+String currentTimeString();
 
 typedef long FileSize;
 

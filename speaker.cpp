@@ -40,6 +40,14 @@ void stopSample() {
   playSampleOn = false;
 }
 
+int samplePosition() {
+  return bitSamplePos;
+}
+
+int sampleLength() {
+  return bitSampleLength;
+}
+
 unsigned char *convertSampleFromUInt8(unsigned char *data, int len) {
   unsigned char *data2 = new unsigned char[(len+7)/8];
   memset(data2,0,(len+7)/8);

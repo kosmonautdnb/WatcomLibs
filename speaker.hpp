@@ -10,6 +10,9 @@ extern double sampleFrequency;
 void playSample(unsigned char *data, int len, bool loop); // uses a bitstream (use convertSampleFromUInt8)
 void stopSample();
 
+int samplePosition();
+int sampleLength();
+
 // new sample size is (len+7)/8 // convertes from uint8 samples to bitstream
 // len is sample count
 unsigned char *convertSampleFromUInt8(unsigned char *data, int len);

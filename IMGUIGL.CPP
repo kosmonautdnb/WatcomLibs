@@ -6,6 +6,7 @@ extern int glFrameBufferHeight;
 
 double mouseX = 60, mouseY = 60;
 double mouseDeltaX = 0, mouseDeltaY = 0;
+double mouseSpeed = 1.0;
 int mouseButtons = 0;
 int currentKey = 0;
 char *clipBoardString = NULL;
@@ -115,6 +116,7 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
                   int i;
                   bool noTexture = false;
                   int flags = 1 | 2 | 4 | 8 | 16;
+                  bool isTransparentColor = false;
                   for (i = j; i < j + 3; i++) {
                     ImDrawVert &a = vtx_data[idx_buffer[i]];
                     if (a.uv.x==white.x&&a.uv.y==white.y) noTexture = true;
@@ -123,12 +125,20 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
                     if (a.pos.x < pcmd->ClipRect.z) flags &= 31-4;
                     if (a.pos.y < pcmd->ClipRect.w) flags &= 31-8;
                     if (((a.col>>24)&255) > 0) flags &= 31 - 16;
+                    if (((a.col>>24)&255) < 250) isTransparentColor = true;
                   }
                   if (flags == 0) {
-                    if (noTexture) 
+                    if (noTexture) {
                       glDisable(GL_TEXTURE_2D); 
-                    else 
+                      if (isTransparentColor) 
+                        glEnable(GL_BLEND);
+                      else
+                        glDisable(GL_BLEND);
+                    }
+                    else {
                       glEnable(GL_TEXTURE_2D);
+                      glEnable(GL_BLEND);
+                    }
         
                     for (i = j; i < j + 3; i++) {
                       ImDrawVert &a = vtx_data[idx_buffer[i]];
@@ -235,6 +245,7 @@ void InitImGui(int w, int h)
   s.FramePadding = ImVec2(2,2);
   s.ItemSpacing = ImVec2(3,3);
   s.WindowPadding = ImVec2(3,3);
+  s.Colors[ImGuiCol_WindowBg] = ImVec4(0,0,0,100.0);
   s.Colors[ImGuiCol_TitleBg] = ImVec4(0xff/255.f,0,0x40/255.f,0x20/255.f);
   s.Colors[ImGuiCol_TitleBgActive] = ImVec4(0xff/255.f,0,0x40/255.f,0x50/255.f);
   s.Colors[ImGuiCol_CloseButton] = ImVec4(0xff/255.f*0.15f,0,0x40/255.f*0.0f,0xff/255.f);
@@ -260,7 +271,7 @@ void ImGuiNewFrame() {
   io.DeltaTime = deltaTime > 0 ? deltaTime : 1.f/30.f;
   lastTime = time;
   glNextMouseDelta(&mouseDeltaX, &mouseDeltaY);
-  mouseX += mouseDeltaX; mouseY += mouseDeltaY;
+  mouseX += mouseDeltaX * mouseSpeed; mouseY += mouseDeltaY * mouseSpeed;
   if (mouseX < 0) mouseX = 0;
   if (mouseY < 0) mouseY = 0;
   if (mouseX > glFrameBufferWidth-1) mouseX = glFrameBufferWidth-1;

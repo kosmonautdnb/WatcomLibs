@@ -31,6 +31,26 @@ int rtcRead(int reg) {
   return inp(0x71) & 0xff;
 }
 
+static String hex(int v) {
+  char *h="0123456789ABCDEF";
+  String r;
+  r.resize(2);
+  r[0] = h[v / 16];
+  r[1] = h[v & 15];
+  return r;
+}
+
+String currentTimeString() {
+  int rtc_seconds = rtcRead(0);
+  int rtc_minutes = rtcRead(2);
+  int rtc_hours   = rtcRead(4);
+  int rtc_weekday = rtcRead(6);
+  int rtc_day     = rtcRead(7);
+  int rtc_month   = rtcRead(8);
+  int rtc_year    = rtcRead(9);
+  return hex(rtc_day)+"."+hex(rtc_month)+"."+hex(rtc_year)+" "+hex(rtc_hours)+":"+hex(rtc_minutes)+"."+hex(rtc_seconds);
+}
+
 static short _dosGetFileDate(const String &filePath) {
   int handle = open(filePath.c_str(),O_RDONLY | O_TEXT);
   union REGS r;
