@@ -24,6 +24,15 @@ void FileDialog::close() {
   doDisplay = false;
 }
 
+void FileDialog::setCurrentPath(const String &path) {
+  currentPath = path;
+  syncFileData();
+}
+
+String FileDialog::getCurrentPath() {
+  return currentPath;
+}
+
 bool FileDialog::display() {
   bool ready = false;
   int i;
@@ -131,7 +140,7 @@ bool FileDialog::display() {
 
   ImGui::Separator();
 
-  if (ImGui::Button("Cancel")) {
+  if (ImGui::Button("Cancel")||ImGui::IsKeyDown(ImGui::GetIO().KeyMap[ImGuiKey_Escape])) {
     currentSelectedFile = "";
     close();
     ready = true;

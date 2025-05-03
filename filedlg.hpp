@@ -35,6 +35,9 @@ public:
   String getSelectedFileName(); // the fileName to load save is returned here
   void close();
 
+  void setCurrentPath(const String &path);
+  String getCurrentPath();
+
   void init();
   void checkDriveLetters();
   void syncFileData();

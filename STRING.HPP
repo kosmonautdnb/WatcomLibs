@@ -335,6 +335,24 @@ public:
     }
     return -1;
   }
+
+  int64_t findFirst(String v) const {
+    int64_t l1 = length();
+    int64_t l2 = v.length();
+    for (int64_t i = 0; i <= l1-l2; i++) {
+      bool found = true;
+      for (int64_t j = 0; j < l2; j++) {
+        if ((*this)[i+j]!=v[j]) {
+          found = false;
+          break;
+        }
+      }
+      if (found) return i;
+    }
+    return -1;
+  }
+
+  int64_t find(String v) {return findFirst(v);}
   
   int64_t findLast(int64_t pos, String v) const {
     int64_t l1 = pos;
