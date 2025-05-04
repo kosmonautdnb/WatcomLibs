@@ -37,7 +37,7 @@ bool FileDialog::display() {
   bool ready = false;
   int i;
   if (!doDisplay) return ready;
-  ImGui::Begin(doLoad ? "Load File##File Dialog" : "Save File##File Dialog", NULL, ImVec2(340,434), -1, ImGuiWindowFlags_NoResize);
+  ImGui::Begin(doLoad ? "Load File##File Dialog" : "Save File##File Dialog", NULL, ImVec2(400,434), -1, ImGuiWindowFlags_NoResize);
 
   Array<String> pathComponents;
   const char *t = currentPath.c_str();
@@ -72,6 +72,7 @@ bool FileDialog::display() {
   ImGui::SameLine(); if (ImGui::Button("Date")) {sortType = SORT_DATE; sortOrder ^= 1;sort();}
   ImGui::SameLine(); if (ImGui::Button("Ext")) {sortType = SORT_EXT; sortOrder ^= 1;sort();}
   ImGui::SameLine(); if (ImGui::Button("Attr")) {sortType = SORT_ATTR; sortOrder ^= 1;sort();}
+  ImGui::SameLine(); if (ImGui::Button("Size")) {sortType = SORT_SIZE; sortOrder ^= 1;sort();}
 
   ImGui::SameLine(); ImGui::Text("New");
   ImGui::SameLine(); if (ImGui::Button("Folder:")) {
@@ -82,7 +83,7 @@ bool FileDialog::display() {
 
   ImGui::Separator();
 
-  ImGui::BeginChild("FileView", ImVec2(340,300));
+  ImGui::BeginChild("FileView", ImVec2(400,300));
   for (i = 0; i < files.size(); i++) {
     ImVec2 k = ImGui::GetCursorPos();
     String buttonName = files[i].name.name+files[i].name.extension + "##FileButton" + toString(i);
@@ -115,7 +116,7 @@ bool FileDialog::display() {
     ImGui::PopStyleColor();
     k.x += 100;
     ImGui::SetCursorPos(k);
-    ImGui::Text(("          " + dateString(files[i].date) + " " + attributeString(files[i].attributes)).c_str());
+    ImGui::Text(("   " + sizeString(files[i].attributes,files[i].size) + "\t" + dateString(files[i].date) + " " + attributeString(files[i].attributes)).c_str());
   }
   ImGui::EndChild();
 
@@ -250,6 +251,7 @@ void FileDialog::sort() {
       case SORT_EXT: bigger = (files[i].name.extension + files[i].name.name) < (files[j].name.extension + files[j].name.name); break;
       case SORT_DATE: bigger = files[i].date < files[j].date; break;
       case SORT_ATTR: bigger = files[i].attributes < files[j].attributes; break;
+      case SORT_SIZE: bigger = files[i].size < files[j].size; break;
       }
       if (sortOrder) bigger = !bigger;
       bool dirHere = files[i].attributes & DOS_ATTR_SUBDIR;
@@ -271,7 +273,16 @@ String FileDialog::dateString(const FileTime &a) {
   return String(a.day) + "." + String(a.month) + "." + String(a.year) + " " + String(a.hour) + ":" + String(a.minute);
 }
 
-String FileDialog::attributeString(int a) {
+String FileDialog::sizeString(const int a, const int64_t s) {
+  if (a & DOS_ATTR_SUBDIR) return "<DIR>";
+  if (s < 1024*1024)
+    return String(s)+"b";
+  if (s < 1024*1024*1024)
+    return String(s/1024)+"K";
+  return String(s/1024/1024)+"MB";
+}
+
+String FileDialog::attributeString(const int a) {
   String r;
   if (a & DOS_ATTR_SUBDIR) r += "D";
   if (a & DOS_ATTR_RDONLY) r += "R";

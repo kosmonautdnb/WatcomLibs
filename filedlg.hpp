@@ -19,6 +19,7 @@ public:
     SORT_NAME,
     SORT_EXT,
     SORT_ATTR,
+    SORT_SIZE,
   };
   int sortType;
   int sortOrder;
@@ -44,8 +45,9 @@ public:
   void oneFolderUp();
   void filter();
   void sort();
+  String sizeString(const int a, const int64_t s);
   String dateString(const FileTime &a);
-  String attributeString(int a);
+  String attributeString(const int a);
 };
 
 #endif // __FILEDLG_HPP
