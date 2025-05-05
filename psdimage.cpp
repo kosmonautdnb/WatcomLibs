@@ -159,10 +159,14 @@ bool PSDImage::psd_loadchannels(FILE* file)
 		if(layerchannel==0) // first channel in this layer, allocate ARGB data memory
 		{
 			layer.imagedata=new ADWORD[width*height];
-			if(layer.channels<4) // this layer has no alpha, so prep imagedata with opaque alpha values
-				for(int i=0;i<width*height;i++)
-					layer.imagedata[i]=0xFF000000;
+  memset(layer.imagedata,0x00,width*height*4);
+			if(layer.channels<4) { // this layer has no alpha, so prep imagedata with opaque alpha values
+  				for(int i=0;i<width*height;i++)
+  					layer.imagedata[i]=0xFF000000;
+  }
 		}
+
+
 
 		if(!(curlayer==0 && layerchannel>0 && compression==0))
 		{	// TODO: investigate whether or not this is true, might be that all raw layers keep the channels together without per-channel compression info
@@ -184,7 +188,7 @@ bool PSDImage::psd_loadchannels(FILE* file)
 					int wy=y+layer.top;
 					ABYTE pixel=0;
 					fread(&pixel, 1, sizeof(ABYTE), file);
-					ADWORD& imgpixel=layer.imagedata[pixi];
+							ADWORD& imgpixel=layer.imagedata[pixi];
 					if(colorchannel==-1) imgpixel=(imgpixel&0x00FFFFFF)|(pixel<<24); // alpha
 					if(colorchannel==0)  imgpixel=(imgpixel&0xFF00FFFF)|(pixel<<16); // r
 					if(colorchannel==1)  imgpixel=(imgpixel&0xFFFF00FF)|(pixel<<8); // g
@@ -193,15 +197,16 @@ bool PSDImage::psd_loadchannels(FILE* file)
 				}
 		}
 		if(compression==1) // PackBits
-		{
+		{  
 			int pixi=0;
 			AWORD* linesizes=new AWORD[height];
-			for(int y=0;y<height;y++)
+  int y;
+			for(y=0;y<height;y++)
 			{
 				fread(&linesizes[y], 1, sizeof(AWORD), file);
 				endianify_word(linesizes[y]);
 			}
-			for(int y=0;y<height;y++)
+			for(y=0;y<height;y++)
 			{
 				int wx=layer.left;
 				int wy=y+layer.top;
@@ -214,7 +219,7 @@ bool PSDImage::psd_loadchannels(FILE* file)
 					bytesread++;
 					if(control&0x80) // RLE
 					{
-						count=-(char)control+1;
+						count=129-(control & 0x7f);
 						ABYTE pixel=0;
 						fread(&pixel, 1, sizeof(ABYTE), file);
 						bytesread++;
@@ -238,7 +243,7 @@ bool PSDImage::psd_loadchannels(FILE* file)
 							fread(&pixel, 1, sizeof(ABYTE), file);
 							bytesread++;
 							ADWORD& imgpixel=layer.imagedata[pixi];
-							if(colorchannel==-1) imgpixel=(imgpixel&0x00FFFFFF)|(pixel<<24); // alpha
+						if(colorchannel==-1) imgpixel=(imgpixel&0x00FFFFFF)|(pixel<<24); // alpha
 							if(colorchannel==0)  imgpixel=(imgpixel&0xFF00FFFF)|(pixel<<16); // r
 							if(colorchannel==1)  imgpixel=(imgpixel&0xFFFF00FF)|(pixel<<8); // g
 							if(colorchannel==2)  imgpixel=(imgpixel&0xFFFFFF00)|(pixel<<0); // b

@@ -83,7 +83,7 @@ public:
 		psd_free();
 	}
 	
-	bool Load(char* filename)
+	bool Load(const char* filename)
 	{
 		psd_free();
 
