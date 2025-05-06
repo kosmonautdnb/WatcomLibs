@@ -254,12 +254,13 @@ void InitImGui(int w, int h)
 
 static void ImGuiKeyBoardInput() {
   currentKey = glNextKey();
-  for (int i = 0; i < 256; i++)
-    ImGui::GetIO().KeysDown[256+i]=false;
+  for (int i = 0; i < 512; i++)
+    ImGui::GetIO().KeysDown[i]=false;
   int c = translate(currentKey);
-  if (c<256) 
+  if (c<256) {
     ImGui::GetIO().AddInputCharacter(c);
-  else  
+    ImGui::GetIO().KeysDown[c]=true;
+  } else  
     ImGui::GetIO().KeysDown[c]=true;
 }
 
