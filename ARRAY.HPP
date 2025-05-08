@@ -68,7 +68,7 @@ public:
     if (numElements<allocatedSize) {
       usedSize = numElements;
     } else {
-      reAlloc(numElements*1.5);
+      reAlloc((int64_t)(numElements*1.5));
       usedSize = numElements;
     }
   }
@@ -78,7 +78,7 @@ public:
       data[usedSize] = elem;
       usedSize++;
     } else {
-      reAlloc(allocatedSize*1.5);
+      reAlloc((int64_t)(allocatedSize*1.5));
       data[usedSize] = elem;
       usedSize++;
     }

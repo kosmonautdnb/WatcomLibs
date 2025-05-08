@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #ifndef __DOS_HPP__
 #define __DOS_HPP__
 

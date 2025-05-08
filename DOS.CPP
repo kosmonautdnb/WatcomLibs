@@ -1,38 +1,60 @@
+#include "types.hpp"
 #include <direct.h>
 #include "dos.hpp"
 #include <stdio.h>
 #include <io.h>
 #include <string.h>
 #include <conio.h>
+#ifndef NOT_DOS
 #include <i86.h>
+#endif
+#ifdef ON_WINDOWS
+#include <vector>
+#include <string>
+#include <windows.h>
+#include <fileapi.h>
+#include <filesystem>
+#include <sys/stat.h>
+#endif
 #include <fcntl.h>
 
 String getCWD() {
-  String currentWorkingDirectory;
+#ifndef NOT_DOS
+    String currentWorkingDirectory;
   currentWorkingDirectory.resize(2048);
   getcwd(&(currentWorkingDirectory[0]),currentWorkingDirectory.length());
   currentWorkingDirectory.resize(strlen(currentWorkingDirectory.c_str()));
   return unixFileName(currentWorkingDirectory+"/");
+#endif
+#ifdef ON_WINDOWS
+ return unixFileName(String((std::filesystem::current_path().string().c_str())))+"/";
+#endif
 }
 
 void disableControlBreak() {
+#ifndef NOT_DOS
   union REGS regs;
   regs.h.ah = 0x33;
   regs.h.al = 1;
   regs.h.dl = 0;
   int386(0x21, &regs, &regs);
+#endif
 }
 
 int rtcRead(int reg) {
+#ifndef NOT_DOS
   int volatile v=0;
   for (int j=1; j < 100; j++) {v++;}
   outp(0x70,reg & 0xff);
   for (int i=1; i < 100; i++) {v++;}
   return inp(0x71) & 0xff;
+#else
+  return 0;
+#endif
 }
 
 static String hex(int v) {
-  char *h="0123456789ABCDEF";
+  const char *h="0123456789ABCDEF";
   String r;
   r.resize(2);
   r[0] = h[v / 16];
@@ -52,6 +74,7 @@ String currentTimeString() {
 }
 
 static short _dosGetFileDate(const String &filePath) {
+#ifndef NOT_DOS
   int handle = open(filePath.c_str(),O_RDONLY | O_TEXT);
   union REGS r;
   r.h.ah = 0x57;
@@ -60,10 +83,14 @@ static short _dosGetFileDate(const String &filePath) {
   int386(0x21,&r,&r);
   close(handle);
   return r.w.dx;
+#else
+    return 0;
+#endif
 }
 
 static short _dosGetFileTime(const String &filePath) {
-  int handle = open(filePath.c_str(),O_RDONLY | O_TEXT);
+#ifndef NOT_DOS
+    int handle = open(filePath.c_str(),O_RDONLY | O_TEXT);
   union REGS r;
   r.h.ah = 0x57;
   r.h.al = 0x00;
@@ -71,6 +98,9 @@ static short _dosGetFileTime(const String &filePath) {
   int386(0x21,&r,&r);
   close(handle);
   return r.w.cx;
+#else
+    return 0;
+#endif
 }
 
 static FileTime toFileTime(int date, int time) {
@@ -107,6 +137,7 @@ bool operator<(const FileTime &a, const FileTime &b) {
 }
 
 Array<File> dosGetFiles(const String &filePath) {
+#ifndef NOT_DOS
   Array<File> ret;
   DIR *dirp;
   struct dirent *direntp;
@@ -126,18 +157,69 @@ Array<File> dosGetFiles(const String &filePath) {
     closedir( dirp );
   }
   return ret;
+#endif
+#ifdef ON_WINDOWS
+  Array<File> ret;
+  std::string path = filePath.c_str();
+  FileTime fileTime;
+  fileTime.day = 0;
+  fileTime.hour = 0;
+  fileTime.millisecond = 0;
+  fileTime.minute = 0;
+  fileTime.month = 0;
+  fileTime.second = 0;
+  fileTime.year = 0;
+  File r;
+  r.date = fileTime;
+  r.name.full = "..";
+  r.name.name = "..";
+  r.name.extension = "";
+  r.attributes = DOS_ATTR_SUBDIR;
+  ret.push_back(r);
+  for (const auto& entry : std::filesystem::directory_iterator(path)) {
+    File r;
+    r.name = toFileName(filePath, entry.path().filename().string().c_str());
+    r.size = entry.file_size();
+    FileTime fileTime = dosGetFileTime(dosFileName(r.name.full));
+    r.date = fileTime;
+    r.attributes = (entry.is_directory() ? DOS_ATTR_SUBDIR : 0);
+    ret.push_back(r);
+  }
+  return ret;
+#endif
 }
 
 FileTime dosGetFileTime(const String &filePath) {
+#ifndef NOT_DOS
   FileTime r;
   short date = _dosGetFileDate(filePath);
   short time = _dosGetFileTime(filePath);
   r = toFileTime(date,time);
   return r;
+#endif
+#ifdef ON_WINDOWS
+  FileTime r;
+  struct stat filestat;
+  if (stat(filePath.c_str(), &filestat) == 0) {
+      struct tm* timeinfo;
+      timeinfo = localtime(&filestat.st_mtime);
+      if (timeinfo != NULL) {
+          r.day = timeinfo->tm_mday;
+          r.month = timeinfo->tm_mon + 1;
+          r.year = timeinfo->tm_year + 1900;
+          r.hour = timeinfo->tm_hour;
+          r.minute = timeinfo->tm_min;
+          r.second = timeinfo->tm_sec;
+          r.millisecond = 0;
+      }
+  }
+  return r;
+#endif
 }
 
 bool dosHasDrive(const char driveLetter) {
-  int d = -1;
+#ifndef NOT_DOS
+    int d = -1;
   if (driveLetter >= 'A' && driveLetter <= 'Z') d = driveLetter - 'A' + 1;
   if (driveLetter >= 'a' && driveLetter <= 'z') d = driveLetter - 'a' + 1;
   if (d < 0) return false;
@@ -148,6 +230,23 @@ bool dosHasDrive(const char driveLetter) {
   r.h.bl = d & 255;
   int386(0x21,&r,&r);
   return (r.w.ax==0x00)||(r.w.ax==0x01);
+#endif
+#ifdef ON_WINDOWS
+  std::vector<std::string> arrayOfDrives;
+  wchar_t* szDrives = new wchar_t[MAX_PATH]();
+  if (GetLogicalDriveStringsW(MAX_PATH, szDrives));
+  for (int i = 0; i < ('Z'-'A')*4; i += 4) {
+    if (szDrives[i] != (char)0) {
+    wchar_t q = szDrives[i];
+      if (q == (L'A' + (driveLetter - 'A'))) {
+        delete[] szDrives;
+        return true;
+      }
+    }
+  }
+  delete[] szDrives;
+  return false;
+#endif
 }
 
 void dosCreateFolder(const String &folderName) {
@@ -179,18 +278,18 @@ String dosFileName(const String &filePath) {
 }
 
 String getPath(const String &fileName) {
-  int k0 = fileName.findLast("/");
-  int k1 = fileName.findLast("\\");
-  int k = fileName.length();
+  int64_t k0 = fileName.findLast("/");
+  int64_t k1 = fileName.findLast("\\");
+  int64_t k = fileName.length();
   if (k0 < k1) k0 = k1;
   if (k0>0) k = k0+1;
   return fileName.substr(0,k);
 }
 
 String getName(const String &fileName) {
-  int k0 = fileName.findLast("/");
-  int k1 = fileName.findLast("\\");
-  int k = 0;
+  int64_t k0 = fileName.findLast("/");
+  int64_t k1 = fileName.findLast("\\");
+  int64_t k = 0;
   if (k0 < k1) k0 = k1;
   if (k0>0) k = k0+1;
   return fileName.substr(k,fileName.findLast("."));

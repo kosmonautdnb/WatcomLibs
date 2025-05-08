@@ -19,7 +19,7 @@ int32_t getHash(const char *v) {
 }
 
 int32_t getHash(const void *v) {
-  return (int32_t)v;
+  return (int32_t)((intptr_t)v);
 }
 
 int32_t getHash(const uint8_t &v) {
@@ -127,7 +127,7 @@ String toString(const char *v) {
 }
 
 String toString(const void *v) {
-  return "[*"+String::asHex((int)v,8)+"]";
+  return "[*"+String::asHex((int)((intptr_t)v),8)+"]";
 }
 
 String toString(const uint8_t &v) {

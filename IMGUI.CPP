@@ -11522,7 +11522,7 @@ void ImGui::ShowTestWindow(bool* opened)
         if (ImGui::TreeNode("Multi-line Text Input"))
         {
             static char text[1024*16] = "// F00F bug\nlabel:\n\tlock cmpxchg8b eax\n";
-            static char *text2 = "// F00F bug\nlabel:\n\tlock cmpxchg8b eax\n"; // :mad: editor fix
+            static const char *text2 = "// F00F bug\nlabel:\n\tlock cmpxchg8b eax\n"; // :mad: editor fix
             ImGui::PushItemWidth(-1.0f);
             ImGui::InputTextMultiline("##source", text, IM_ARRAYSIZE(text), ImVec2(0.f, ImGui::GetTextLineHeight() * 16), ImGuiInputTextFlags_AllowTabInput);
             ImGui::PopItemWidth();

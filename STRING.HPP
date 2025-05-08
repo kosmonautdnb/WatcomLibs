@@ -94,6 +94,7 @@ public:
       memcpy(data,b.data,dataLength);
     } else {
       data = NULL;
+      dataLength = 0;
     }
   }
 
@@ -106,6 +107,7 @@ public:
       memcpy(data,c.data,dataLength);
     } else {
       data = NULL;
+      dataLength = 0;
     }
   }
   
@@ -117,6 +119,7 @@ public:
       memcpy(data,_data,dataLength);
     } else {
       data = NULL;
+      dataLength = 0;
     }
   }
 
@@ -128,6 +131,7 @@ public:
       memcpy(data,_data,dataLength);
     } else {
       data = NULL;
+      dataLength = 0;
     }
   }
   
@@ -136,7 +140,7 @@ public:
     b.resize(32);
     uint64_t va = v;
     if (v < 0) va = -v;
-    int32_t i = b.length();
+    int64_t i = b.length();
     do {
       i--;
       b[i]=(va % 10)+'0';
@@ -267,13 +271,13 @@ public:
   static String fromFloat(float v) {
     String k;
     k.resize(16);
-    sprintf(&(k[0]),"%f",v);
+    snprintf_x4(&(k[0]),16,"%f",v);
     k.resize(strlen(k.c_str()));
     return k;
   }
 
   float toFloat() {
-    return atof(c_str());
+    return (float)atof(c_str());
   }  
 
   char *c_str() const {

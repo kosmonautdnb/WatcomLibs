@@ -40,18 +40,18 @@ bool equals(const int64_t &a, const uint64_t &b);
 bool equals(const float &a,const float &b);
 bool equals(const double &a,const double &b);
 
-String toString(const class Object &v);
-String toString(const char *v);
-String toString(const void *v);
-String toString(const uint8_t &v);
-String toString(const int8_t &v);
-String toString(const uint16_t &v);
-String toString(const int16_t &v);
-String toString(const uint32_t &v);
-String toString(const int32_t &v);
-String toString(const uint64_t &v);
-String toString(const int64_t &v);
-String toString(const float &v);
-String toString(const double &v);
+class String toString(const class Object &v);
+class String toString(const char *v);
+class String toString(const void *v);
+class String toString(const uint8_t &v);
+class String toString(const int8_t &v);
+class String toString(const uint16_t &v);
+class String toString(const int16_t &v);
+class String toString(const uint32_t &v);
+class String toString(const int32_t &v);
+class String toString(const uint64_t &v);
+class String toString(const int64_t &v);
+class String toString(const float &v);
+class String toString(const double &v);
 
 #endif //__OBJECT_HPP__

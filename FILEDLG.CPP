@@ -1,6 +1,26 @@
-#include "filedlg.hpp"
+#define _CRT_SECURE_NO_WARNINGS
+
+#include "TYPES.HPP"
+
+#ifndef NOT_DOS
 #include "imguigl.hpp"
+#define FDWIDTH 400
+#define FDHEIGHT 434
+#define FDXTAB 100
 #include "hashmap.hpp"
+#define spHashMap HashMap
+#define spHas(__s__,__v__) has(__v__)
+#else
+#include <imgui/imgui.h>
+#define FDWIDTH 700
+#define FDHEIGHT 434
+#define FDXTAB 400
+#include <map>
+#define spHashMap std::map
+#define spHas(__s__,__v__) find(__v__)!=(__s__).end()
+#endif
+
+#include "filedlg.hpp"
 
 extern int glFrameBufferWidth;
 extern int glFrameBufferHeight;
@@ -37,7 +57,7 @@ bool FileDialog::display() {
   bool ready = false;
   int i;
   if (!doDisplay) return ready;
-  ImGui::Begin(doLoad ? "Load File##File Dialog" : "Save File##File Dialog", NULL, ImVec2(400,434), -1, ImGuiWindowFlags_NoResize);
+  ImGui::Begin(doLoad ? "Load File##File Dialog" : "Save File##File Dialog", NULL, ImVec2(FDWIDTH,FDHEIGHT), -1, ImGuiWindowFlags_NoResize);
 
   Array<String> pathComponents;
   const char *t = currentPath.c_str();
@@ -55,7 +75,7 @@ bool FileDialog::display() {
 
   for (i = 0; i < pathComponents.size(); i++) {
     if (i != 0) ImGui::SameLine();
-    if (ImGui::Button((pathComponents[i]+"##pathButtons"+toString(i)).c_str())) {
+    if (ImGui::Button((pathComponents[i]+"##pathButtons"+toString(i)).c_str())&&i>0) {
       String newPath;
       for (int j = 0; j <= i; j++) {
         newPath += pathComponents[j] + "/";
@@ -83,12 +103,12 @@ bool FileDialog::display() {
 
   ImGui::Separator();
 
-  ImGui::BeginChild("FileView", ImVec2(400,300));
+  ImGui::BeginChild("FileView", ImVec2(FDWIDTH,300));
   for (i = 0; i < files.size(); i++) {
     ImVec2 k = ImGui::GetCursorPos();
     String buttonName = files[i].name.name+files[i].name.extension + "##FileButton" + toString(i);
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0,0,0,0));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1,1,1,0.2));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1,1,1,0.2f));
     bool isDir = (files[i].attributes & DOS_ATTR_SUBDIR);
     ImGui::PushStyleColor(ImGuiCol_Text, isDir ? ImVec4(1,1,0,1) : ImVec4(1,1,1,1));
     if (ImGui::Button(buttonName.c_str())) {
@@ -114,7 +134,7 @@ bool FileDialog::display() {
     ImGui::PopStyleColor();
     ImGui::PopStyleColor();
     ImGui::PopStyleColor();
-    k.x += 100;
+    k.x += FDXTAB;
     ImGui::SetCursorPos(k);
     ImGui::Text(("   " + sizeString(files[i].attributes,files[i].size) + "\t" + dateString(files[i].date) + " " + attributeString(files[i].attributes)).c_str());
   }
@@ -201,19 +221,19 @@ void FileDialog::syncFileData() {
 }
 
 void FileDialog::oneFolderUp() {
-  int i = currentPath.findLast("/");
+  int64_t i = currentPath.findLast("/");
   i = currentPath.findLast(i,"/"); 
-  currentPath = currentPath.substr(0,i) + "/";
+  if (i >= 0) currentPath = currentPath.substr(0,i) + "/";
 }
 
 void FileDialog::filter() {
-  int i;
+  int64_t i;
   for (i = files.size() - 1; i >= 0; i--) {
     if (files[i].name.name == ".") {files.erase(i,1); break;}
   }
   const char *s = items;
   String current;
-  HashMap<String, bool> set;
+  spHashMap<String, bool> set;
   int currentItem = 0;
   while (true) {
     char c = *s;
@@ -231,12 +251,12 @@ void FileDialog::filter() {
     }
     s++;
   }
-  if (set.has("*.*")) 
+  if (set.spHas(set,"*.*")) 
     return;
   for (i = files.size() - 1; i >= 0; i--) {
     if (files[i].attributes & DOS_ATTR_SUBDIR) continue;
     String here = toLower(files[i].name.extension.substr(1));
-    if (set.has(here)) continue;
+    if (set.spHas(set,here)) continue;
     files.erase(i,1);
   }
 }

@@ -1,12 +1,11 @@
 #include "string.hpp"
 
-
 int32_t String::hash() const {
   int32_t hash = 0;
   for (int32_t i = 0; i < length(); i++) {
     hash += (*this)[i]*((i%547)+1);
   }
-  hash += length();
+  hash += (int32_t)length();
   return hash;
 }
 
@@ -50,11 +49,11 @@ String operator+(const String &a, const char *b) {
         return a + String(b);
 }
 
-String operator+(const long a, const String &b) {
+String operator+(const int64_t a, const String &b) {
         return String(a) + b;
 }
 
-String operator+(const String &a, const long b) {
+String operator+(const String &a, const int64_t b) {
         return a + String(b);
 }
 
