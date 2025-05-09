@@ -4,6 +4,8 @@
 #ifdef _MSC_VER
 #define NOT_DOS
 #define ON_WINDOWS
+#else
+#define ON_DOS
 #endif
 
 #ifdef NOT_DOS
