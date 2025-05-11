@@ -75,7 +75,7 @@ bool FileDialog::display() {
 
   for (i = 0; i < pathComponents.size(); i++) {
     if (i != 0) ImGui::SameLine();
-    if (ImGui::Button((pathComponents[i]+"##pathButtons"+toString(i)).c_str())&&i>0) {
+    if (ImGui::Button((pathComponents[i]+"##pathButtons"+toString(i)).c_str())) {
       String newPath;
       for (int j = 0; j <= i; j++) {
         newPath += pathComponents[j] + "/";
