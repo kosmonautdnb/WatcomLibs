@@ -130,6 +130,7 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
                   if (flags == 0) {
                     if (noTexture) {
                       glDisable(GL_TEXTURE_2D); 
+                      glDisable(GL_ALPHA_TEST);
                       if (isTransparentColor) 
                         glEnable(GL_BLEND);
                       else
@@ -138,6 +139,7 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
                     else {
                       glEnable(GL_TEXTURE_2D);
                       glEnable(GL_BLEND);
+                      glEnable(GL_ALPHA_TEST);
                     }
         
                     for (i = j; i < j + 3; i++) {
