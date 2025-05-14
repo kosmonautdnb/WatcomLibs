@@ -3,10 +3,16 @@
 
 // this is not working in dos4gw, in !!!!!pmode/w!!!!! it's working
 
+  // scan code pressed table
 extern bool keyPressed[0x80];
+
+  // checks if a scan code currently is pressed
 bool isKeyPressed(int scanCode);
 
+  // installs the "keyPressed handler"
 void installKeyboardHandler();
+
+  // removes the "keyPressed handler"
 void uninstallKeyboardHandler();
 
 #define SCANCODE_ESCAPE 1

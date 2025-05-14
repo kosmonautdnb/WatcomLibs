@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <i86.h>
 
+// this is not working in dos4gw, in !!!!!pmode/w!!!!! it's working
+
 typedef void (__interrupt __far* KeyboardHandler)();
 static KeyboardHandler oldKeyboardHandler = NULL;
 
@@ -12,8 +14,7 @@ bool isKeyPressed(int scanCode) {
   return keyPressed[scanCode & 0x7f];
 }
 
-static void (__interrupt __far keyboardHandler) (void)
-{
+static void (__interrupt __far keyboardHandler) (void) {
   unsigned char key = inp(0x60);
   keyPressed[key & 0x7f] = key & 0x80 ? false : true;
   oldKeyboardHandler();

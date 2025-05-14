@@ -12,12 +12,20 @@
 
 #define PI 3.14159265358979323846
 
+unsigned int *glFrameBufferDedicated = NULL; // linear framebuffer
 int glFrameBufferWidth = 0;
 int glFrameBufferHeight = 0;
 unsigned int *glFrameBuffer = NULL;
-unsigned int *glFrameBufferDedicated = NULL; // linear framebuffer
 unsigned int *glStencilBuffer = NULL; // not supported
 float *glDepthBuffer = NULL;
+
+int glFrameBufferWidth0 = 0;
+int glFrameBufferHeight0 = 0;
+unsigned int *glFrameBuffer0 = NULL;
+unsigned int *glStencilBuffer0 = NULL;
+float *glDepthBuffer0 = NULL;
+
+
 
 GLdouble identityMatrix[4*4] = {1,0,0,0 ,0,1,0,0 ,0,0,1,0 ,0,0,0,1};
 
@@ -999,7 +1007,7 @@ void glClear(GLbitfield mask) {
       for (int x = minX; x < maxX; x++)
         glDepthBuffer[x+y*glFrameBufferWidth] = glContext.clearDepth; // clamping?
   }
-  if (mask & GL_STENCIL_BUFFER_BIT) {
+  if ((mask & GL_STENCIL_BUFFER_BIT) && (glStencilBuffer != NULL)) {
     unsigned int k = glContext.clearStencil;
     for (int y = minY; y < maxY; y++)
       for (int x = minX; x < maxX; x++)
@@ -1067,6 +1075,12 @@ void glColor4ubv(const GLubyte *v) {
   glContext.colorGreen = (float)v[1] / 255.f;
   glContext.colorBlue = (float)v[2] / 255.f;
   glContext.colorAlpha = (float)v[3] / 255.f;
+}
+
+void glColor3ubv(const GLubyte *v) {
+  glContext.colorRed = (float)v[0] / 255.f;
+  glContext.colorGreen = (float)v[1] / 255.f;
+  glContext.colorBlue = (float)v[2] / 255.f;
 }
 
 void glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) {
@@ -3250,21 +3264,49 @@ void glDrawTriangle(_GLContext *context,glVertex *v0,glVertex *v1,glVertex *v2) 
   if (g2 > 1) g2 = 1;
   if (b2 > 1) b2 = 1;
   if (a2 > 1) a2 = 1;
+
+  r0 *= 255.0;
+  g0 *= 255.0;
+  b0 *= 255.0;
+  a0 *= 255.0;
+
+  r1 *= 255.0;
+  g1 *= 255.0;
+  b1 *= 255.0;
+  a1 *= 255.0;
+
+  r2 *= 255.0;
+  g2 *= 255.0;
+  b2 *= 255.0;
+  a2 *= 255.0;
+
+  int r,g,b,a,rf,gf,bf,af;
+  bool interpolateColor = true;
+  if ( floor(r0)==floor(r1)&&floor(r1)==floor(r2)
+    &&floor(g0)==floor(g1)&&floor(g1)==floor(g2)
+    &&floor(b0)==floor(b1)&&floor(b1)==floor(b2)
+    &&floor(a0)==floor(a1)&&floor(a1)==floor(a2)) {
+    interpolateColor = false;
+    rf = r0;
+    gf = g0;
+    bf = b0;
+    af = a0;
+  }   
    
-  r0 = r0*255.0*v0w;
-  g0 = g0*255.0*v0w;
-  b0 = b0*255.0*v0w;
-  a0 = a0*255.0*v0w;
+  r0 *= v0w;
+  g0 *= v0w;
+  b0 *= v0w;
+  a0 *= v0w;
 
-  r1 = r1*255.0*v1w;
-  g1 = g1*255.0*v1w;
-  b1 = b1*255.0*v1w;
-  a1 = a1*255.0*v1w;
+  r1 *= v1w;
+  g1 *= v1w;
+  b1 *= v1w;
+  a1 *= v1w;
 
-  r2 = r2*255.0*v2w;
-  g2 = g2*255.0*v2w;
-  b2 = b2*255.0*v2w;
-  a2 = a2*255.0*v2w;
+  r2 *= v2w;
+  g2 *= v2w;
+  b2 *= v2w;
+  a2 *= v2w;
 
   __PAINTPOLYQUAD_BEGINY__
   __PAINTPOLYQUAD_INITBARYFORX__
@@ -3273,10 +3315,17 @@ void glDrawTriangle(_GLContext *context,glVertex *v0,glVertex *v1,glVertex *v2) 
         double zp = __BARY0__(v0z)+__BARY1__(v1z)+__BARY2__(v2z);
         if ((!depthTest)||glCheckDepthFunction(*zDest,zp,depthFunction)) {
           double iw = 1.0/(__BARY0__(v0w)+__BARY1__(v1w)+__BARY2__(v2w));
-          int r = (__BARY0__(r0)+__BARY1__(r1)+__BARY2__(r2))*iw;
-          int g = (__BARY0__(g0)+__BARY1__(g1)+__BARY2__(g2))*iw;
-          int b = (__BARY0__(b0)+__BARY1__(b1)+__BARY2__(b2))*iw;
-          int a = (__BARY0__(a0)+__BARY1__(a1)+__BARY2__(a2))*iw;
+          if (interpolateColor) {
+            r = (__BARY0__(r0)+__BARY1__(r1)+__BARY2__(r2))*iw;
+            g = (__BARY0__(g0)+__BARY1__(g1)+__BARY2__(g2))*iw;
+            b = (__BARY0__(b0)+__BARY1__(b1)+__BARY2__(b2))*iw;
+            a = (__BARY0__(a0)+__BARY1__(a1)+__BARY2__(a2))*iw;
+          } else {
+            r = rf;
+            g = gf;
+            b = bf;
+            a = af;
+          }
           if (textured) {
             float tx = (__BARY0__(tx0)+__BARY1__(tx1)+__BARY2__(tx2))*iw;
             float ty = (__BARY0__(ty0)+__BARY1__(ty1)+__BARY2__(ty2))*iw;
@@ -3689,6 +3738,11 @@ GLboolean glVesa(int xRes,int yRes, int bPP) {
       memset(glFrameBuffer,0,glFrameBufferWidth*glFrameBufferHeight*4);
       memset(glStencilBuffer,0,glFrameBufferWidth*glFrameBufferHeight*4);
       memset(glDepthBuffer,0,glFrameBufferWidth*glFrameBufferHeight*4);
+      glFrameBufferWidth0 = glFrameBufferWidth;
+      glFrameBufferHeight0 = glFrameBufferHeight;
+      glFrameBuffer0 = glFrameBuffer;
+      glDepthBuffer0 = glDepthBuffer;
+      glStencilBuffer0 = glStencilBuffer;
       glSetupMouse();
       glStartClock = clock();
       glViewport(0,0,xRes,yRes);
@@ -3701,26 +3755,26 @@ GLboolean glVesa(int xRes,int yRes, int bPP) {
 }
 void glRefresh() {
   unsigned int rgba;
-  for (int i = 0; i < glFrameBufferWidth*glFrameBufferHeight; i++) {
-    rgba = glFrameBuffer[i];
+  for (int i = 0; i < glFrameBufferWidth0*glFrameBufferHeight0; i++) {
+    rgba = glFrameBuffer0[i];
     glFrameBufferDedicated[i] = (rgba & 0xff00ff00)|((rgba>>16)&0xff)|((rgba<<16)&0x00ff0000);
   }
 }
 void glDone() {
-  delete[] glFrameBuffer;
-  delete[] glDepthBuffer;
-  delete[] glStencilBuffer;
+  delete[] glFrameBuffer0;
+  delete[] glDepthBuffer0;
+  delete[] glStencilBuffer0;
   unmapPhysical((unsigned int)glFrameBufferDedicated);
   setBiosGraphicsMode(glGraphicsModeToRestore);
 }
 
 void glSetMonitorAspectRatio(float aspect) {
-  glContext.zoomX = 1.0/(aspect*glFrameBufferHeight/glFrameBufferWidth);
+  glContext.zoomX = 1.0/(aspect*glFrameBufferHeight0/glFrameBufferWidth0);
   glContext.zoomY = 1.0;
 }
 
 double glGetMonitorAspectRatio() {
-  return 1.0/glContext.zoomX/((double)glFrameBufferHeight/glFrameBufferWidth);
+  return 1.0/glContext.zoomX/((double)glFrameBufferHeight0/glFrameBufferWidth0);
 }
 
 void glZoomX(float zoom) {
@@ -3738,7 +3792,7 @@ float glGetZoomX() {
 float glGetZoomY() {
   return glContext.zoomY;
 }
-
+                                                                                                                                                                         
 float glPixelLastSX = 0;
 float glPixelLastSY = 0;
 bool glPixelLastValid = false;
@@ -3823,10 +3877,10 @@ void glNextMouseDelta(double *mouseX, double *mouseY) {
   *mouseX = glMouseX - glLastMouseX;
   *mouseY = glMouseY - glLastMouseY;
   if (true) {
-    glSetMousePos(glFrameBufferWidth/2, glFrameBufferHeight/2);
+    glSetMousePos(glFrameBufferWidth0/2, glFrameBufferHeight0/2);
     // update lastMouseX this way
-    glMouseX = glFrameBufferWidth/2;
-    glMouseY = glFrameBufferHeight/2;
+    glMouseX = glFrameBufferWidth0/2;
+    glMouseY = glFrameBufferHeight0/2;
   }
 }
 
@@ -3844,14 +3898,14 @@ void glSetupMouse() {
     union REGS regs;
     regs.x.eax = 0x07;
     regs.x.ecx = 0;
-    regs.x.edx = glFrameBufferWidth-1;
+    regs.x.edx = glFrameBufferWidth0-1;
     int386(0x33, &regs, &regs);
     regs.x.eax = 0x08;
     regs.x.ecx = 0;
-    regs.x.edx = glFrameBufferHeight-1;
+    regs.x.edx = glFrameBufferHeight0-1;
     int386(0x33, &regs, &regs);
-    glMouseX = glFrameBufferWidth/2;
-    glMouseY = glFrameBufferHeight/2;
+    glMouseX = glFrameBufferWidth0/2;
+    glMouseY = glFrameBufferHeight0/2;
     glSetMousePos(glMouseX, glMouseY);
 }
 
@@ -3881,6 +3935,41 @@ void glTexturePointer(int width, int height, unsigned int *textureData) {
   t->data = textureData;
   t->width = width;
   t->height = height;
+}
+
+void glSetRenderTarget(GLuint *frameBufferOrNULL, GLfloat *depthBuffer, GLuint width, GLuint height) {
+  if (frameBufferOrNULL == NULL) {
+    glFrameBufferWidth = glFrameBufferWidth0;
+    glFrameBufferHeight = glFrameBufferHeight0;
+    glFrameBuffer = glFrameBuffer0;
+    glStencilBuffer = glStencilBuffer0;
+    glDepthBuffer = glDepthBuffer0;
+  } else {
+    glFrameBufferWidth = width;
+    glFrameBufferHeight = height;
+    glFrameBuffer = frameBufferOrNULL;
+    glStencilBuffer = NULL;
+    glDepthBuffer = depthBuffer;
+  }
+}
+
+GLuint glGetTextureWidth(GLuint textureId) {
+  glTexture *t = &glTextures[textureId];
+  if (t->name == 0x00) return 0;
+  return t->width;
+
+}
+
+GLuint glGetTextureHeight(GLuint textureId) {
+  glTexture *t = &glTextures[textureId];
+  if (t->name == 0x00) return 0;
+  return t->height;
+}
+
+GLuint *glGetTexturePointer(GLuint textureId) {
+  glTexture *t = &glTextures[textureId];
+  if (t->name == 0x00) return NULL;
+  return t->data;
 }
 
 // --------------------------------------

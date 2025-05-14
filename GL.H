@@ -5,8 +5,8 @@
 // Of course with texturing/blending and alphatest etc.. 
 // It is required that Vesa 3.0 e.g. 640x480x32 works on your device.
 //-------------------------
-#ifndef __gl_h_
-#define __gl_h_
+#ifndef __gl_h__
+#define __gl_h__
 
 #ifdef __cplusplus
 extern "C" {
@@ -644,6 +644,7 @@ GLAPI void APIENTRY glColor3f (GLfloat red, GLfloat green, GLfloat blue); // :ma
 GLAPI void APIENTRY glColor3fv (const GLfloat *v); // :mad: // supported
 GLAPI void APIENTRY glColor3ub (GLubyte red, GLubyte green, GLubyte blue); // :mad: // supported
 GLAPI void APIENTRY glColor4ubv(const GLubyte *color); // :mad: // supported
+GLAPI void APIENTRY glColor3ubv(const GLubyte *color); // :mad: // supported
 GLAPI void APIENTRY glColorMaterial(GLenum face, GLenum pname); // :mad: // supported
 GLAPI void APIENTRY glMateriali(GLenum face, GLenum pname, GLint param); // :mad: // supported
 GLAPI void APIENTRY glFrustum(float left, float right, float bottom, float top, float znear, float zfar); // :mad: // supported
@@ -793,6 +794,9 @@ double glSeconds();
 void glSetTime(double seconds);
                            // convenient, allocation free glTexImage2D for 32bit RGBA
 void glTexturePointer(int width, int height, unsigned int *textureData);
-#endif /* __gl_h_ */
-
-
+                           // set a render target (NULL sets screen/default render target)
+void glSetRenderTarget(GLuint *frameBufferOrNULL, GLfloat *depthBuffer, GLuint width, GLuint height); // remember to use GLViewport,too...
+GLuint glGetTextureWidth(GLuint textureId);
+GLuint glGetTextureHeight(GLuint textureId);
+GLuint *glGetTexturePointer(GLuint textureId);
+#endif // __gl_h__
