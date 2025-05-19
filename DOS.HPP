@@ -67,4 +67,46 @@ String getPath(const String &fileName);
 String getName(const String &fileName);
 String getExtension(const String &fileName);
 
+// long file name extensions (maybe you need doslfn.com)
+//---------
+bool doslfnCreateDirectory(const char *name);
+bool doslfnDeleteDirectory(const char *name);
+bool doslfnChangeDirectory(const char *name);
+bool doslfnDeleteFiles(const char *name, bool useWildCards = false);
+FileTime doslfnGetFileTime(const char *name);
+bool doslfnGetCWD(char *name, int onDrive=0, int nameBytes = 4095); // no drive letters returned
+bool doslfnRename(const char *oldName, const char *newName);
+bool doslfnLongPath(char *name, const char *fileName, int nameBytes = 4095);
+bool doslfnShortPath(char *name, const char *fileName, int nameBytes = 4095);
+int   doslfnOpen(const char *fileName, bool read);
+bool doslfnRead(int fileHandle, void *dest, unsigned int byteCount);
+bool doslfnWrite(int fileHandle, void *source, unsigned int byteCount);
+bool doslfnClose(int fileHandle);
+
+// lowlevel DPMI and DOS calls
+//---------
+typedef struct {
+  unsigned short selector; // for protected mode
+  unsigned short segment; // for 16 bit dos mode (offset is 0)
+  void *ptr; // flat mode memory to write to
+} DOSPOINTER;
+
+typedef struct {
+  short di;
+  short si;
+  short bp;
+  short reserved;
+  short bx;
+  short dx;
+  short cx;
+  short ax;
+  short flags;
+  short es,ds,fs,gs,ip,cs,sp,ss;
+  int cflag;
+} REGS16;
+
+DOSPOINTER dosMalloc(int size);
+bool dosFree(const DOSPOINTER &mem);
+short dosInt386x(int intNumber, REGS16 *in, REGS16 *out);
+
 #endif //__DOS_HPP__
