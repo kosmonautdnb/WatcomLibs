@@ -372,8 +372,8 @@ FileTime doslfnGetFileTime(const char *name) {
   return r ? toFileTime(regs.di,regs.cx) : toFileTime(0,0);
 }
 
-bool doslfnGetCWD(char *name, uint16_t onDrive, uint32_t nameBytes) {
-  DOSPOINTER dosInterfaceMemory = dosMalloc(nameBytes+1);
+bool doslfnGetCWD(char *name, uint16_t onDrive) {
+  DOSPOINTER dosInterfaceMemory = dosMalloc(MAX_LFN_PATH);
   if (dosInterfaceMemory.ptr == NULL) return false;
   REGS16 regs;
   memset(&regs,0,sizeof(regs));
@@ -423,11 +423,11 @@ bool doslfnRename(const char *oldName, const char *newName) {
   return true;
 }
 
-bool doslfnPath(char *name, const char *fileName, uint32_t nameBytes, bool longPath) {
+bool doslfnPath(char *name, const char *fileName, bool longPath) {
   DOSPOINTER dosInterfaceMemory1 = dosMalloc(strlen(fileName)+1);
   if (dosInterfaceMemory1.ptr == NULL) return false;
   memcpy((char*)dosInterfaceMemory1.ptr,fileName,strlen(fileName)+1);
-  DOSPOINTER dosInterfaceMemory2 = dosMalloc(nameBytes);
+  DOSPOINTER dosInterfaceMemory2 = dosMalloc(MAX_LFN_PATH);
   if (dosInterfaceMemory2.ptr == NULL) {
     dosFree(dosInterfaceMemory1);
     return false;
@@ -455,12 +455,12 @@ bool doslfnPath(char *name, const char *fileName, uint32_t nameBytes, bool longP
   return true;
 }
 
-bool doslfnLongPath(char *name, const char *fileName, uint32_t nameBytes) {
-  return doslfnPath(name, fileName, nameBytes, true);
+bool doslfnLongPath(char *name, const char *fileName) {
+  return doslfnPath(name, fileName, true);
 }
 
-bool doslfnShortPath(char *name, const char *fileName, uint32_t nameBytes) {
-  return doslfnPath(name, fileName, nameBytes,false);
+bool doslfnShortPath(char *name, const char *fileName) {
+  return doslfnPath(name, fileName,false);
 }
 
 int32_t doslfnOpen(const char *fileName, bool read) {

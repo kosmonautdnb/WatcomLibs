@@ -69,15 +69,16 @@ String getExtension(const String &fileName);
 
 // long file name extensions (maybe you need doslfn.com)
 //---------
+#define MAX_LFN_PATH 260
 bool doslfnCreateDirectory(const char *name);
 bool doslfnDeleteDirectory(const char *name);
 bool doslfnChangeDirectory(const char *name);
 bool doslfnDeleteFiles(const char *name, bool useWildCards = false);
 FileTime doslfnGetFileTime(const char *name);
-bool doslfnGetCWD(char *name, uint16_t onDrive=0, uint32_t nameBytes = 4095); // no drive letters returned
+bool doslfnGetCWD(char *name, uint16_t onDrive=0); // no drive letters returned
 bool doslfnRename(const char *oldName, const char *newName);
-bool doslfnLongPath(char *name, const char *fileName, uint32_t nameBytes = 4095);
-bool doslfnShortPath(char *name, const char *fileName, uint32_t nameBytes = 4095);
+bool doslfnLongPath(char *name, const char *fileName);
+bool doslfnShortPath(char *name, const char *fileName);
 int32_t doslfnOpen(const char *fileName, bool read);
 bool doslfnRead(int32_t fileHandle, void *dest, uint64_t byteCount);
 bool doslfnWrite(int32_t fileHandle, void *source, uint64_t byteCount);
