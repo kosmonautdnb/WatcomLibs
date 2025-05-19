@@ -687,6 +687,7 @@ uint16_t dosInt386x(uint32_t intno, REGS16 *in, REGS16 *out) {
   rmregs.edi = in->di; 
   rmregs.ds = in->ds;
   rmregs.es = in->es;
+  rmregs.flags = in->cflag ? 0x01 : 0x00;
   r.w.ax = 0x300;
   r.h.bl = intno;
   r.h.bh = 0;
