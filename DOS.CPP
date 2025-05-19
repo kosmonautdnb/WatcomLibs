@@ -600,6 +600,7 @@ bool doslfnClose(int32_t fileHandle) {
 
 uint64_t doslfnTell(int32_t fileHandle) {
   FILE k;
+  memset(&k,0,sizeof(FILE));
   k._handle = fileHandle;
   return ftell(&k);
 }
