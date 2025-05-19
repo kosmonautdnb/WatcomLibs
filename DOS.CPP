@@ -201,7 +201,7 @@ FileTime dosGetFileTime(const String &filePath) {
   FileTime r;
   struct stat filestat;
   if (stat(filePath.c_str(), &filestat) == 0) {
-Q      struct tm* timeinfo;
+      struct tm* timeinfo;
       timeinfo = localtime(&filestat.st_mtime);
       if (timeinfo != NULL) {
           r.day = timeinfo->tm_mday;
