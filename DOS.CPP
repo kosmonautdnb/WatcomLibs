@@ -327,7 +327,7 @@ int dosErrorAdditional = 0;
 #define LFN_SERVERCREATEOPEN 0x71a9
 #define LFN_CREATETERMINATE 0x71aa
 
-bool basicDosCallWithString(int functionNr, const char *str, bool si = false, unsigned short bx = 0, REGS16 *result = NULL, unsigned short dx = 0) {
+bool basicDosCallWithString(uint16_t functionNr, const char *str, bool si = false, uint16_t bx = 0, REGS16 *result = NULL, uint16_t dx = 0) {
   DOSPOINTER dosInterfaceMemory = dosMalloc(strlen(str)+1);
   if (dosInterfaceMemory.ptr == NULL) return false;
   sprintf((char*)dosInterfaceMemory.ptr,"%s",str);
@@ -372,7 +372,7 @@ FileTime doslfnGetFileTime(const char *name) {
   return r ? toFileTime(regs.di,regs.cx) : toFileTime(0,0);
 }
 
-bool doslfnGetCWD(char *name, int onDrive, int nameBytes) {
+bool doslfnGetCWD(char *name, uint16_t onDrive, uint32_t nameBytes) {
   DOSPOINTER dosInterfaceMemory = dosMalloc(nameBytes+1);
   if (dosInterfaceMemory.ptr == NULL) return false;
   REGS16 regs;
@@ -423,7 +423,7 @@ bool doslfnRename(const char *oldName, const char *newName) {
   return true;
 }
 
-bool doslfnPath(char *name, const char *fileName, int nameBytes, bool longPath) {
+bool doslfnPath(char *name, const char *fileName, uint32_t nameBytes, bool longPath) {
   DOSPOINTER dosInterfaceMemory1 = dosMalloc(strlen(fileName)+1);
   if (dosInterfaceMemory1.ptr == NULL) return false;
   memcpy((char*)dosInterfaceMemory1.ptr,fileName,strlen(fileName)+1);
@@ -455,15 +455,15 @@ bool doslfnPath(char *name, const char *fileName, int nameBytes, bool longPath) 
   return true;
 }
 
-bool doslfnLongPath(char *name, const char *fileName, int nameBytes) {
+bool doslfnLongPath(char *name, const char *fileName, uint32_t nameBytes) {
   return doslfnPath(name, fileName, nameBytes, true);
 }
 
-bool doslfnShortPath(char *name, const char *fileName, int nameBytes) {
+bool doslfnShortPath(char *name, const char *fileName, uint32_t nameBytes) {
   return doslfnPath(name, fileName, nameBytes,false);
 }
 
-int doslfnOpen(const char *fileName, bool read) {
+int32_t doslfnOpen(const char *fileName, bool read) {
   DOSPOINTER dosInterfaceMemory = dosMalloc(strlen(fileName)+1);
   if (dosInterfaceMemory.ptr == NULL) return false;
   memcpy((char*)dosInterfaceMemory.ptr,fileName,strlen(fileName)+1);
@@ -498,7 +498,7 @@ int doslfnOpen(const char *fileName, bool read) {
 
 #define FILEIO_BYTES 8192
 
-bool doslfnRead(int fileHandle, void *dest, unsigned int byteCount) {
+bool doslfnRead(int32_t fileHandle, void *dest, uint64_t byteCount) {
   DOSPOINTER dosInterfaceMemory = dosMalloc(FILEIO_BYTES);
   if (dosInterfaceMemory.ptr == NULL) return false;
 
@@ -507,7 +507,7 @@ bool doslfnRead(int fileHandle, void *dest, unsigned int byteCount) {
     memset(&regs,0,sizeof(regs));
     regs.ax = 0x3f00;
     regs.bx = fileHandle & 0xffff;
-    unsigned int readCount = byteCount > FILEIO_BYTES ? FILEIO_BYTES : byteCount;
+    uint32_t readCount = byteCount > FILEIO_BYTES ? FILEIO_BYTES : byteCount;
     regs.cx = readCount;
     regs.ds = dosInterfaceMemory.segment;
     regs.dx = 0;
@@ -533,16 +533,16 @@ bool doslfnRead(int fileHandle, void *dest, unsigned int byteCount) {
   return true;
 }
 
-bool doslfnWrite(int fileHandle, void *source, unsigned int byteCount) {
+bool doslfnWrite(int32_t fileHandle, void *source, uint64_t byteCount) {
   DOSPOINTER dosInterfaceMemory = dosMalloc(FILEIO_BYTES);
   if (dosInterfaceMemory.ptr == NULL) return false;
 
-  while(byteCount>0) {
+  do {
     REGS16 regs;
     memset(&regs,0,sizeof(regs));
     regs.ax = 0x4000;
     regs.bx = fileHandle & 0xffff;
-    unsigned int writeCount = byteCount > FILEIO_BYTES ? FILEIO_BYTES : byteCount;
+    uint32_t writeCount = byteCount > FILEIO_BYTES ? FILEIO_BYTES : byteCount;
     regs.cx = writeCount;
     memcpy(dosInterfaceMemory.ptr,source,writeCount);
     regs.ds = dosInterfaceMemory.segment;
@@ -563,12 +563,27 @@ bool doslfnWrite(int fileHandle, void *source, unsigned int byteCount) {
     }
     byteCount -= writeCount;
     source = (void*)(((unsigned char*)source)+writeCount);
-  }
+  } while(byteCount>0);
   dosFree(dosInterfaceMemory);
   return true;
 }
 
-bool doslfnClose(int fileHandle) {
+bool doslfnSeek(int32_t fileHandle, uint64_t pos, uint32_t seekMode) {
+  REGS16 regs;
+  memset(&regs,0,sizeof(regs));
+  regs.ax = 0x4200+(seekMode==SEEK_SET?0:0)+(seekMode==SEEK_CUR?1:0)+(seekMode==SEEK_END?2:0);
+  regs.bx = fileHandle & 0xffff;
+  regs.cx = (pos >> 16) & 0xffff;
+  regs.dx = pos & 0xffff;
+  regs.flags = 0;
+  dosInt386x(0x21, &regs, &regs);
+  if (regs.flags & 1) {
+    return false;
+  }
+  return true;
+}
+
+bool doslfnClose(int32_t fileHandle) {
   REGS16 regs;
   memset(&regs,0,sizeof(regs));
   regs.ax  = 0x3e00;
@@ -583,6 +598,20 @@ bool doslfnClose(int fileHandle) {
   return true;
 }
 
+uint64_t doslfnTell(int32_t fileHandle) {
+  FILE k;
+  k._handle = fileHandle;
+  return ftell(&k);
+}
+
+uint64_t doslfnSize(int32_t fileHandle) {
+  uint64_t cp = doslfnTell(fileHandle);
+  doslfnSeek(fileHandle,0,SEEK_END);
+  uint64_t r = doslfnTell(fileHandle);
+  doslfnSeek(fileHandle,cp,SEEK_SET);
+  return r;
+}
+
 // lowlevel DPMI and DOS calls
 //---------
 __inline DOSPOINTER dosNullPointer() {
@@ -593,7 +622,7 @@ __inline DOSPOINTER dosNullPointer() {
   return k;
 }
 
-__inline DOSPOINTER makeDosPointer(unsigned short selector, unsigned short segment) {
+__inline DOSPOINTER makeDosPointer(uint16_t selector, uint16_t segment) {
   DOSPOINTER k;
   k.selector = selector;
   k.segment = segment;
@@ -601,7 +630,7 @@ __inline DOSPOINTER makeDosPointer(unsigned short selector, unsigned short segme
   return k;
 }
 
-DOSPOINTER dosMalloc(int size) {
+DOSPOINTER dosMalloc(uint32_t size) {
   union REGS regs;
   regs.w.ax = 0x100;
   regs.w.bx = (size+15)/16;
@@ -642,7 +671,7 @@ typedef struct {
   short es,ds,fs,gs,ip,cs,sp,ss;
 } _REGS16;
 
-short dosInt386x(int intno, REGS16 *in, REGS16 *out) {
+uint16_t dosInt386x(uint32_t intno, REGS16 *in, REGS16 *out) {
   _REGS16 rmregs;
   union REGS r;
   struct SREGS sr;

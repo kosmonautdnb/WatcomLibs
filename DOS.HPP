@@ -74,39 +74,42 @@ bool doslfnDeleteDirectory(const char *name);
 bool doslfnChangeDirectory(const char *name);
 bool doslfnDeleteFiles(const char *name, bool useWildCards = false);
 FileTime doslfnGetFileTime(const char *name);
-bool doslfnGetCWD(char *name, int onDrive=0, int nameBytes = 4095); // no drive letters returned
+bool doslfnGetCWD(char *name, uint16_t onDrive=0, uint32_t nameBytes = 4095); // no drive letters returned
 bool doslfnRename(const char *oldName, const char *newName);
-bool doslfnLongPath(char *name, const char *fileName, int nameBytes = 4095);
-bool doslfnShortPath(char *name, const char *fileName, int nameBytes = 4095);
-int   doslfnOpen(const char *fileName, bool read);
-bool doslfnRead(int fileHandle, void *dest, unsigned int byteCount);
-bool doslfnWrite(int fileHandle, void *source, unsigned int byteCount);
-bool doslfnClose(int fileHandle);
+bool doslfnLongPath(char *name, const char *fileName, uint32_t nameBytes = 4095);
+bool doslfnShortPath(char *name, const char *fileName, uint32_t nameBytes = 4095);
+int32_t doslfnOpen(const char *fileName, bool read);
+bool doslfnRead(int32_t fileHandle, void *dest, uint64_t byteCount);
+bool doslfnWrite(int32_t fileHandle, void *source, uint64_t byteCount);
+bool doslfnSeek(int32_t fileHandle, uint64_t pos, uint32_t seekMode);
+bool doslfnClose(int32_t fileHandle);
+uint64_t doslfnTell(int32_t fileHandle);
+uint64_t doslfnSize(int32_t fileHandle);
 
 // lowlevel DPMI and DOS calls
 //---------
 typedef struct {
-  unsigned short selector; // for protected mode
-  unsigned short segment; // for 16 bit dos mode (offset is 0)
+  uint16_t selector; // for protected mode
+  uint16_t segment; // for 16 bit dos mode (offset is 0)
   void *ptr; // flat mode memory to write to
 } DOSPOINTER;
 
 typedef struct {
-  short di;
-  short si;
-  short bp;
-  short reserved;
-  short bx;
-  short dx;
-  short cx;
-  short ax;
-  short flags;
-  short es,ds,fs,gs,ip,cs,sp,ss;
+  uint16_t di;
+  uint16_t si;
+  uint16_t bp;
+  uint16_t reserved;
+  uint16_t bx;
+  uint16_t dx;
+  uint16_t cx;
+  uint16_t ax;
+  uint16_t flags;
+  uint16_t es,ds,fs,gs,ip,cs,sp,ss;
   int cflag;
 } REGS16;
 
-DOSPOINTER dosMalloc(int size);
+DOSPOINTER dosMalloc(uint32_t size);
 bool dosFree(const DOSPOINTER &mem);
-short dosInt386x(int intNumber, REGS16 *in, REGS16 *out);
+uint16_t dosInt386x(uint32_t intNumber, REGS16 *in, REGS16 *out);
 
 #endif //__DOS_HPP__
