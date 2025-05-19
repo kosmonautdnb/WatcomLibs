@@ -303,7 +303,7 @@ String getExtension(const String &fileName) {
 
 // long file name extensions (maybe you need doslfn.com)
 //---------
-int dosErrorCode = 0;
+#define dosErrorCode errno
 int dosErrorAdditional = 0;
 
 // int 21h long file name functions (not all implemented here)
@@ -337,11 +337,10 @@ bool basicDosCallWithString(uint16_t functionNr, const char *str, bool si = fals
   regs.bx = bx;
   regs.dx = dx;
   regs.si = si ? 1 : 0;
-  regs.flags = 0;
   regs.ds = dosInterfaceMemory.segment;
   dosInt386x(0x21, &regs, &regs);
   dosFree(dosInterfaceMemory);
-  if (regs.flags & 1) {
+  if (regs.cflag) {
     dosErrorCode = regs.ax;
     dosErrorAdditional = 0;
     return false;
@@ -378,12 +377,11 @@ bool doslfnGetCWD(char *name, uint16_t onDrive) {
   REGS16 regs;
   memset(&regs,0,sizeof(regs));
   regs.ax = 0x7147;
-  regs.flags = 0;
   regs.dx = onDrive;
   regs.si = 0;
   regs.ds = dosInterfaceMemory.segment;
   dosInt386x(0x21, &regs, &regs);
-  if (regs.flags & 1) {
+  if (regs.cflag) {
     dosFree(dosInterfaceMemory);
     dosErrorCode = regs.ax;
     dosErrorAdditional = 0;
@@ -411,11 +409,10 @@ bool doslfnRename(const char *oldName, const char *newName) {
   regs.dx = 0;
   regs.es = dosInterfaceMemory2.segment;
   regs.si = 0;
-  regs.flags = 0;
   dosInt386x(0x21, &regs, &regs);
   dosFree(dosInterfaceMemory1);
   dosFree(dosInterfaceMemory2);
-  if (regs.flags & 1) {
+  if (regs.cflag) {
     dosErrorCode = regs.ax;
     dosErrorAdditional = 0;
     return false;
@@ -440,9 +437,8 @@ bool doslfnPath(char *name, const char *fileName, bool longPath) {
   regs.si = 0;
   regs.es = dosInterfaceMemory2.segment;
   regs.di = 0;
-  regs.flags = 0;
   dosInt386x(0x21, &regs, &regs);
-  if (regs.flags & 1) {
+  if (regs.cflag) {
     dosFree(dosInterfaceMemory1);
     dosFree(dosInterfaceMemory2);
     dosErrorCode = regs.ax;
@@ -484,10 +480,9 @@ int32_t doslfnOpen(const char *fileName, bool read) {
   regs.dx = ((read ? 0 : 1)<<4)|(read?1:2);
   regs.ds = dosInterfaceMemory.segment;
   regs.si = 0;
-  regs.flags = 0;
   dosInt386x(0x21, &regs, &regs);
   dosFree(dosInterfaceMemory);
-  if (regs.flags & 1) {
+  if (regs.cflag) {
     dosErrorCode = regs.ax;
     dosErrorAdditional = 0;
     return -1;
@@ -511,9 +506,8 @@ bool doslfnRead(int32_t fileHandle, void *dest, uint64_t byteCount) {
     regs.cx = readCount;
     regs.ds = dosInterfaceMemory.segment;
     regs.dx = 0;
-    regs.flags = 0;
     dosInt386x(0x21, &regs, &regs);
-    if (regs.flags & 1) {
+    if (regs.cflag) {
       dosFree(dosInterfaceMemory);
       dosErrorCode = regs.ax;
       dosErrorAdditional = 0;
@@ -547,9 +541,8 @@ bool doslfnWrite(int32_t fileHandle, void *source, uint64_t byteCount) {
     memcpy(dosInterfaceMemory.ptr,source,writeCount);
     regs.ds = dosInterfaceMemory.segment;
     regs.dx = 0;
-    regs.flags = 0;
     dosInt386x(0x21, &regs, &regs);
-    if (regs.flags & 1) {
+    if (regs.cflag) {
       dosFree(dosInterfaceMemory);
       dosErrorCode = regs.ax;
       dosErrorAdditional = 0;
@@ -575,9 +568,8 @@ bool doslfnSeek(int32_t fileHandle, uint64_t pos, uint32_t seekMode) {
   regs.bx = fileHandle & 0xffff;
   regs.cx = (pos >> 16) & 0xffff;
   regs.dx = pos & 0xffff;
-  regs.flags = 0;
   dosInt386x(0x21, &regs, &regs);
-  if (regs.flags & 1) {
+  if (regs.cflag) {
     return false;
   }
   return true;
@@ -588,9 +580,8 @@ bool doslfnClose(int32_t fileHandle) {
   memset(&regs,0,sizeof(regs));
   regs.ax  = 0x3e00;
   regs.bx = fileHandle & 0xffff;
-  regs.flags = 0;
   dosInt386x(0x21, &regs, &regs);
-  if (regs.flags & 1) {
+  if (regs.cflag) {
     dosErrorCode = regs.ax;
     dosErrorAdditional = 0;
     return false;
@@ -612,6 +603,31 @@ uint64_t doslfnSize(int32_t fileHandle) {
   doslfnSeek(fileHandle,cp,SEEK_SET);
   return r;
 }
+
+LFNFILEINFO doslfnInfo(int32_t fileHandle) {
+  LFNFILEINFO r;
+  memset(&r,0,sizeof(LFNFILEINFO));
+  DOSPOINTER dosInterfaceMemory = dosMalloc(sizeof(LFNFILEINFO));
+  if (dosInterfaceMemory.ptr == NULL) return r;
+  REGS16 regs;
+  memset(&regs,0,sizeof(regs));
+  regs.ax = 0x71a6;
+  regs.bx = fileHandle & 0xffff;
+  regs.cflag = true;
+  regs.ds = dosInterfaceMemory.segment;
+  regs.dx = 0;
+  dosInt386x(0x21, &regs, &regs);
+  if (regs.cflag) {
+    dosErrorCode = regs.ax;
+    dosErrorAdditional = 0;
+    dosFree(dosInterfaceMemory);
+    return r;
+  }
+  memcpy(&r,dosInterfaceMemory.ptr,sizeof(LFNFILEINFO));
+  dosFree(dosInterfaceMemory);
+  return r;
+}
+
 
 // lowlevel DPMI and DOS calls
 //---------
@@ -704,7 +720,7 @@ uint16_t dosInt386x(uint32_t intno, REGS16 *in, REGS16 *out) {
   out->cs = rmregs.cs;
   out->ss = rmregs.ss;
   out->ds = rmregs.ds;
-  out->cflag = rmregs.flags & 0x01;
+  out->cflag = (rmregs.flags & 0x01) ? true : false;
   return out->ax;
 }
 #endif // NOT_DOS --}

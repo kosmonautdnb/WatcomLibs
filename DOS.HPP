@@ -70,6 +70,16 @@ String getExtension(const String &fileName);
 // long file name extensions (maybe you need doslfn.com)
 //---------
 #define MAX_LFN_PATH 260
+typedef struct {
+  uint32_t attributes;
+  uint64_t creationTime;
+  uint64_t accessTime;
+  uint64_t modificationTime;
+  uint32_t driveId;
+  uint64_t fileSize;
+  uint32_t linkCount;
+  uint64_t fileId;
+} LFNFILEINFO;
 bool doslfnCreateDirectory(const char *name);
 bool doslfnDeleteDirectory(const char *name);
 bool doslfnChangeDirectory(const char *name);
@@ -86,6 +96,7 @@ bool doslfnSeek(int32_t fileHandle, uint64_t pos, uint32_t seekMode);
 bool doslfnClose(int32_t fileHandle);
 uint64_t doslfnTell(int32_t fileHandle);
 uint64_t doslfnSize(int32_t fileHandle);
+LFNFILEINFO doslfnInfo(int32_t fileHandle); // maybe not supported: errno = 0x7100 in that case
 
 // lowlevel DPMI and DOS calls
 //---------
@@ -104,9 +115,8 @@ typedef struct {
   uint16_t dx;
   uint16_t cx;
   uint16_t ax;
-  uint16_t flags;
   uint16_t es,ds,fs,gs,ip,cs,sp,ss;
-  int cflag;
+  bool cflag;
 } REGS16;
 
 DOSPOINTER dosMalloc(uint32_t size);

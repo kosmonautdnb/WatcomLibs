@@ -11,8 +11,8 @@
 #ifdef NOT_DOS
 #include <stdint.h>
 #else
-typedef long int int64_t;
-typedef unsigned long int uint64_t;
+typedef __int64 int64_t;
+typedef unsigned __int64 uint64_t;
 typedef int int32_t;
 typedef unsigned int uint32_t;
 typedef short int16_t;
