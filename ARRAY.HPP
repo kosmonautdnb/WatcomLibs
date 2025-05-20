@@ -14,11 +14,11 @@ public:
   Array() {
     usedSize = 0;
     allocatedSize = 5;
-    data = new T[allocatedSize];
+    data = new T[(unsigned int)allocatedSize]; // no 64 bit new
   }
 
   const Array &operator=(const Array &b) {
-    T *copy = new T[b.allocatedSize];
+    T *copy = new T[(unsigned int)b.allocatedSize]; // no 64 bit new
     for (int64_t i = 0; i < b.usedSize; i++)
       copy[i] = b.data[i];
     if (data != NULL) delete[] data;
@@ -36,7 +36,7 @@ public:
   
   void reAlloc(int64_t numElements) {
     if (numElements<2) numElements = 2; // *1.5 is a problem
-    T *data2 = new T[numElements];
+    T *data2 = new T[(unsigned int)numElements]; // no 64 bit new
     for (int64_t i = 0; i < numElements; i++)
       data2[i] = i < usedSize ? data[i] : T();
     delete[] data;
