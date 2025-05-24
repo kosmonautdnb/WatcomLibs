@@ -3,7 +3,9 @@
 
 // this is not working in dos4gw, in !!!!!pmode/w!!!!! it's working
 // samples are played at 18643.4375 Hz (timerirq)
-extern double sampleFrequency;
+extern double speakerFrequency;
+// how many seconds since enableSamplePlayback
+extern volatile double speakerSeconds;
 
 // data is a bitstream (8 consecutive bits per byte) and len the length in bits 
 // (you have to delete the sample by yourself)

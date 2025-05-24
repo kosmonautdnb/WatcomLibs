@@ -7,7 +7,7 @@
 
 #define HARDWARE_TIMER_FREQUENCY 1193180 // 1193180 / 65536  = 18.2
 #define TIMER_MULTIPLICATOR 1024 // 1193180 * 1024 / 65536
-double sampleFrequency = (double)HARDWARE_TIMER_FREQUENCY/65536.0*TIMER_MULTIPLICATOR;
+double speakerFrequency = (double)HARDWARE_TIMER_FREQUENCY/65536.0*TIMER_MULTIPLICATOR;
 
 typedef void (__interrupt __far* TimerIrqHandler)();
 static TimerIrqHandler oldTimerIrqHandler;
@@ -18,6 +18,7 @@ volatile int bitSamplePos = 0;
 volatile int bitSampleLength = 0;
 volatile int timerIrqPos = 0;
 volatile bool loopSample = true;
+volatile double speakerSeconds = 0;
 
 static void initSample() {
   playSampleOn = false;
@@ -115,6 +116,7 @@ static void (__interrupt __far timerIrqHandler) (void)
     outp(0x61,a|k);
   }
 
+  speakerSeconds += (double)1.0/((double)HARDWARE_TIMER_FREQUENCY * TIMER_MULTIPLICATOR / 65536.0);
   timerIrqPos++;
   if (timerIrqPos>=TIMER_MULTIPLICATOR) {
     timerIrqPos = 0;
@@ -127,6 +129,7 @@ static void (__interrupt __far timerIrqHandler) (void)
 void enableSamplePlayback() {
 
   initSample();
+  speakerSeconds = 0;
 
   union REGS r;
   unsigned   rmvector;
