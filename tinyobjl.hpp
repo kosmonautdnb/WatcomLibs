@@ -58,8 +58,8 @@ typedef struct {
 
 typedef struct {
   char *name; /* group name or object name. */
-  unsigned int face_offset;
-  unsigned int length;
+  unsigned int face_offset; // :mad: seems to be *2??
+  unsigned int length; // :mad: seems to be *2??
 } tinyobj_shape_t;
 
 typedef struct { int v_idx, vt_idx, vn_idx; } tinyobj_vertex_index_t;

@@ -507,6 +507,25 @@ Vector operator/(const Matrix &a, const Vector &b) {
   return div(a,b);
 }
 
+
+Vector max(const Vector &a,const Vector &b) {
+  Vector r;
+  r.x = a.x > b.x ? a.x : b.x;
+  r.y = a.y > b.y ? a.y : b.y;
+  r.z = a.z > b.z ? a.z : b.z;
+  r.w = a.w;
+  return r;
+}
+
+Vector min(const Vector &a,const Vector &b) {
+  Vector r;
+  r.x = a.x < b.x ? a.x : b.x;
+  r.y = a.y < b.y ? a.y : b.y;
+  r.z = a.z < b.z ? a.z : b.z;
+  r.w = a.w;
+  return r;
+}
+
 Vector abs(const Vector &a) {
   Vector r;
   r.x = fabs(a.x);

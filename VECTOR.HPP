@@ -176,6 +176,8 @@ Vector operator/(const Vector &a, const Matrix &b);
 Vector operator*(const Matrix &a, const Vector &b);
 Vector operator/(const Matrix &a, const Vector &b);
 
+Vector max(const Vector &a, const Vector &b);
+Vector min(const Vector &a, const Vector &b);
 Vector abs(const Vector &a);
 Vector sin(const Vector &a);
 Vector cos(const Vector &a);
