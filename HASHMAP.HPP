@@ -203,8 +203,8 @@ public:
     return r;
   }
 
-  int64_t size() {
-    int64_t r = 0;
+  size_t size() {
+    size_t r = 0;
     for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {

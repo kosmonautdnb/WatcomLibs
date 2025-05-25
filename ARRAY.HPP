@@ -8,8 +8,8 @@ template<class T>
 class Array {
 public:
   T *data;
-  int64_t usedSize;
-  int64_t allocatedSize;
+  size_t usedSize;
+  size_t allocatedSize;
 
   Array() {
     usedSize = 0;
@@ -19,7 +19,7 @@ public:
 
   const Array &operator=(const Array &b) {
     T *copy = new T[(unsigned int)b.allocatedSize]; // no 64 bit new
-    for (int64_t i = 0; i < b.usedSize; i++)
+    for (size_t i = 0; i < b.usedSize; i++)
       copy[i] = b.data[i];
     if (data != NULL) delete[] data;
     data = copy;
@@ -34,18 +34,18 @@ public:
     allocatedSize = 0;
   }
   
-  void reAlloc(int64_t numElements) {
+  void reAlloc(size_t numElements) {
     if (numElements<2) numElements = 2; // *1.5 is a problem
     T *data2 = new T[(unsigned int)numElements]; // no 64 bit new
-    for (int64_t i = 0; i < numElements; i++)
+    for (size_t i = 0; i < numElements; i++)
       data2[i] = i < usedSize ? data[i] : T();
     delete[] data;
     data = data2;
     allocatedSize = numElements;
   }
 
-  void erase(int64_t pos, int64_t count) {
-    int64_t i;
+  void erase(size_t pos, size_t count) {
+    size_t i;
     for (i = pos+count; i < usedSize; i++) {
       data[i-count]=data[i];    
     }
@@ -55,20 +55,20 @@ public:
     usedSize-=count;
   }
 
-  void insert(const T &element, int64_t pos) {
+  void insert(const T &element, size_t pos) {
     resize(usedSize+1);
-    int64_t i;
+    size_t i;
     for (i = usedSize-1; i > pos; i--) {
       data[i]=data[i-1];    
     }
     data[pos]=element;    
   }
   
-  void resize(int64_t numElements) {
+  void resize(size_t numElements) {
     if (numElements<allocatedSize) {
       usedSize = numElements;
     } else {
-      reAlloc((int64_t)(numElements*1.5));
+      reAlloc((size_t)(numElements*1.5));
       usedSize = numElements;
     }
   }
@@ -78,7 +78,7 @@ public:
       data[usedSize] = elem;
       usedSize++;
     } else {
-      reAlloc((int64_t)(allocatedSize*1.5));
+      reAlloc((size_t)(allocatedSize*1.5));
       data[usedSize] = elem;
       usedSize++;
     }
@@ -88,7 +88,7 @@ public:
     usedSize = 0;
   }
   
-  int64_t size() const {
+  size_t size() const {
     return usedSize;
   }
   
@@ -96,11 +96,11 @@ public:
     return size()==0;
   }
   
-  T &operator[](int64_t index) {
+  T &operator[](size_t index) {
     return data[index];
   }
 
-  const T &operator[](int64_t index) const {
+  const T &operator[](size_t index) const {
     return data[index];
   }
   
