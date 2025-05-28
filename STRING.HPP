@@ -10,7 +10,7 @@
 class String : public Object {
 public:
   char *data;
-  int64_t dataLength;
+  int32_t dataLength;
   
   String() {
     data = NULL;
@@ -35,7 +35,7 @@ public:
   const bool operator==(const String &b) const {
     if (b.length() != length())
       return false;
-    for (int64_t i = 0; i < length(); i++) {
+    for (int32_t i = 0; i < length(); i++) {
       if (b[i] != (*this)[i])
               return false;
     }
@@ -47,9 +47,9 @@ public:
   }
   
   const bool operator<(const String &b) const {
-    int64_t l = length();
+    int32_t l = length();
     if (b.length()<l) l = b.length();
-    for (int64_t i = 0; i < l; i++) {
+    for (int32_t i = 0; i < l; i++) {
       if (b[i]==(*this)[i]) continue;
       return b[i]<(*this)[i];
     }
@@ -57,9 +57,9 @@ public:
   }
   
   const bool operator>(const String &b) const {
-    int64_t l = length();
+    int32_t l = length();
     if (b.length()<l) l = b.length();
-    for (int64_t i = 0; i < l; i++) {
+    for (int32_t i = 0; i < l; i++) {
       if (b[i]==(*this)[i]) continue;
       return b[i]>(*this)[i];
     }
@@ -140,7 +140,7 @@ public:
     b.resize(32);
     uint64_t va = v;
     if (v < 0) va = -v;
-    int64_t i = b.length();
+    int32_t i = b.length();
     do {
       i--;
       b[i]=(va % 10)+'0';
@@ -166,7 +166,7 @@ public:
     dataLength = 0;
   }
   
-  void resize(int64_t newLength) {
+  void resize(int32_t newLength) {
     if (data == NULL) {
       dataLength = newLength + 1;
       data = new char[dataLength];
@@ -186,16 +186,16 @@ public:
     }
   }
   
-  int64_t length() const {
+  int32_t length() const {
     if (data == NULL) return 0;
     return dataLength - 1;
   }
 
-  int64_t size() const {
+  int32_t size() const {
     return length();
   }
   
-  char &operator[](int64_t index) const {
+  char &operator[](int32_t index) const {
     return data[index];
   }
   
@@ -284,13 +284,13 @@ public:
     return data;
   }
   
-  void erase(int64_t pos, int64_t count) {
+  void erase(int32_t pos, int32_t count) {
     memcpy(data+pos,data+pos+count,length()-(pos+count));
     dataLength -= count;
   }
   
-  void insert(int64_t pos, const String &str) {
-    int64_t l = length();
+  void insert(int32_t pos, const String &str) {
+    int32_t l = length();
     dataLength = l+str.length()+1;
     char *newData = new char[dataLength];
     if (pos>0)  memcpy(newData,data,pos);
@@ -301,11 +301,11 @@ public:
     data = newData;
   }
   
-  void insert(int64_t pos, const char c) {
+  void insert(int32_t pos, const char c) {
     insert(pos,String::fromChar(c));
   }
   
-  String substr(int64_t firstIndex) const {
+  String substr(int32_t firstIndex) const {
     if (firstIndex == -1) return "";
     if (firstIndex >= length()) return String(*this);
     String r;
@@ -314,7 +314,7 @@ public:
     return r;
   }
   
-  String substr(int64_t firstIndex, int64_t lastIndex) const {
+  String substr(int32_t firstIndex, int32_t lastIndex) const {
     if (lastIndex == -1) return substr(firstIndex);
     if (firstIndex == -1) return "";
     if (firstIndex >= length()) return String(*this);
@@ -324,12 +324,12 @@ public:
     return r;
   }
   
-  int64_t findLast(String v) const {
-    int64_t l1 = length();
-    int64_t l2 = v.length();
-    for (int64_t i = l1 - l2; i >= 0; i--) {
+  int32_t findLast(const String &v) const {
+    int32_t l1 = length();
+    int32_t l2 = v.length();
+    for (int32_t i = l1 - l2; i >= 0; i--) {
       bool found = true;
-      for (int64_t j = 0; j < l2; j++) {
+      for (int32_t j = 0; j < l2; j++) {
         if ((*this)[i+j]!=v[j]) {
           found = false;
           break;
@@ -340,12 +340,12 @@ public:
     return -1;
   }
 
-  int64_t findFirst(String v) const {
-    int64_t l1 = length();
-    int64_t l2 = v.length();
-    for (int64_t i = 0; i <= l1-l2; i++) {
+  int32_t findFirst(const String &v) const {
+    int32_t l1 = length();
+    int32_t l2 = v.length();
+    for (int32_t i = 0; i <= l1-l2; i++) {
       bool found = true;
-      for (int64_t j = 0; j < l2; j++) {
+      for (int32_t j = 0; j < l2; j++) {
         if ((*this)[i+j]!=v[j]) {
           found = false;
           break;
@@ -356,14 +356,17 @@ public:
     return -1;
   }
 
-  int64_t find(String v) {return findFirst(v);}
-  
-  int64_t findLast(int64_t pos, String v) const {
-    int64_t l1 = pos;
-    int64_t l2 = v.length();
-    for (int64_t i = l1 - l2; i >= 0; i--) {
+  int32_t find(const String &v) {return findFirst(v);}
+  bool startsWith(const String &v) {
+    return find(v) == 0;
+  }
+ 
+  int32_t findLast(int32_t pos, const String &v) const {
+    int32_t l1 = pos;
+    int32_t l2 = v.length();
+    for (int32_t i = l1 - l2; i >= 0; i--) {
       bool found = true;
-      for (int64_t j = 0; j < l2; j++) {
+      for (int32_t j = 0; j < l2; j++) {
         if ((*this)[i+j]!=v[j]) {
           found = false;
           break;
@@ -374,7 +377,7 @@ public:
     return -1;
   }
   
-  String last(int64_t letters) const {
+  String last(int32_t letters) const {
     if (length()<letters)
       return String(*this);
     return substr(length()-letters);
@@ -383,7 +386,7 @@ public:
   static String add(const String &a, const String &b);
   void add(const String &b) {
     if (b.data == NULL) return;
-    int64_t l = length();
+    int32_t l = length();
     resize(l+b.length());
     memcpy(data+l,b.data,b.length()+1);
   }
