@@ -6,6 +6,8 @@
 extern double speakerFrequency;
 // how many seconds since enableSamplePlayback
 extern volatile double speakerSeconds;
+// you can disable sound playback by this
+extern volatile bool muteSpeaker;
 
 // data is a bitstream (8 consecutive bits per byte) and len the length in bits 
 // (you have to delete the sample by yourself)

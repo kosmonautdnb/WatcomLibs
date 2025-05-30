@@ -19,6 +19,7 @@ volatile int bitSampleLength = 0;
 volatile int timerIrqPos = 0;
 volatile bool loopSample = true;
 volatile double speakerSeconds = 0;
+volatile bool muteSpeaker = false;
 
 static void initSample() {
   playSampleOn = false;
@@ -113,7 +114,8 @@ static void (__interrupt __far timerIrqHandler) (void)
     bitSamplePos++;
     if (bitSampleLength>0) bitSamplePos %= bitSampleLength;
     if (!loopSample) if (bitSamplePos==0) playSampleOn = false;
-    outp(0x61,a|k);
+    if (!muteSpeaker)
+      outp(0x61,a|k);
   }
 
   speakerSeconds += (double)1.0/((double)HARDWARE_TIMER_FREQUENCY * TIMER_MULTIPLICATOR / 65536.0);
