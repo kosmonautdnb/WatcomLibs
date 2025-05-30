@@ -1,8 +1,7 @@
-#include "C:\_OPENGL_\GL.H"
+#include "GL.H"
 #include "object.hpp"
 #include "string.hpp"
 #include "truetype.hpp"
-#include <stdio.h>
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stbttf.hpp"
@@ -13,14 +12,17 @@
 stbtt_bakedchar cdata[GLYPH_COUNT]; // ASCII 32..126 is 95 glyphs
 GLuint ftex = 0;
 
-GLuint stb_initfont(const char *ttf_file_name, float fontHeight)
+unsigned int stb_initfont(const char *ttf_file_name, float fontHeight)
 {
   int width = 512;
   int height = 512;
   int ttf_buffer_size = 1<<20;
+  FILE *in = fopen(ttf_file_name, "rb");
+  if (in == NULL) return 0;
   unsigned char *temp_bitmap = new unsigned char[width*height];
   unsigned char *ttf_buffer = new unsigned char[ttf_buffer_size];
-  fread(ttf_buffer,1,ttf_buffer_size,fopen(ttf_file_name, "rb"));
+  fread(ttf_buffer,1,ttf_buffer_size,in);
+  fclose(in);
   stbtt_BakeFontBitmap(ttf_buffer,0,fontHeight,temp_bitmap,width,height,GLYPH_START,GLYPH_COUNT,cdata); // no guarantee this fits!
   delete[] ttf_buffer;
   glGenTextures(1, &ftex);
@@ -41,6 +43,8 @@ void stb_print(float x, float y, const char *text, uint32_t color, float anchorX
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, ftex);
+  glEnable(GL_ALPHA_TEST);
+  glAlphaFunc(GL_GREATER,0.1);
   
   glColor4ubv((GLubyte*)&color);
   glVertex4f(0,0,0,1.f);
@@ -56,12 +60,8 @@ void stb_print(float x, float y, const char *text, uint32_t color, float anchorX
       stbtt_aligned_quad q;
       stbtt_GetBakedQuad(cdata, 512,512, *text2-32, &x2,&y2,&q,1);//1=opengl & d3d10+,0=d3d9
       if (q.x0<minX||first) minX = q.x0;
-      if (q.x1<minX||first) minX = q.x1;
       if (q.y0<minY||first) minY = q.y0;
-      if (q.y1<minY||first) minY = q.y1;
-      if (q.x0>maxX||first) maxX = q.x0;
       if (q.x1>maxX||first) maxX = q.x1;
-      if (q.y0>maxY||first) maxY = q.y0;
       if (q.y1>maxY||first) maxY = q.y1;
       first = false;
     }
@@ -75,7 +75,7 @@ void stb_print(float x, float y, const char *text, uint32_t color, float anchorX
 
   x -= (maxX-minX)/zoomX*anchorX;
   y -= (maxY-minY)/zoomY*anchorY;
-  
+
   glBegin(GL_QUADS);
   while (*text) {
     if (*text >= 32 && *text < 128) {
@@ -91,9 +91,11 @@ void stb_print(float x, float y, const char *text, uint32_t color, float anchorX
   glEnd();
 
   glDepthMask(GL_TRUE);
+  glDisable(GL_ALPHA_TEST);
 }
 
 void glDrawTextTTF(bool clip, float xp, float yp, float zp, const float scale, const char *text, uint32_t color, float anchorX, float anchorY) {
+  // on ortho use zp=-1 for nearplane
   double model[16];
   double projection[16];
   int view[4];
@@ -101,8 +103,8 @@ void glDrawTextTTF(bool clip, float xp, float yp, float zp, const float scale, c
   glGetDoublev(GL_PROJECTION_MATRIX,projection);
   glGetIntegerv(GL_VIEWPORT,view);
   double sx1,sy1,sz1;  
-  gluProject(xp,yp,zp,model,projection,view,&sx1,&sy1,&sz1);
-  if (abs(sz1) >= 1.0) return; // i don't know what glu makes here, >1 seems to be the far plane? or the near plane?   
+  gluProjectx(xp,yp,zp,model,projection,view,&sx1,&sy1,&sz1);
+  //if (abs(sz1) >= 1.0) return; // i don't know what glu makes here, >1 seems to be the far plane? or the near plane?   
 
   glMatrixMode(GL_PROJECTION);
   glPushMatrix();
@@ -113,7 +115,8 @@ void glDrawTextTTF(bool clip, float xp, float yp, float zp, const float scale, c
   glLoadIdentity();
 
   anchorY -= 1.0; // ttf uses lower line as baseline instead of top  
-  stb_print(sx1,view[1]+view[3]-sy1,text,color,anchorX, anchorY);
+  glScalef(scale,scale,1);
+  stb_print(sx1/scale,(view[1]+view[3]-sy1)/scale,text,color,anchorX, anchorY);
 
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
