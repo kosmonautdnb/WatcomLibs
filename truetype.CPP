@@ -92,6 +92,7 @@ void stb_print(float x, float y, const char *text, uint32_t color, float anchorX
 
   glDepthMask(GL_TRUE);
   glDisable(GL_ALPHA_TEST);
+  glDisable(GL_BLEND);
 }
 
 void glDrawTextTTF(bool clip, float xp, float yp, float zp, const float scale, const char *text, uint32_t color, float anchorX, float anchorY) {
@@ -116,7 +117,7 @@ void glDrawTextTTF(bool clip, float xp, float yp, float zp, const float scale, c
 
   anchorY -= 1.0; // ttf uses lower line as baseline instead of top  
   glScalef(scale,scale,1);
-  stb_print(sx1/scale,(view[1]+view[3]-sy1)/scale,text,color,anchorX, anchorY);
+  stb_print(sx1/scale,sy1/scale,text,color,anchorX, anchorY);
 
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
