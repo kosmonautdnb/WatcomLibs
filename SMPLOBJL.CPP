@@ -4,7 +4,7 @@
 #include "smplobjl.hpp"
 
 #define SMPL_BUFFSIZE 1024
-#define SMPL_ERROR {printf("%d\n",__LINE__);getchar();delete ret; return NULL;}
+#define SMPL_ERROR {printf("SMPLOBJL.CPP LINE:%d\n",__LINE__);getchar();delete ret; return NULL;}
 static char buffer[SMPL_BUFFSIZE];
 static char buffer2[SMPL_BUFFSIZE];
 
@@ -81,7 +81,7 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
           int value = 0;
           int vertexId = 0;
           int componentId = 0;
-          int helper[SMPL_MAXV][4];
+          int helper[SMPL_MAXV_LOAD][4];
           memset(helper,0,sizeof(helper));
           while(*s2==' '||*s2=='\t') s2++;
           while(*s2 != 0x00) {
@@ -89,7 +89,7 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
             if (c == '#') break;
             if (c >= '0' && c <= '9') {value*=10;value+=c-'0';}
             if (c=='/') {helper[vertexId][componentId]=value;componentId++;value=0; if (componentId>=4) SMPL_ERROR}
-            if (c==' '||c=='\t'||c=='\n') {helper[vertexId][componentId]=value;value=0;componentId=0;vertexId++;while(*s2==' '||*s2=='\t'||*s2=='\n') s2++;s2--;if (vertexId>=SMPL_MAXV) SMPL_ERROR;}
+            if (c==' '||c=='\t'||c=='\n') {helper[vertexId][componentId]=value;value=0;componentId=0;vertexId++;while(*s2==' '||*s2=='\t'||*s2=='\n') s2++;s2--;if (vertexId>=SMPL_MAXV_LOAD) SMPL_ERROR;}
             s2++;
           }
           if (!triangulate) {
@@ -97,6 +97,7 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
             SMPL_Face *f = &ret->faces.back();
             f->m = currentMaterial;
             f->c = vertexId;
+            if (vertexId>SMPL_MAXV) SMPL_ERROR;
             for (int i = 0; i < vertexId; i++) {
               f->v[i] = helper[i][0]-1;
               f->t[i] = helper[i][1]-1;

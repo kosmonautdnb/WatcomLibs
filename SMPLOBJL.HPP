@@ -8,7 +8,8 @@
 #include "string.hpp"
 #include "hashmap.hpp"
 
-#define SMPL_MAXV 6
+#define SMPL_MAXV 4
+#define SMPL_MAXV_LOAD 24
 
 class SMPL_Face {
 public:
