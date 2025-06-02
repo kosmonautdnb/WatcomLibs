@@ -1,11 +1,11 @@
 #include "object.hpp"
 #include "string.hpp"
 
-int32_t getHash(const Object &v) {
+uint32_t getHash(const Object &v) {
   return v.hash();
 }
 
-int32_t getHash(const char *v) {
+uint32_t getHash(const char *v) {
   int32_t hash = 0;
   const char *s=v;
   int32_t i = 0;
@@ -18,47 +18,47 @@ int32_t getHash(const char *v) {
   return hash;
 }
 
-int32_t getHash(const void *v) {
+uint32_t getHash(const void *v) {
   return (int32_t)((intptr_t)v);
 }
 
-int32_t getHash(const uint8_t &v) {
+uint32_t getHash(const uint8_t &v) {
   return v;
 }
 
-int32_t getHash(const int8_t &v) {
+uint32_t getHash(const int8_t &v) {
   return v;
 }
 
-int32_t getHash(const uint16_t &v) {
+uint32_t getHash(const uint16_t &v) {
   return v;
 }
 
-int32_t getHash(const int16_t &v) {
+uint32_t getHash(const int16_t &v) {
   return v;
 }
 
-int32_t getHash(const uint32_t &v) {
+uint32_t getHash(const uint32_t &v) {
   return v;
 }
 
-int32_t getHash(const int32_t &v) {
+uint32_t getHash(const int32_t &v) {
   return v;
 }
 
-int32_t getHash(const uint64_t &v) {
+uint32_t getHash(const uint64_t &v) {
   return (v & 0xffffffff)^(v>>32);
 }
 
-int32_t getHash(const int64_t &v) {
+uint32_t getHash(const int64_t &v) {
   return (v & 0xffffffff)^(v>>32);
 }
 
-int32_t getHash(const float &v) {
+uint32_t getHash(const float &v) {
   return *((int*)&v);
 }
 
-int32_t getHash(const double &v) {
+uint32_t getHash(const double &v) {
   return (*((int*)&v))^*(((int*)&v)+1);
 }
 

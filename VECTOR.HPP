@@ -29,7 +29,7 @@ public:
 
   virtual ~Vector() {}
 
-  virtual int32_t hash() const {
+  virtual uint32_t hash() const {
     return getHash(x)+getHash(y)*3+getHash(z)*7+getHash(w)*11;
   }
   

@@ -57,7 +57,7 @@ public:
 
   virtual ~Pair() {}
 
-  virtual int32_t hash() const {
+  virtual uint32_t hash() const {
     return getHash(first) + getHash(second)*3;
   }
   

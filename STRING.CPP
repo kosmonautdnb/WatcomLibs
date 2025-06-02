@@ -1,11 +1,11 @@
 #include "string.hpp"
 
-int32_t String::hash() const {
-  int32_t hash = 0;
+uint32_t String::hash() const {
+  uint32_t hash = 0;
   for (int32_t i = 0; i < length(); i++) {
     hash += (*this)[i]*((i%547)+1);
   }
-  hash += (int32_t)length();
+  hash += (uint32_t)length();
   return hash;
 }
 

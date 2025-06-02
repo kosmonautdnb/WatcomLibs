@@ -75,7 +75,7 @@ public:
   }
 
   const VALUE at(const KEY& key) const {
-    int32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
+    uint32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
     while(t != NULL)  {
       if (equals(t->key,key)) {
@@ -91,7 +91,7 @@ public:
   }
 
   VALUE &at(const KEY& key) {
-    int32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
+    uint32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
     ElementLink<KEY,VALUE> *f = NULL;
     while(t != NULL)  {
@@ -135,7 +135,7 @@ public:
   }
 
   bool has(const KEY& key) const {
-    int32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
+    uint32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
     while(t != NULL)  {
       if (equals(t->key,key)) {
@@ -147,7 +147,7 @@ public:
   }
 
   bool erase(const KEY& key) {
-    int32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
+    uint32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
     while(t != NULL)  {
       if (equals(t->key, key)) {

@@ -6,25 +6,25 @@
 // keep small virtual function table in mind
 class Object {
 public:
-  virtual int32_t hash() const = 0;
+  virtual uint32_t hash() const = 0;
   virtual bool equals(Object *a) const = 0;
   virtual class String toString() const = 0;
   virtual bool serialize(class Serializer *ser) {return false;}
 };
 
-int32_t getHash(const class Object &v);
-int32_t getHash(const char *v);
-int32_t getHash(const void *v);
-int32_t getHash(const uint8_t &v);
-int32_t getHash(const int8_t &v);
-int32_t getHash(const uint16_t &v);
-int32_t getHash(const int16_t &v);
-int32_t getHash(const uint32_t &v);
-int32_t getHash(const int32_t &v);
-int32_t getHash(const uint64_t &v);
-int32_t getHash(const int64_t &v);
-int32_t getHash(const float &v);
-int32_t getHash(const double &v);
+uint32_t getHash(const class Object &v);
+uint32_t getHash(const char *v);
+uint32_t getHash(const void *v);
+uint32_t getHash(const uint8_t &v);
+uint32_t getHash(const int8_t &v);
+uint32_t getHash(const uint16_t &v);
+uint32_t getHash(const int16_t &v);
+uint32_t getHash(const uint32_t &v);
+uint32_t getHash(const int32_t &v);
+uint32_t getHash(const uint64_t &v);
+uint32_t getHash(const int64_t &v);
+uint32_t getHash(const float &v);
+uint32_t getHash(const double &v);
 
 bool equals(const class Object &a,const class Object &b);
 bool equals(const char *a,const char *b);

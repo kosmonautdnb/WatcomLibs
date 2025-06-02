@@ -15,8 +15,8 @@ public:
   virtual ~Matrix() {
   }
 
-  virtual int32_t hash() const {
-    int32_t hash = 0;
+  virtual uint32_t hash() const {
+    uint32_t hash = 0;
     for (int32_t i = 0; i < 16; i++) hash += getHash(m[i]);
     return hash;
   }

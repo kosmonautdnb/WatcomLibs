@@ -156,7 +156,7 @@ public:
     if (data != NULL) delete[] data;
   }
 
-  virtual int32_t hash() const;
+  virtual uint32_t hash() const;
   virtual bool equals(Object *a) const;
   virtual String toString() const;
 
