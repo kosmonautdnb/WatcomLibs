@@ -18,7 +18,7 @@ int samplePosition();
 int sampleLength();
 
 // new sample size is (len+7)/8 // convertes from uint8 samples to bitstream
-// len is sample count
+// len is sample count (not for 8 bit (signed) samples)
 unsigned char *convertSampleFromUInt8(unsigned char *data, int len);
 unsigned char *convertSampleFromSInt8(char *data, int len);
 unsigned char *convertSampleFromUInt16(unsigned short *data, int len);
@@ -28,5 +28,9 @@ unsigned char *convertSampleFromSInt16(short *data, int len);
 void enableSamplePlayback();
 // disables the sample player (must be called before another enableSamplePlayback)
 void disableSamplePlayback();
+
+// mixing version uses a signed int ringbuffer
+void playSample32BitSigned(signed int *data, int len, double volume); // for enable32BitSignedSamplePlayback
+void enable32BitSignedSamplePlayback(signed int *audioBuffer, int len);
 
 #endif //__SPEAKER_HPP__

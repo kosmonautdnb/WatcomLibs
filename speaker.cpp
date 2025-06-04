@@ -20,8 +20,10 @@ volatile int timerIrqPos = 0;
 volatile bool loopSample = true;
 volatile double speakerSeconds = 0;
 volatile bool muteSpeaker = false;
+volatile bool mode8Bit = false;
 
 static void initSample() {
+  mode8Bit = false;
   playSampleOn = false;
   bitSample = NULL;
   bitSamplePos = 0;
@@ -31,6 +33,8 @@ static void initSample() {
 }
 
 void playSample(unsigned char *data, int len, bool loop) {
+  if (mode8Bit) 
+    return;
   initSample();
   bitSample = data;
   bitSampleLength = len;
@@ -39,7 +43,7 @@ void playSample(unsigned char *data, int len, bool loop) {
 }
 
 void stopSample() {
-  playSampleOn = false;
+  if (!mode8Bit) playSampleOn = false;
 }
 
 int samplePosition() {
@@ -110,10 +114,22 @@ static void (__interrupt __far timerIrqHandler) (void)
 {
   if (bitSample!=NULL&&bitSampleLength!=0&&playSampleOn) {
     int a = inp(0x61) & (~3); // bit 0 = connect to PIT, bit 1 = ON/OFF
-    int k = bitSample[bitSamplePos>>3]&(1<<(bitSamplePos&7)) ? 2 : 0;
-    bitSamplePos++;
-    if (bitSampleLength>0) bitSamplePos %= bitSampleLength;
-    if (!loopSample) if (bitSamplePos==0) playSampleOn = false;
+    int k = 0;
+    if (!mode8Bit) {
+      // direct
+      k = bitSample[bitSamplePos>>3]&(1<<(bitSamplePos&7)) ? 2 : 0;
+      bitSamplePos++;
+      if (bitSampleLength>0) bitSamplePos %= bitSampleLength;
+      if (!loopSample) if (bitSamplePos==0) playSampleOn = false;
+    } else {
+      // mode8Bit (with looping audio with mixing)
+      int k0 = ((signed int*)bitSample)[(bitSamplePos - 1 + bitSampleLength) % bitSampleLength];
+      ((signed int*)bitSample)[(bitSamplePos - 1 + bitSampleLength) % bitSampleLength]=0;      
+      int k1 = ((signed int*)bitSample)[bitSamplePos % bitSampleLength];
+      bitSamplePos++;
+      bitSamplePos %= bitSampleLength;
+      k = k1>k0?2:0;
+    }
     if (!muteSpeaker)
       outp(0x61,a|k);
   }
@@ -171,4 +187,27 @@ void disableSamplePlayback() {
   outp(0x43,0x36);
   outp(0x40,0); // both 0 = 65536 = 1193180.0/65536.0 = ~18.2 hz
   outp(0x40,0);
+}
+
+void enable32BitSignedSamplePlayback(signed int *audioBuffer, int len) {
+  enableSamplePlayback();
+  memset(audioBuffer,0,len*sizeof(signed int*));
+  mode8Bit = true;
+  bitSampleLength = len;
+  bitSample = (unsigned char*)audioBuffer;
+  playSampleOn = true;
+}
+
+void playSample32BitSigned(signed int *data, int len, double volume) {
+  if (!mode8Bit) 
+    return;
+  if (bitSample==NULL|bitSampleLength<=0) return;
+  int pos = bitSamplePos+100; // play a tiny bit in the future
+  for (int i = 0; i < len; i++) {
+    pos %= bitSampleLength;
+    int a = ((signed int*)bitSample)[pos];
+    a += data[i]*volume;
+    ((signed int*)bitSample)[pos] = a;
+    pos++;
+  }
 }
