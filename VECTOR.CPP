@@ -45,6 +45,7 @@ Vector &Vector::sub(double _x, double _y, double _z) {
 }
 
 Vector &Vector::div(double _x, double _y, double _z) {
+  if (_x==0||_y==0||_z==0) return *this;
   x /= _x; 
   y /= _y; 
   z /= _z; 
@@ -73,6 +74,7 @@ Vector &Vector::sub(const Vector &b) {
 }
 
 Vector &Vector::div(const Vector &b) {
+  if (b.x==0||b.y==0||b.z==0) return *this;
   x = x/b.x; 
   y = y/b.y; 
   z = z/b.z; 
@@ -101,6 +103,7 @@ Vector &Vector::sub(double v) {
 }
 
 Vector &Vector::div(double v) {
+  if (v==0) return *this;
   x = x/v; 
   y = y/v; 
   z = z/v; 
