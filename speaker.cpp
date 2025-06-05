@@ -127,7 +127,6 @@ static void (__interrupt __far timerIrqHandler) (void)
       ((signed int*)bitSample)[(bitSamplePos - 1 + bitSampleLength) % bitSampleLength]=0;      
       int k1 = ((signed int*)bitSample)[bitSamplePos % bitSampleLength];
       bitSamplePos++;
-      bitSamplePos %= bitSampleLength;
       k = k1>k0?2:0;
     }
     if (!muteSpeaker)
