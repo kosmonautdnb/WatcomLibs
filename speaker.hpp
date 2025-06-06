@@ -3,6 +3,7 @@
 
 // this is not working in dos4gw, in !!!!!pmode/w!!!!! it's working
 // samples are played at 18643.4375 Hz (timerirq)
+// it somehow "minimally" alters the DOS clock (not the RTC), yet. I didn't found the reason for this, yet.
 extern double speakerFrequency;
 // how many seconds since enableSamplePlayback
 extern volatile double speakerSeconds;
