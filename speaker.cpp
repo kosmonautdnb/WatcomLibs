@@ -5,7 +5,7 @@
 #include <math.h>
 #include <string.h>
 
-#define HARDWARE_TIMER_FREQUENCY 1193180 // 1193180 / 65536  = 18.2
+#define HARDWARE_TIMER_FREQUENCY 1193180 // 1193180 / 65536  = 18.2 (found in the internet that it's more like 1193181.66666666 instead of 1193180)
 #define TIMER_MULTIPLICATOR 1024 // 1193180 * 1024 / 65536
 double speakerFrequency = (double)HARDWARE_TIMER_FREQUENCY/65536.0*TIMER_MULTIPLICATOR;
 
@@ -28,7 +28,6 @@ static void initSample() {
   bitSample = NULL;
   bitSamplePos = 0;
   bitSampleLength = 0;
-  timerIrqPos = 0;
   loopSample = true;
 }
 
@@ -147,6 +146,7 @@ void enableSamplePlayback() {
 
   initSample();
   speakerSeconds = 0;
+  timerIrqPos = 0;
 
   union REGS r;
   unsigned   rmvector;
@@ -156,19 +156,17 @@ void enableSamplePlayback() {
   int386 (0x31, &r, &r);
   oldTimerIrqHandler = (TimerIrqHandler)MK_FP(r.x.ecx,r.x.edx);
 
+  int here = 65536/TIMER_MULTIPLICATOR;
+
   r.x.eax = 0x205;
   r.h.bl = 0x08;
   r.x.ecx = FP_SEG(timerIrqHandler);
   r.x.edx = FP_OFF(timerIrqHandler);
   int386 (0x31, &r, &r);
 
-  double pitBase = HARDWARE_TIMER_FREQUENCY/65536.0; // ~18.2 hz
-  double frequency = pitBase*TIMER_MULTIPLICATOR;
-  double val = HARDWARE_TIMER_FREQUENCY/frequency;
-  int here = (int)floor(val);
   outp(0x43,0x36);
   outp(0x40,here & 255);
-  outp(0x40,here / 256);
+  outp(0x40,(here>>8) & 255);
 }
 
 void disableSamplePlayback() {
@@ -176,16 +174,16 @@ void disableSamplePlayback() {
   initSample();
 
   union REGS r;
-  unsigned   rmvector;
+
+  outp(0x43,0x36);
+  outp(0x40,0); // both 0 = 65536 = 1193180.0/65536.0 = ~18.2 hz
+  outp(0x40,0);
 
   r.x.eax = 0x205;
   r.h.bl = 0x08;
   r.x.ecx = FP_SEG(oldTimerIrqHandler);
   r.x.edx = FP_OFF(oldTimerIrqHandler);
   int386 (0x31, &r, &r);
-  outp(0x43,0x36);
-  outp(0x40,0); // both 0 = 65536 = 1193180.0/65536.0 = ~18.2 hz
-  outp(0x40,0);
 }
 
 void enable32BitSignedSamplePlayback(signed int *audioBuffer, int len) {
