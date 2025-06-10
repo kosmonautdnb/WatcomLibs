@@ -50,7 +50,7 @@ void stb_print(float x, float y, const char *text, uint32_t color, float anchorX
   glVertex4f(0,0,0,1.f);
   glDepthMask(GL_FALSE);
   
-  float minX,minY,maxX,maxY;
+  float minX,minY=y,maxX,maxY=y;
   const char *text2 = text;
   float x2 = x;
   float y2 = y;
@@ -65,6 +65,10 @@ void stb_print(float x, float y, const char *text, uint32_t color, float anchorX
       if (q.y1>maxY||first) maxY = q.y1;
       first = false;
     }
+    if (*text2 == '\n') {
+      x2 = x;
+      y2 =minY;
+    }
     ++text2;
   }
 
@@ -75,7 +79,9 @@ void stb_print(float x, float y, const char *text, uint32_t color, float anchorX
 
   x -= (maxX-minX)/zoomX*anchorX;
   y -= (maxY-minY)/zoomY*anchorY;
+  float x3 = x;
 
+  minY = y;
   glBegin(GL_QUADS);
   while (*text) {
     if (*text >= 32 && *text < 128) {
@@ -85,6 +91,11 @@ void stb_print(float x, float y, const char *text, uint32_t color, float anchorX
       glTexCoord2f(q.s1,q.t1); glVertex2f(q.x1,q.y1);
       glTexCoord2f(q.s1,q.t0); glVertex2f(q.x1,q.y0);
       glTexCoord2f(q.s0,q.t0); glVertex2f(q.x0,q.y0);
+      if (q.y0<minY) minY = q.y0;
+    }
+    if (*text == '\n') {
+      x = x3;
+      y =minY;
     }
     ++text;
   }
