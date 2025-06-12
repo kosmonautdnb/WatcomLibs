@@ -9,10 +9,10 @@
 #define GLYPH_START 32
 #define GLYPH_COUNT 96
 
-stbtt_bakedchar cdata[GLYPH_COUNT]; // ASCII 32..126 is 95 glyphs
-GLuint ftex = 0;
+stbtt_bakedchar cdata[MAX_FONTS][GLYPH_COUNT]; // ASCII 32..126 is 95 glyphs
+GLuint ftex[MAX_FONTS] = {0};
 
-unsigned int stb_initfont(const char *ttf_file_name, float fontHeight)
+unsigned int stb_initfont(int fontIndex, const char *ttf_file_name, float fontHeight)
 {
   int width = 512;
   int height = 512;
@@ -23,26 +23,30 @@ unsigned int stb_initfont(const char *ttf_file_name, float fontHeight)
   unsigned char *ttf_buffer = new unsigned char[ttf_buffer_size];
   fread(ttf_buffer,1,ttf_buffer_size,in);
   fclose(in);
-  stbtt_BakeFontBitmap(ttf_buffer,0,fontHeight,temp_bitmap,width,height,GLYPH_START,GLYPH_COUNT,cdata); // no guarantee this fits!
+  stbtt_BakeFontBitmap(ttf_buffer,0,fontHeight,temp_bitmap,width,height,GLYPH_START,GLYPH_COUNT,cdata[fontIndex]); // no guarantee this fits!
   delete[] ttf_buffer;
-  glGenTextures(1, &ftex);
-  glBindTexture(GL_TEXTURE_2D, ftex);
+  glGenTextures(1, &ftex[fontIndex]);
+  glBindTexture(GL_TEXTURE_2D, ftex[fontIndex]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 512,512, 0, GL_ALPHA, GL_UNSIGNED_BYTE, temp_bitmap);
   delete[] temp_bitmap;
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  return ftex;
+  return ftex[fontIndex];
 }
 
-void stb_print(float x, float y, const char *text, uint32_t color, float anchorX, float anchorY)
+void stb_clearfont(int fontIndex) {
+  glDeleteTextures(1,&ftex[fontIndex]);
+}
+
+void stb_print(int fontIndex, float x, float y, const char *text, uint32_t color, float anchorX, float anchorY)
 {
   // assume orthographic projection with units = screen pixels, origin at top left
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, ftex);
+  glBindTexture(GL_TEXTURE_2D, ftex[fontIndex]);
   glEnable(GL_ALPHA_TEST);
   glAlphaFunc(GL_GREATER,0.1);
   
@@ -50,35 +54,32 @@ void stb_print(float x, float y, const char *text, uint32_t color, float anchorX
   glVertex4f(0,0,0,1.f);
   glDepthMask(GL_FALSE);
   
-  float minX,minY=y,maxX,maxY=y;
+  float minX=x,minY=y,maxX=x,maxY=y;
   const char *text2 = text;
   float x2 = x;
   float y2 = y;
-  bool first = true;
   while (*text2) {
     if (*text2 >= 32 && *text2 < 128) {
       stbtt_aligned_quad q;
-      stbtt_GetBakedQuad(cdata, 512,512, *text2-32, &x2,&y2,&q,1);//1=opengl & d3d10+,0=d3d9
-      if (q.x0<minX||first) minX = q.x0;
-      if (q.y0<minY||first) minY = q.y0;
-      if (q.x1>maxX||first) maxX = q.x1;
-      if (q.y1>maxY||first) maxY = q.y1;
-      first = false;
+      stbtt_GetBakedQuad(cdata[fontIndex], 512,512, *text2-32, &x2,&y2,&q,1);//1=opengl & d3d10+,0=d3d9
+      if (q.x0<minX) minX = q.x0;
+      if (q.x1<minX) minX = q.x1;
+      if (q.y0<minY) minY = q.y0;
+      if (q.y1<minY) minY = q.y1;
+      if (q.x0>maxX) maxX = q.x0;
+      if (q.x1>maxX) maxX = q.x1;
+      if (q.y0>maxY) maxY = q.y0;
+      if (q.y1>maxY) maxY = q.y1;
     }
     if (*text2 == '\n') {
       x2 = x;
-      y2 =minY;
+      y2 = minY;
     }
     ++text2;
   }
 
-  float zoomX = 1.f;
-  float zoomY = 1.f;
-  glGetFloatv(GL_ZOOM_X,&zoomX);
-  glGetFloatv(GL_ZOOM_Y,&zoomY);
-
-  x -= (maxX-minX)/zoomX*anchorX;
-  y -= (maxY-minY)/zoomY*anchorY;
+  x -= (maxX-minX)*anchorX;
+  y -= (maxY-minY)*anchorY;
   float x3 = x;
 
   minY = y;
@@ -86,7 +87,7 @@ void stb_print(float x, float y, const char *text, uint32_t color, float anchorX
   while (*text) {
     if (*text >= 32 && *text < 128) {
       stbtt_aligned_quad q;
-      stbtt_GetBakedQuad(cdata, 512,512, *text-32, &x,&y,&q,1);//1=opengl & d3d10+,0=d3d9
+      stbtt_GetBakedQuad(cdata[fontIndex], 512,512, *text-32, &x,&y,&q,1);//1=opengl & d3d10+,0=d3d9
       glTexCoord2f(q.s0,q.t1); glVertex2f(q.x0,q.y1);
       glTexCoord2f(q.s1,q.t1); glVertex2f(q.x1,q.y1);
       glTexCoord2f(q.s1,q.t0); glVertex2f(q.x1,q.y0);
@@ -106,7 +107,7 @@ void stb_print(float x, float y, const char *text, uint32_t color, float anchorX
   glDisable(GL_BLEND);
 }
 
-void glDrawTextTTF(bool clip, float xp, float yp, float zp, const float scale, const char *text, uint32_t color, float anchorX, float anchorY) {
+void glDrawTextTTF(int fontIndex, float xp, float yp, float zp, const float scale, const char *text, uint32_t color, float anchorX, float anchorY) {
   // on ortho use zp=-1 for nearplane
   double model[16];
   double projection[16];
@@ -128,7 +129,7 @@ void glDrawTextTTF(bool clip, float xp, float yp, float zp, const float scale, c
 
   anchorY -= 1.0; // ttf uses lower line as baseline instead of top  
   glScalef(scale,scale,1);
-  stb_print(sx1/scale,sy1/scale,text,color,anchorX, anchorY);
+  stb_print(fontIndex, sx1/scale,sy1/scale,text,color,anchorX, anchorY);
 
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();

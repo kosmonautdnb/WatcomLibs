@@ -4,9 +4,12 @@
 #include "stbttf.hpp"
 #include "types.hpp"
 
-unsigned int stb_initfont(const char *ttf_file_name, float fontHeight = 32.f);
-void stb_print(float x, float y, const char *text, uint32_t color, float anchorX, float anchorY);
+#define MAX_FONTS 4
 
-void glDrawTextTTF(bool clip, float xp, float yp, float zp, const float scale, const char *text, uint32_t color, float anchorX, float anchorY);
+unsigned int stb_initfont(int fontIndex, const char *ttf_file_name, float fontHeight = 32.f);
+void stb_clearfont(int fontIndex);
+void stb_print(int fontIndex, float x, float y, const char *text, uint32_t color, float anchorX, float anchorY);
+
+void glDrawTextTTF(int fontIndex, float xp, float yp, float zp, const float scale, const char *text, uint32_t color, float anchorX, float anchorY);
 
 #endif //__TRUETYPE_HPP__
