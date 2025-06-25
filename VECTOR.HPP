@@ -189,5 +189,6 @@ Vector clamp(const Vector &a, const double &b, const double &c);
 Vector saturate(const Vector &a);
 Vector lerp(const Vector &a, const Vector &b, const double &c);
 Vector mix(const Vector &a, const Vector &b, const double &c);
+double distance(const Vector &a, const Vector &b);
 
 #endif //__VECTOR_HPP__

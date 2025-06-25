@@ -617,3 +617,7 @@ Vector lerp(const Vector &a, const Vector &b, const double &c) {
 Vector mix(const Vector &a, const Vector &b, const double &c) {
   return lerp(a,b,c);
 }
+
+double distance(const Vector &a, const Vector &b) {
+  return length(a-b);
+}

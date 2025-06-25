@@ -380,37 +380,39 @@ Matrix inverse(const Matrix &a) {
   return c;
 }
 
+#define GET(__x__,__y__) m[(__x__)+(__y__)*4]
+
 Vector transform(const Vector &a, const Matrix &b) {
   Vector r;
-  r.x = b.get(0,0)*a.x+b.get(0,1)*a.y+b.get(0,2)*a.z+b.get(0,3)*a.w;
-  r.y = b.get(1,0)*a.x+b.get(1,1)*a.y+b.get(1,2)*a.z+b.get(1,3)*a.w;
-  r.z = b.get(2,0)*a.x+b.get(2,1)*a.y+b.get(2,2)*a.z+b.get(2,3)*a.w;
-  r.w = b.get(3,0)*a.x+b.get(3,1)*a.y+b.get(3,2)*a.z+b.get(3,3)*a.w;
+  r.x = b.GET(0,0)*a.x+b.GET(0,1)*a.y+b.GET(0,2)*a.z+b.GET(0,3)*a.w;
+  r.y = b.GET(1,0)*a.x+b.GET(1,1)*a.y+b.GET(1,2)*a.z+b.GET(1,3)*a.w;
+  r.z = b.GET(2,0)*a.x+b.GET(2,1)*a.y+b.GET(2,2)*a.z+b.GET(2,3)*a.w;
+  r.w = b.GET(3,0)*a.x+b.GET(3,1)*a.y+b.GET(3,2)*a.z+b.GET(3,3)*a.w;
   return r;
 }
 
 Vector transformTransposed(const Vector &a, const Matrix &b) {
   Vector r;
-  r.x = b.get(0,0)*a.x+b.get(1,0)*a.y+b.get(2,0)*a.z+b.get(3,0)*a.w;
-  r.y = b.get(0,1)*a.x+b.get(1,1)*a.y+b.get(2,1)*a.z+b.get(3,1)*a.w;
-  r.z = b.get(0,2)*a.x+b.get(1,2)*a.y+b.get(2,2)*a.z+b.get(3,2)*a.w;
-  r.w = b.get(0,3)*a.x+b.get(1,3)*a.y+b.get(2,3)*a.z+b.get(3,3)*a.w;
+  r.x = b.GET(0,0)*a.x+b.GET(1,0)*a.y+b.GET(2,0)*a.z+b.GET(3,0)*a.w;
+  r.y = b.GET(0,1)*a.x+b.GET(1,1)*a.y+b.GET(2,1)*a.z+b.GET(3,1)*a.w;
+  r.z = b.GET(0,2)*a.x+b.GET(1,2)*a.y+b.GET(2,2)*a.z+b.GET(3,2)*a.w;
+  r.w = b.GET(0,3)*a.x+b.GET(1,3)*a.y+b.GET(2,3)*a.z+b.GET(3,3)*a.w;
   return r;
 }
 
 Vector transform3x3(const Vector &a, const Matrix &b) {
   Vector r;
-  r.x = b.get(0,0)*a.x+b.get(0,1)*a.y+b.get(0,2)*a.z;
-  r.y = b.get(1,0)*a.x+b.get(1,1)*a.y+b.get(1,2)*a.z;
-  r.z = b.get(2,0)*a.x+b.get(2,1)*a.y+b.get(2,2)*a.z;
+  r.x = b.GET(0,0)*a.x+b.GET(0,1)*a.y+b.GET(0,2)*a.z;
+  r.y = b.GET(1,0)*a.x+b.GET(1,1)*a.y+b.GET(1,2)*a.z;
+  r.z = b.GET(2,0)*a.x+b.GET(2,1)*a.y+b.GET(2,2)*a.z;
   return r;
 }
 
 Vector transformTransposed3x3(const Vector &a, const Matrix &b) {
   Vector r;
-  r.x = b.get(0,0)*a.x+b.get(1,0)*a.y+b.get(2,0)*a.z;
-  r.y = b.get(0,1)*a.x+b.get(1,1)*a.y+b.get(2,1)*a.z;
-  r.z = b.get(0,2)*a.x+b.get(1,2)*a.y+b.get(2,2)*a.z;
+  r.x = b.GET(0,0)*a.x+b.GET(1,0)*a.y+b.GET(2,0)*a.z;
+  r.y = b.GET(0,1)*a.x+b.GET(1,1)*a.y+b.GET(2,1)*a.z;
+  r.z = b.GET(0,2)*a.x+b.GET(1,2)*a.y+b.GET(2,2)*a.z;
   return r;
 }
 
