@@ -1,5 +1,5 @@
 # TemplateLib_WatcomC
-A very very basic and reduced STL like library for WatcomC (WatcomC++ is different on some points, all here works well with Watcom but e.g. not on VisualC++)
+A very very basic and reduced STL like library for WatcomC (WatcomC++ is different on some points, all here works well with Watcom but e.g. not with VisualC++, it's just supposed for WatcomC++)
 
 Some parts may need https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git
 
