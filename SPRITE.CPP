@@ -122,7 +122,7 @@ void drawBall(const class Vector &ballPos, const double ballSize, const BallHeig
 }
 
 
-void drawSprite(const class Vector &spritePos, const double spriteWidth, const double spriteHeight, const unsigned int glTexture, const unsigned int spriteColor) {
+void drawSprite(const class Vector &spritePos, const double spriteWidth, const double spriteHeight, const unsigned int glTexture, const unsigned int spriteColor, unsigned int spriteFlags) {
   Matrix modelMatrix;
   Matrix projectionMatrix;
   glGetDoublev(GL_MODELVIEW_MATRIX, modelMatrix.m);   
@@ -170,6 +170,13 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
   tx0 = txadd-1-(int)floor((fx0-(double)ix0)*txadd);
   ty0 = tyadd-1-(int)floor((fy0-(double)iy0)*tyadd);
 
+  if (spriteFlags & SPRITEFLAG_NOT_SUBPIXEL) {
+    tx0 = 0;
+    ty0 = 0;
+    txadd = (int)((double)(tx1-tx0)*4096.0/(ix1-ix0));
+    tyadd = (int)((double)(ty1-ty0)*4096.0/(iy1-iy0));
+  }
+
   if (ix0<viewport[0]) {tx0+=(viewport[0]-ix0)*txadd;ix0 = viewport[0];}
   if (iy0<viewport[1]) {ty0+=(viewport[1]-iy0)*tyadd;iy0 = viewport[1];}
   if (ix1>viewport[0]+viewport[2]) {ix1 = viewport[0]+viewport[2];}
@@ -195,10 +202,38 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
       float *destZ = destZ0;
       unsigned int *data2 = &data[(ty>>12)*texWidth];
       unsigned int tx = tx0;
-      for (int i = ix1-ix0; i>0; i--) {
-         const unsigned int rgba = data2[tx>>12];
-         int a = (((rgba>>24)&255)*spriteAlpha)>>8;
-         if (a != 0) {
+      if (spriteFlags & SPRITEFLAG_PREMULTIPLIED_ALPHA) {
+        for (int i = ix1-ix0; i>0; i--) {
+          const unsigned int rgba = data2[tx>>12];
+          int a = (((rgba>>24)&255)*spriteAlpha)>>8;
+          if (a != 0) {
+            if (zp0<=*destZ) {
+              *destZ = zp0;
+              int rh = *destP & 255;
+              int gh = (*destP>>8) & 255;
+              int bh = (*destP>>16) & 255;
+              int rt = rgba & 255;
+              int gt = (rgba>>8) & 255;
+              int bt = (rgba>>16) & 255;
+              a = 255-a;
+              rh = ((rh*a)>>8)+rt;
+              bh = ((gh*a)>>8)+gt;
+              gh = ((bh*a)>>8)+bt;
+              if (rh > 255) rh = 255;
+              if (gh > 255) gh = 255;
+              if (bh > 255) bh = 255;
+              *destP = rh|(gh<<8)|(bh<<16)|0xff000000;
+            }
+          }
+          tx += txadd;
+          destZ++;
+          destP++;
+        }
+      } else { // SPRITEFLAG_PREMULTIPLIED_ALPHA else
+        for (int i = ix1-ix0; i>0; i--) {
+          const unsigned int rgba = data2[tx>>12];
+          int a = (((rgba>>24)&255)*spriteAlpha)>>8;
+          if (a != 0) {
             if (zp0<=*destZ) {
               *destZ = zp0;
               int rh = *destP & 255;
@@ -212,10 +247,11 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
               bh += (((bt - bh)*a)>>8);
               *destP = rh|(gh<<8)|(bh<<16)|0xff000000;
             }
-         }
-         tx += txadd;
-         destZ++;
-         destP++;
+          }
+          tx += txadd;
+          destZ++;
+          destP++;
+        }
       }
       destP0 += glFrameBufferWidth;
       destZ0 += glFrameBufferWidth;
