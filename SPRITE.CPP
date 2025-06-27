@@ -202,7 +202,7 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
       float *destZ = destZ0;
       unsigned int *data2 = &data[(ty>>12)*texWidth];
       unsigned int tx = tx0;
-      if (spriteFlags & SPRITEFLAG_PREMULTIPLIED_ALPHA) {
+      if (spriteFlags & SPRITEFLAG_ADDITIVE) {
         for (int i = ix1-ix0; i>0; i--) {
           const unsigned int rgba = data2[tx>>12];
           int a = (((rgba>>24)&255)*spriteAlpha)>>8;
@@ -212,13 +212,12 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
               int rh = *destP & 255;
               int gh = (*destP>>8) & 255;
               int bh = (*destP>>16) & 255;
-              int rt = rgba & 255;
-              int gt = (rgba>>8) & 255;
-              int bt = (rgba>>16) & 255;
-              a = 255-a;
-              rh = ((rh*a)>>8)+rt;
-              bh = ((gh*a)>>8)+gt;
-              gh = ((bh*a)>>8)+bt;
+              const int rt = rgba & 255;
+              const int gt = (rgba>>8) & 255;
+              const int bt = (rgba>>16) & 255;
+              rh += (rt*((spriteColor)&255))>>8;
+              gh += (gt*((spriteColor>>8)&255))>>8;
+              bh += (bt*((spriteColor>>16)&255))>>8;
               if (rh > 255) rh = 255;
               if (gh > 255) gh = 255;
               if (bh > 255) bh = 255;
@@ -229,28 +228,58 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
           destZ++;
           destP++;
         }
-      } else { // SPRITEFLAG_PREMULTIPLIED_ALPHA else
-        for (int i = ix1-ix0; i>0; i--) {
-          const unsigned int rgba = data2[tx>>12];
-          int a = (((rgba>>24)&255)*spriteAlpha)>>8;
-          if (a != 0) {
-            if (zp0<=*destZ) {
-              *destZ = zp0;
-              int rh = *destP & 255;
-              int gh = (*destP>>8) & 255;
-              int bh = (*destP>>16) & 255;
-              int rt = rgba & 255;
-              int gt = (rgba>>8) & 255;
-              int bt = (rgba>>16) & 255;
-              rh += (((rt - rh)*a)>>8);
-              gh += (((gt - gh)*a)>>8);
-              bh += (((bt - bh)*a)>>8);
-              *destP = rh|(gh<<8)|(bh<<16)|0xff000000;
+      } 
+      else { // SPRITEFLAG_ADDITIVE else
+        if (spriteFlags & SPRITEFLAG_PREMULTIPLIED_ALPHA) {
+          for (int i = ix1-ix0; i>0; i--) {
+            const unsigned int rgba = data2[tx>>12];
+            int a = (((rgba>>24)&255)*spriteAlpha)>>8;
+            if (a != 0) {
+              if (zp0<=*destZ) {
+                *destZ = zp0;
+                int rh = *destP & 255;
+                int gh = (*destP>>8) & 255;
+                int bh = (*destP>>16) & 255;
+                const int rt = rgba & 255;
+                const int gt = (rgba>>8) & 255;
+                const int bt = (rgba>>16) & 255;
+                a = 255-a;
+                rh = (rh*a+rt*((spriteColor)&255))>>8;
+                gh = (gh*a+rt*((spriteColor>>8)&255))>>8;
+                bh = (bh*a+bt*((spriteColor>>16)&255))>>8;
+                if (rh > 255) rh = 255;
+                if (gh > 255) gh = 255;
+                if (bh > 255) bh = 255;
+                *destP = rh|(gh<<8)|(bh<<16)|0xff000000;
+              }
             }
+            tx += txadd;
+            destZ++;
+            destP++;
           }
-          tx += txadd;
-          destZ++;
-          destP++;
+        } else { // SPRITEFLAG_PREMULTIPLIED_ALPHA else
+          for (int i = ix1-ix0; i>0; i--) {
+            const unsigned int rgba = data2[tx>>12];
+            int a = (((rgba>>24)&255)*spriteAlpha)>>8;
+            if (a != 0) {
+              if (zp0<=*destZ) {
+                *destZ = zp0;
+                int rh = *destP & 255;
+                int gh = (*destP>>8) & 255;
+                int bh = (*destP>>16) & 255;
+                const int rt = rgba & 255;
+                const int gt = (rgba>>8) & 255;
+                const int bt = (rgba>>16) & 255;
+                rh += (((((rt*((spriteColor)&255))>>8) - rh)*a)>>8);
+                gh += (((((gt*((spriteColor>>8)&255))>>8) - gh)*a)>>8);
+                bh += (((((bt*((spriteColor>>16)&255))>>8) - bh)*a)>>8);
+                *destP = rh|(gh<<8)|(bh<<16)|0xff000000;
+              }
+            }
+            tx += txadd;
+            destZ++;
+            destP++;
+          }
         }
       }
       destP0 += glFrameBufferWidth;
