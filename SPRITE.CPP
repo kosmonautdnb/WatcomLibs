@@ -4,6 +4,11 @@
 #include "matrix.hpp"
 #include <math.h>
 
+double spritePixelCenterX = 0.5;  // currently is different to glSpritePixelCenterX
+double spritePixelCenterY = 0.5;  // currently is different to glSpritePixelCenterY
+double spriteTexelCenterX = 0.0; // currently is different to glSpriteTexelCenterX
+double spriteTexelCenterY = 0.0; // currently is different to glSpriteTexelCenterY
+
 BallHeightMap *genBallHeightMap(const int width, const int height) {
   BallHeightMap *r = new BallHeightMap(width,height);
   for (int y = 0; y < height; y++) {
@@ -32,6 +37,12 @@ void drawBall(const class Vector &ballPos, const double ballSize, const BallHeig
   if (p2.z < -p2.w || p2.z > p2.w || p2.w == 0) {
     return;
   }
+
+  double zoomX; 
+  double zoomY;
+  glGetDoublev(GL_ZOOM_X,&zoomX);
+  glGetDoublev(GL_ZOOM_Y,&zoomY);
+
   double px = projectionMatrix.m[0+0*4]*(ballSize*0.5);
   double py = projectionMatrix.m[1+1*4]*(ballSize*0.5);
   Vector pzv = p1+Vector(0,0,ballSize*0.5);
@@ -46,16 +57,19 @@ void drawBall(const class Vector &ballPos, const double ballSize, const BallHeig
   double yp = p2.y/p2.w;
 
   int viewport[4]; glGetIntegerv(GL_VIEWPORT, viewport); viewport[1]=glFrameBufferHeight-viewport[1]-viewport[3];
-  xp = (xp*0.5+0.5)*(double)viewport[2]+(double)viewport[0];
-  yp = (-yp*0.5+0.5)*(double)viewport[3]+(double)viewport[1];
+  xp = (xp*0.5*zoomX+0.5)*(double)viewport[2]+(double)viewport[0];
+  yp = (-yp*0.5*zoomY+0.5)*(double)viewport[3]+(double)viewport[1];
 
-  double sx = (fabs(px)*0.5/p2.w)*(double)viewport[2];
-  double sy = (fabs(py)*0.5/p2.w)*(double)viewport[3];
+  double sx = (fabs(px)*0.5/p2.w)*(double)viewport[2]*zoomX;
+  double sy = (fabs(py)*0.5/p2.w)*(double)viewport[3]*zoomY;
 
-  double fx0 = xp - sx;
-  double fy0 = yp - sy;
-  double fx1 = xp + sx;
-  double fy1 = yp + sy;
+  double txa = -spriteTexelCenterX * sx * 2.0 / ballHeightMap->width; // inverse texel offset, may it work??
+  double tya = -spriteTexelCenterY * sy * 2.0 / ballHeightMap->height;
+
+  double fx0 = xp - sx+spritePixelCenterX+txa;
+  double fy0 = yp - sy+spritePixelCenterY+tya;
+  double fx1 = xp + sx+spritePixelCenterX+txa;
+  double fy1 = yp + sy+spritePixelCenterY+tya;
 
   int ix0 = (int)floor(fx0);  if (ix0>=glFrameBufferWidth||ix0>=viewport[0]+viewport[2]) return;
   int iy0 = (int)floor(fy0);  if (iy0>=glFrameBufferHeight||iy0>=viewport[1]+viewport[3]) return;
@@ -133,31 +147,45 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
   if (p2.z < -p2.w || p2.z > p2.w || p2.w == 0) {
     return;
   }
+  double zoomX; 
+  double zoomY;
+  glGetDoublev(GL_ZOOM_X,&zoomX);
+  glGetDoublev(GL_ZOOM_Y,&zoomY);
+
   double xp = p2.x/p2.w;
   double yp = p2.y/p2.w;
 
   int viewport[4]; glGetIntegerv(GL_VIEWPORT, viewport); viewport[1]=glFrameBufferHeight-viewport[1]-viewport[3];
-  xp = (xp*0.5+0.5)*(double)viewport[2]+(double)viewport[0];
-  yp = (-yp*0.5+0.5)*(double)viewport[3]+(double)viewport[1];
+
+  xp = (xp*0.5*zoomX+0.5)*(double)viewport[2]+(double)viewport[0];
+  yp = (-yp*0.5*zoomY+0.5)*(double)viewport[3]+(double)viewport[1];
 
   double px = projectionMatrix.m[0+0*4]*(spriteWidth*0.5);
   double py = projectionMatrix.m[1+1*4]*(spriteHeight*0.5);
 
-  double sx = (fabs(px)*0.5/p2.w)*(double)viewport[2];
-  double sy = (fabs(py)*0.5/p2.w)*(double)viewport[3];
+  double sx = (fabs(px)*0.5/p2.w)*(double)viewport[2]*zoomX;
+  double sy = (fabs(py)*0.5/p2.w)*(double)viewport[3]*zoomY;
 
-  double fx0 = xp - sx;
-  double fy0 = yp - sy;
-  double fx1 = xp + sx;
-  double fy1 = yp + sy;
+  if (spriteFlags & SPRITEFLAG_BYSCREENSIZE) {
+    sx = spriteWidth * 0.5 * zoomX;
+    sy = spriteHeight * 0.5 * zoomY;
+  }
+
+  int texWidth = glGetTextureWidth(glTexture);
+  int texHeight = glGetTextureHeight(glTexture);
+  
+  double txa = -spriteTexelCenterX * sx * 2.0 / texWidth; // inverse texel offset, may it work??
+  double tya = -spriteTexelCenterY * sy * 2.0 / texHeight;
+  
+  double fx0 = xp - sx+spritePixelCenterX+txa;
+  double fy0 = yp - sy+spritePixelCenterY+tya;
+  double fx1 = xp + sx+spritePixelCenterX+txa;
+  double fy1 = yp + sy+spritePixelCenterY+tya;
 
   int ix0 = (int)floor(fx0);  if (ix0>=glFrameBufferWidth||ix0>=viewport[0]+viewport[2]) return;
   int iy0 = (int)floor(fy0);  if (iy0>=glFrameBufferHeight||iy0>=viewport[1]+viewport[3]) return;
   int ix1 = (int)floor(fx1);   if (ix1<=0||ix1<=viewport[0]) return;
   int iy1 = (int)floor(fy1);   if (iy1<=0||iy1<=viewport[1]) return;
-
-  int texWidth = glGetTextureWidth(glTexture);
-  int texHeight = glGetTextureHeight(glTexture);
 
   int tx0 = 0;
   int ty0 = 0;
@@ -191,8 +219,14 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
   double zp0 = p2.z/p2.w;
   zp0 = (zp0*0.5+0.5)*(zNearFar[1]-zNearFar[0])+zNearFar[0];
   unsigned int *data = glGetTexturePointer(glTexture);
-  int spriteAlpha = (spriteColor >> 24) & 255;
- 
+  const bool depthWrite = (spriteFlags & SPRITEFLAG_NODEPTHWRITE) ? false : true;
+  const bool depthCompare = (spriteFlags & SPRITEFLAG_NODEPTHCOMPARE) ? false : true;
+  if (!depthCompare) zp0 = -1.f; // farplane
+  int sp_r = spriteColor & 255;
+  int sp_g = (spriteColor>>8) & 255;
+  int sp_b = (spriteColor>>16) & 255;
+  int sp_a = (spriteColor >> 24) & 255;
+
   {  
     unsigned int *destP0 = &glFrameBuffer[iy0 * glFrameBufferWidth+ix0];
     float *destZ0 = &glDepthBuffer[iy0 * glFrameBufferWidth+ix0];
@@ -205,24 +239,22 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
       if (spriteFlags & SPRITEFLAG_ADDITIVE) {
         for (int i = ix1-ix0; i>0; i--) {
           const unsigned int rgba = data2[tx>>12];
-          int a = (((rgba>>24)&255)*spriteAlpha)>>8;
-          if (a != 0) {
-            if (zp0<=*destZ) {
-              *destZ = zp0;
-              int rh = *destP & 255;
-              int gh = (*destP>>8) & 255;
-              int bh = (*destP>>16) & 255;
-              const int rt = rgba & 255;
-              const int gt = (rgba>>8) & 255;
-              const int bt = (rgba>>16) & 255;
-              rh += (rt*((spriteColor)&255))>>8;
-              gh += (gt*((spriteColor>>8)&255))>>8;
-              bh += (bt*((spriteColor>>16)&255))>>8;
-              if (rh > 255) rh = 255;
-              if (gh > 255) gh = 255;
-              if (bh > 255) bh = 255;
-              *destP = rh|(gh<<8)|(bh<<16)|0xff000000;
-            }
+          int a = (((rgba>>24)&255)*sp_a)>>8;
+          if (zp0<=*destZ) {
+            if (depthWrite) *destZ = zp0;
+            int rh = *destP & 255;
+            int gh = (*destP>>8) & 255;
+            int bh = (*destP>>16) & 255;
+            const int rt = rgba & 255;
+            const int gt = (rgba>>8) & 255;
+            const int bt = (rgba>>16) & 255;
+            rh += (rt*sp_r)>>8;
+            gh += (gt*sp_g)>>8;
+            bh += (bt*sp_b)>>8;
+            if (rh > 255) rh = 255;
+            if (gh > 255) gh = 255;
+            if (bh > 255) bh = 255;
+            *destP = rh|(gh<<8)|(bh<<16)|0xff000000;
           }
           tx += txadd;
           destZ++;
@@ -233,25 +265,23 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
         if (spriteFlags & SPRITEFLAG_PREMULTIPLIED_ALPHA) {
           for (int i = ix1-ix0; i>0; i--) {
             const unsigned int rgba = data2[tx>>12];
-            int a = (((rgba>>24)&255)*spriteAlpha)>>8;
-            if (a != 0) {
-              if (zp0<=*destZ) {
-                *destZ = zp0;
-                int rh = *destP & 255;
-                int gh = (*destP>>8) & 255;
-                int bh = (*destP>>16) & 255;
-                const int rt = rgba & 255;
-                const int gt = (rgba>>8) & 255;
-                const int bt = (rgba>>16) & 255;
-                a = 255-a;
-                rh = (rh*a+rt*((spriteColor)&255))>>8;
-                gh = (gh*a+rt*((spriteColor>>8)&255))>>8;
-                bh = (bh*a+bt*((spriteColor>>16)&255))>>8;
-                if (rh > 255) rh = 255;
-                if (gh > 255) gh = 255;
-                if (bh > 255) bh = 255;
-                *destP = rh|(gh<<8)|(bh<<16)|0xff000000;
-              }
+            int a = (((rgba>>24)&255)*sp_a)>>8;
+            if (zp0<=*destZ) {
+              if (depthWrite) *destZ = zp0;
+              int rh = *destP & 255;
+              int gh = (*destP>>8) & 255;
+              int bh = (*destP>>16) & 255;
+              const int rt = rgba & 255;
+              const int gt = (rgba>>8) & 255;
+              const int bt = (rgba>>16) & 255;
+              a = 255-a;
+              rh = (rh*a+rt*sp_r)>>8;
+              gh = (gh*a+gt*sp_g)>>8;
+              bh = (bh*a+bt*sp_b)>>8;
+              if (rh > 255) rh = 255;
+              if (gh > 255) gh = 255;
+              if (bh > 255) bh = 255;
+              *destP = rh|(gh<<8)|(bh<<16)|0xff000000;
             }
             tx += txadd;
             destZ++;
@@ -260,19 +290,19 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
         } else { // SPRITEFLAG_PREMULTIPLIED_ALPHA else
           for (int i = ix1-ix0; i>0; i--) {
             const unsigned int rgba = data2[tx>>12];
-            int a = (((rgba>>24)&255)*spriteAlpha)>>8;
+            int a = (((rgba>>24)&255)*sp_a)>>8;
             if (a != 0) {
               if (zp0<=*destZ) {
-                *destZ = zp0;
+                if (depthWrite) *destZ = zp0;
                 int rh = *destP & 255;
                 int gh = (*destP>>8) & 255;
                 int bh = (*destP>>16) & 255;
                 const int rt = rgba & 255;
                 const int gt = (rgba>>8) & 255;
                 const int bt = (rgba>>16) & 255;
-                rh += (((((rt*((spriteColor)&255))>>8) - rh)*a)>>8);
-                gh += (((((gt*((spriteColor>>8)&255))>>8) - gh)*a)>>8);
-                bh += (((((bt*((spriteColor>>16)&255))>>8) - bh)*a)>>8);
+                rh += ((((rt*sp_r)>>8) - rh)*a)>>8;
+                gh += ((((gt*sp_g)>>8) - gh)*a)>>8;
+                bh += ((((bt*sp_b)>>8) - bh)*a)>>8;
                 *destP = rh|(gh<<8)|(bh<<16)|0xff000000;
               }
             }
