@@ -1,6 +1,4 @@
-// simple wavefront ".obj" loader no materials supported just texture coordinates,normals and vertices
-// somehow works with blender exports here..
-//----
+// simple wavefront .obj + .mtl loader
 #ifndef __SMPLOBJL_HPP__
 #define __SMPLOBJL_HPP__
 
@@ -27,6 +25,17 @@ public:
   int faceEnd;
 };
 
+class SMPL_Material {
+public:
+  Vector diffuse; // Kd
+  Vector ambient; // Ka
+  Vector specular; // Ks
+  Vector emissive; // ke
+  float specularPower; //Ns
+  float refract; //Ni
+  float alpha; //d,Tr
+};
+
 class SMPL_File {
 public:
   Array<Vector> vertices;
@@ -35,6 +44,7 @@ public:
   HashMap<int,String> materialNames;
   Array<SMPL_Face> faces;
   Array<SMPL_Object> objs;
+  HashMap<String,SMPL_Material> materials;
 };
 
 SMPL_File *loadObj(const String &fileName, bool triangulate = false);

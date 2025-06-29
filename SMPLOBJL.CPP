@@ -1,12 +1,65 @@
-// simple wavefront ".obj" loader no materials supported just texture coordinates,normals and vertices
-// somehow works with blender exports here..
-//----
 #include "smplobjl.hpp"
 
 #define SMPL_BUFFSIZE 1024
 #define SMPL_ERROR {printf("SMPLOBJL.CPP LINE:%d\n",__LINE__);getchar();delete ret; return NULL;}
 static char buffer[SMPL_BUFFSIZE];
 static char buffer2[SMPL_BUFFSIZE];
+
+static bool loadMaterialLib(SMPL_File *f,const String &fileName) {
+  String currentMaterial;
+  FILE *in = fopen(fileName.c_str(), "r");
+  if (in == NULL) return false;
+  while(fgets(buffer,SMPL_BUFFSIZE,in)) {
+    char *s = buffer;
+    while(*s==' '||*s=='\t') s++;
+    if (*s == '#') continue;
+    if (*s=='n') {
+      if (sscanf(s,"newmtl %s",buffer2)==1) {
+        currentMaterial = buffer2;
+      }
+      continue;
+    }
+    if (*s=='d') {
+      float x;
+      if (sscanf(s+1,"%f",&x)==1) {
+        f->materials[currentMaterial].alpha = x;
+      }
+      continue;
+    }
+    if (*s=='T'&&*(s+1)=='r') {
+      float x;
+      if (sscanf(s+2,"%f",&x)==1) {
+        f->materials[currentMaterial].alpha = 1-x;
+      }
+      continue;
+    }
+    if (*s=='N'&&(*(s+1)!=0)) {
+      float x;
+      if (sscanf(s+2,"%f",&x)==1) {
+        switch(*(s+1)) {
+        case 's': {f->materials[currentMaterial].specularPower=x;} break;
+        case 'i': {f->materials[currentMaterial].refract=x;} break;
+        }
+      }
+      continue;
+    }
+    if (*s=='K'&&(*(s+1)!=0)) {
+      float x,y,z;
+      if (sscanf(s+2,"%f %f %f",&x,&y,&z)==3) {
+        Vector c(x,y,z);
+        switch(*(s+1)) {
+        case 'a': {f->materials[currentMaterial].ambient = c;} break;
+        case 'd': {f->materials[currentMaterial].diffuse = c;} break;
+        case 's': {f->materials[currentMaterial].specular = c;} break;
+        case 'e': {f->materials[currentMaterial].emissive = c;} break;
+        }
+      }
+      continue;
+    }
+  }
+  fclose(in);
+  return true;
+}
 
 SMPL_File *loadObj(const String &fileName, bool triangulate) {
   SMPL_File *ret = NULL;
@@ -49,7 +102,13 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
         continue;
       }
       if (sscanf(s,"mtllib %s",buffer2)==1) {
-        // not used currently.
+        String a = buffer2;
+        int pre1 = fileName.findLast("/");
+        int pre2 = fileName.findLast("\\");
+        int k = pre1;
+        if (pre2 > pre1) k = pre2;
+        if (k >= 0) a = fileName.substr(0,k)+"/"+a;
+        loadMaterialLib(ret, a);
         continue;
       }
     } else {
