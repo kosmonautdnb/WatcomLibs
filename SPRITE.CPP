@@ -98,11 +98,11 @@ void drawBall(const class Vector &ballPos, const double ballSize, const BallHeig
   if (glIsEnabled(GL_SCISSOR_TEST)) {
     int box[4];
     glGetIntegerv(GL_SCISSOR_BOX, box);
-    box[1] = glFrameBufferHeight-box[1];
+    box[1] = glFrameBufferHeight-box[1]-box[3];
     if (ix0<box[0]) {tx0+=(box[0]-ix0)*txadd; ix0 = box[0];}
     if (iy0<box[1]) {ty0+=(box[1]-iy0)*tyadd; iy0 = box[1];}
     if (ix1>=box[0]+box[2]) { ix1 = box[0] + box[2];}
-    if (iy1>=box[1]+box[3]) { iy1 = box[1] + box[3];}
+    if (iy1>=box[1]+box[3]) { iy1 = box[1]+box[3];}
   }
   if (ix0>=ix1||iy0>=iy1) return;
 
@@ -225,11 +225,11 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
   if (glIsEnabled(GL_SCISSOR_TEST)) {
     int box[4];
     glGetIntegerv(GL_SCISSOR_BOX, box);
-    box[1] = glFrameBufferHeight-box[1];
+    box[1] = glFrameBufferHeight-box[1]-box[3];
     if (ix0<box[0]) {tx0+=(box[0]-ix0)*txadd; ix0 = box[0];}
     if (iy0<box[1]) {ty0+=(box[1]-iy0)*tyadd; iy0 = box[1];}
     if (ix1>=box[0]+box[2]) { ix1 = box[0] + box[2];}
-    if (iy1>=box[1]+box[3]) { iy1 = box[1] + box[3];}
+    if (iy1>=box[1]+box[3]) { iy1 = box[1]+box[3];}
   }
   if (ix0>=ix1||iy0>=iy1) return;
 
