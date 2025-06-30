@@ -33,27 +33,27 @@ Random.hpp - some basic "dependend random"
 Charset.hpp - a tiny font to be rendered per pixel  
 Dos.hpp - easy access to DOS functionality, comes with long file name support  
 FXAA.hpp - full screen post process anti aliasing  https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/  
-Jsonread.hpp - a json reader  
-Jsonwrt.hpp - a json writer  
+Jsonread.hpp - a json reader https://github.com/rafagafe/tiny-json  
+Jsonwrt.hpp - a json writer https://github.com/rafagafe/tiny-json  
 Keymtrx.hpp - direct access to the keyboard matrix  
-PLMPEG.hpp - MPEG1 (Video/Sound) Replay Single Header library  
+PLMPEG.hpp - MPEG1 (Video/Sound) Replay Single Header library https://github.com/phoboslab/pl_mpeg  
 SMPLOBJL.hpp - a basic/tiny wavefront .OBJ/.MTL mesh loader  
 SPRITE.hpp - a sprite (and 3D sphereParticle/ball) renderer compatible with OpenGL  
-STBIMGRS.hpp - a image rescale library (many filters)  
-STBRECT.hpp - Texture atlas generator  
-STBTEXT.hpp - Text editor basics  
-STBTTF.hpp - Truetype text/font renderer  
-TINYEXPR.hpp - a math expression solver (string input)  
+STBIMGRS.hpp - a image rescale library (many filters)  https://github.com/nothings/obbg/tree/master/stb  
+STBRECT.hpp - Texture atlas generator  https://github.com/nothings/obbg/tree/master/stb  
+STBTEXT.hpp - Text editor basics  https://github.com/nothings/obbg/tree/master/stb  
+STBTTF.hpp - Truetype text/font renderer  https://github.com/nothings/obbg/tree/master/stb  
+TINYEXPR.hpp - a math expression solver (string input)  https://github.com/codeplea/tinyexpr  
 Image.hpp - Image loading/saving/resizing  
-minimp3.hpp - A mp3 decoder  
+minimp3.hpp - A mp3 decoder  https://github.com/lieff/minimp3  
 mpeg1.hpp - mpeg1 wrapper for PLMPEG.hpp  
-psdimage.hpp - simple psd loader featuring layers  
+psdimage.hpp - simple psd loader featuring layers  (PSD image loader by DrPetter)  
 speaker.hpp - speaker sample playback, and current time lookup with finer granularity  
-stbimage.hpp - loader for different image formats. Wrapped in image.hpp  
-stbimgwr.hpp - writer for different image formats. Wrapped in image.hpp  
+stbimage.hpp - loader for different image formats. Wrapped in image.hpp  https://github.com/nothings/obbg/tree/master/stb    
+stbimgwr.hpp - writer for different image formats. Wrapped in image.hpp  https://github.com/nothings/obbg/tree/master/stb    
 textures.hpp - a basic "texture cache"  
 truetype.hpp - true type font rendering (also in OpenGL). Wrapped in Truetype.hpp  
-ufbx.hpp - an .fbx loader, however too big for WatcomC to diggest/compile  
+ufbx.hpp - an .fbx loader, however too big for WatcomC to diggest/compile https://github.com/ufbx/ufbx   
 
 ### WatcomC with 256 MB of memory instead of the 32 MB with Dos4gw
 
