@@ -8,7 +8,7 @@ Some parts may need https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git
 IMGUI.CPP, IMGUI.H, IMGUIGL.CPP, IMGUIGL.HPP (needs OpenGLForDos)
 
 ## Some basic types
-Types.hpp - a bit like <stdint>
+Types.hpp - a bit like <stdint>  
 Object.hpp - a bit like "java"  
 Array.hpp - a bit like std::vector  
 HashMap.hpp - a bit like std:map   
