@@ -8,6 +8,7 @@ Some parts may need https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git
 IMGUI.CPP, IMGUI.H, IMGUIGL.CPP, IMGUIGL.HPP (needs OpenGLForDos)
 
 ## Some basic types
+Types.hpp - a bit like <stdint>
 Object.hpp - a bit like "java"  
 Array.hpp - a bit like std::vector  
 HashMap.hpp - a bit like std:map   
@@ -17,6 +18,33 @@ Pair.hpp - a bit like std::pair
 Vector.hpp - some 3d vector stuff (w is handled differently than xyz) with virtual function table overhead (Object.hpp)  
 Matrix.hpp - some 3d matrix stuff with virtual function table overhead (Object.hpp)  
 Random.hpp - some basic "dependend random"
+
+## Some useful classes
+Charset.hpp - a tiny font to be rendered per pixel  
+Dos.hpp - easy access to DOS functionality, comes with long file name support  
+FileDLG.hpp - a file dialog window written in IMGUI  
+FXAA.hpp - full screen post process anti aliasing 
+Jsonread.hpp - a json reader  
+Jsonwrt.hpp - a json writer  
+Keymtrx.hpp - direct access to the keyboard matrix  
+PLMPEG.hpp - MPEG1 (Video/Sound) Replay Single Header library  
+SMPLOBJL.hpp - a basic/tiny wavefront .OBJ/.MTL mesh loader  
+SPRITE.hpp - a sprite (and 3D sphereParticle/ball) renderer compatible with OpenGL  
+STBIMGRS.hpp - a image rescale library (many filters)  
+STBRECT.hpp - Texture atlas generator  
+STBTEXT.hpp - Text editor basics  
+STBTTF.hpp - Truetype text/font renderer  
+TINYEXPR.hpp - a math expression solver (string input)  
+Image.hpp - Image loading/saving/resizing  
+minimp3.hpp - A mp3 decoder  
+mpeg1.hpp - mpeg1 wrapper for PLMPEG.hpp  
+psdimage.hpp - simple psd loader featuring layers  
+speaker.hpp - speaker sample playback, and current time lookup with finer granularity  
+stbimage.hpp - loader for different image formats. Wrapped in image.hpp  
+stbimgwr.hpp - writer for different image formats. Wrapped in image.hpp  
+textures.hpp - a basic "texture cache"  
+truetype.hpp - true type font rendering (also in OpenGL). Wrapped in Truetype.hpp  
+ufbx.hpp - an .fbx loader, however too big for WatcomC to diggest/compile  
 
 ### WatcomC with 256 MB of memory instead of the 32 MB with Dos4gw
 
