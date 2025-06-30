@@ -13,7 +13,7 @@ IMGUIGL.HPP
 FileDLG.hpp - a DOS file dialog window written for IMGUI  
 
 ## Some basic types
-Types.hpp - a bit like <stdint>  
+Types.hpp - a bit like "stdint" 
 Object.hpp - a bit like "java"  
 Array.hpp - a bit like std::vector  
 HashMap.hpp - a bit like std:map   
