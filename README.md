@@ -16,7 +16,7 @@ String.hpp - a bit like std::string
 Pair.hpp - a bit like std::pair  
 Vector.hpp - some 3d vector stuff (w is handled differently than xyz) with virtual function table overhead (Object.hpp)  
 Matrix.hpp - some 3d matrix stuff with virtual function table overhead (Object.hpp)  
-random.hpp - some basic "dependend random"
+Random.hpp - some basic "dependend random"
 
 ### WatcomC with 256 MB of memory instead of the 32 MB with Dos4gw
 
