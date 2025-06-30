@@ -4,8 +4,12 @@ A very very basic and reduced STL like library for WatcomC (WatcomC++ is differe
 Some parts may need https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git
 
 ## ImGui v1.43 included and working
-
-IMGUI.CPP, IMGUI.H, IMGUIGL.CPP, IMGUIGL.HPP (needs OpenGLForDos)
+(needs OpenGLForDos)  
+IMGUI.CPP  
+IMGUI.H  
+IMGUIGL.CPP  
+IMGUIGL.HPP 
+FileDLG.hpp - a dos file dialog window written for IMGUI  
 
 ## Some basic types
 Types.hpp - a bit like <stdint>  
@@ -22,7 +26,6 @@ Random.hpp - some basic "dependend random"
 ## Some useful classes
 Charset.hpp - a tiny font to be rendered per pixel  
 Dos.hpp - easy access to DOS functionality, comes with long file name support  
-FileDLG.hpp - a file dialog window written in IMGUI  
 FXAA.hpp - full screen post process anti aliasing 
 Jsonread.hpp - a json reader  
 Jsonwrt.hpp - a json writer  
