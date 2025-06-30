@@ -8,8 +8,8 @@ Some parts may need https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git
 IMGUI.CPP  
 IMGUI.H  
 IMGUIGL.CPP  
-IMGUIGL.HPP 
-FileDLG.hpp - a dos file dialog window written for IMGUI  
+IMGUIGL.HPP  
+FileDLG.hpp - a DOS file dialog window written for IMGUI  
 
 ## Some basic types
 Types.hpp - a bit like <stdint>  
