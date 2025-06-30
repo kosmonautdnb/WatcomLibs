@@ -4,6 +4,8 @@ The libraries needed some tweaks, because of "different" WatcomC++ mechanics.
 
 ## OpenGL for DOS
 https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git  
+GL.h  
+GLIMPL.cpp  
 
 ## ImGui v1.43 included and working
 (needs OpenGLForDos)  
