@@ -5,6 +5,7 @@ Some parts may need https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git
 
 ## ImGui v1.43 included and working
 (needs OpenGLForDos)  
+IMCONFIG.H  
 IMGUI.CPP  
 IMGUI.H  
 IMGUIGL.CPP  
