@@ -27,7 +27,7 @@ Random.hpp - some basic "dependend random"
 ## Some useful classes
 Charset.hpp - a tiny font to be rendered per pixel  
 Dos.hpp - easy access to DOS functionality, comes with long file name support  
-FXAA.hpp - full screen post process anti aliasing 
+FXAA.hpp - full screen post process anti aliasing  
 Jsonread.hpp - a json reader  
 Jsonwrt.hpp - a json writer  
 Keymtrx.hpp - direct access to the keyboard matrix  
