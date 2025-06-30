@@ -7,6 +7,15 @@ Some parts may need https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git
 
 IMGUI.CPP, IMGUI.H, IMGUIGL.CPP, IMGUIGL.HPP (needs OpenGLForDos)
 
+## Some basic types
+Object.hpp - a bit like "java"
+Array.hpp - a bit like std::vector
+HashMap.hpp - a bit like std:map 
+String.hpp - a bit like std::string
+Pair.hpp - a bit like std::pair
+Vector.hpp - some 3d vector stuff (w is handled differently than xyz) with virtual function table overhead (Object.hpp)
+Matrix.hpp - some 3d matrix stuff with virtual function table overhead (Object.hpp)
+
 ### WatcomC with 256 MB of memory instead of the 32 MB with Dos4gw
 
 Maybe use PMODE/W (you can utilize around 256MB of memory this way)
