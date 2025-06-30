@@ -4,7 +4,7 @@ The libraries needed some tweaks, because of "different" WatcomC++ mechanics.
 
 ## OpenGL for DOS
 https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git  
-GL.h  - OpenGL except stencil buffer and projective textures
+GL.h  - almost all OpenGL 1.3 except stencil buffer and projective textures  
 GLIMPL.cpp  
 
 ## ImGui v1.43 included and working
