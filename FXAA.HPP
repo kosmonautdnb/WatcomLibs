@@ -4,6 +4,6 @@
 #ifndef __FXAA_HPP__
 #define __FXAA_HPP__
 
-void doFXAA(unsigned int *sourceBuffer, unsigned int *tempBuffer, const int width, const int height); // sourceBuffer != destBuffer
+void doFXAA(unsigned int *sourceBuffer, const int width, const int height);
 
 #endif //__FXAA_HPP__
