@@ -1,7 +1,9 @@
 # TemplateLib_WatcomC
-A very very basic and reduced STL like library for WatcomC (WatcomC++ is different on some points, all here works well with Watcom but e.g. not with VisualC++, it's just supposed for WatcomC++)
+A very very basic and reduced STL like library for WatcomC (WatcomC++ is different on some points, all here works well with Watcom but e.g. not with VisualC++, it's just supposed for WatcomC++)  
+The libraries needed some conversions, because of "different" WatcomC++ mechanics.  
 
-Some parts may need https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git
+## OpenGL for DOS
+https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git  
 
 ## ImGui v1.43 included and working
 (needs OpenGLForDos)  
