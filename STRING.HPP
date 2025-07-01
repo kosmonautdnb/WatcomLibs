@@ -81,7 +81,7 @@ public:
     return *this;
   }
   
-  const String &operator+=(int64_t b) {
+  const String &operator+=(int32_t b) {
     add(String(b));
     return *this;
   }
@@ -135,10 +135,10 @@ public:
     }
   }
   
-  String(const int64_t v) {
+  String(const int32_t v) {
     String b;
     b.resize(32);
-    uint64_t va = v;
+    uint32_t va = v;
     if (v < 0) va = -v;
     int32_t i = b.length();
     do {
@@ -203,21 +203,21 @@ public:
     return length()==0;
   }
 
-  static String asHex(int64_t l, int64_t len) {
+  static String asHex(int32_t l, int32_t len) {
     const char *hex="0123456789ABCDEF";
     String k; k.resize(len);
-    for (int64_t i = 0; i < len; i++) {
+    for (int32_t i = 0; i < len; i++) {
       k[len-1-i] = hex[l & 15];
       l>>=4;
     }
     return k;
   }
 
-  int64_t hexToInt() {
+  int32_t hexToInt() {
     if (empty()) return 0;
-    int64_t number = 0;
+    int32_t number = 0;
     bool sign = false;
-    for(int64_t i = 0; i < length(); i++) {
+    for(int32_t i = 0; i < length(); i++) {
       char c = (*this)[i];
       if (c>='0'&&c<='9') {
         number *= 16;
@@ -237,15 +237,15 @@ public:
     return number;
   }
 
-  static String fromInt(int64_t v) {
+  static String fromInt(int32_t v) {
     return String(v);
   }
 
-  int64_t toInt() {
+  int32_t toInt() {
     if (empty()) return 0;
-    int64_t number = 0;
+    int32_t number = 0;
     bool sign = false;
-    for(int64_t i = 0; i < length(); i++) {
+    for(int32_t i = 0; i < length(); i++) {
       char c = (*this)[i];
       if (c>='0'&&c<='9') {
         number *= 10;
@@ -397,7 +397,7 @@ String operator+(const Object &a, const String &b);
 String operator+(const String &a, const Object &b);
 String operator+(const char *a, const String &b);
 String operator+(const String &a, const char *b);
-String operator+(const int64_t a, const String &b);
-String operator+(const String &a, const int64_t b);
+String operator+(const int32_t a, const String &b);
+String operator+(const String &a, const int32_t b);
 String toLower(const String &v);
 #endif //__STRING_HPP__

@@ -105,6 +105,7 @@ void stb_print(int fontIndex, float x, float y, const char *text, uint32_t color
   glDepthMask(GL_TRUE);
   glDisable(GL_ALPHA_TEST);
   glDisable(GL_BLEND);
+  glDisable(GL_TEXTURE_2D);
 }
 
 void glDrawTextTTF(int fontIndex, float xp, float yp, float zp, const float scale, const char *text, uint32_t color, float anchorX, float anchorY) {

@@ -1,4 +1,5 @@
 // simple wavefront .obj + .mtl loader
+// simple stanford .ply (ASCII) loader
 #ifndef __SMPLOBJL_HPP__
 #define __SMPLOBJL_HPP__
 
@@ -47,6 +48,27 @@ public:
   HashMap<String,SMPL_Material> materials;
 };
 
+class SMPL_Ply {
+public:
+  SMPL_Ply() : vertexStride(0), xProperty(0), yProperty(0), zProperty(0), vertexCount(0), faceCount(0) {
+  }
+  Array<float> vertices;
+  Array<String> vertexProperties;
+  Array<int> faceIndices;
+  Array<int> faceIndexCount;
+  Array<int> faceStartIndex;
+  int vertexStride;
+  int xProperty;
+  int yProperty;
+  int zProperty;
+  int vertexCount;
+  int faceCount;
+  Vector vertex(const int index) {const int z = index*vertexStride;return Vector(vertices[z+xProperty],vertices[z+yProperty],vertices[z+zProperty]);}
+  int *face(const int index) {return &faceIndices[faceStartIndex[index]];}
+  int faceVertexCount(const int index) {return faceIndexCount[index];}
+};
+
 SMPL_File *loadObj(const String &fileName, bool triangulate = false);
+SMPL_Ply *loadPly(const String &fileName);
 
 #endif // __SMPLOBJL_HPP__

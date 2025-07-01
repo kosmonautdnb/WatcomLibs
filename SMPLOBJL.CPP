@@ -188,3 +188,100 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
 
   return ret;
 }
+
+String getPlyWord(char **r) {
+  char *s = *r;
+  while((*s!=0x00)&&((*s==' ')||(*s=='\t')||(*s==0x0d)||(*s==0x0a))) {
+    s++;
+  }
+  char *start = s;
+  while((*s!=0x00)&&(!((*s==' ')||(*s=='\t')||(*s==0x0d)||(*s==0x0a)))) {
+    s++;
+  }
+  char *end = s;
+  *r = end;
+  String ret;
+  ret.resize(end-start);
+  memcpy(ret.data,start,ret.size());
+  return toLower(ret);
+}
+
+SMPL_Ply *loadPly(const String &fileName) {
+  SMPL_Ply *ret = NULL;
+  FILE *in = fopen(fileName.c_str(), "r");
+  if (in == NULL) return ret;
+  ret = new SMPL_Ply();
+  bool isPly = false;
+  bool format = false;
+  String formatString;
+  String formatVersion;
+  while(fgets(buffer,SMPL_BUFFSIZE,in)) {
+    char *s = buffer;
+    while(*s==' '||*s=='\t') s++;
+    String w = getPlyWord(&s);
+    if (w=="comment") {
+      continue;
+    }
+    if ((!isPly)&&(w=="ply")) {
+        isPly = true;
+    }
+    if (!isPly) {
+      delete[] ret; ret = NULL;
+      return ret;
+    }
+    if ((!format)&&(w=="format")) {
+      format = true;
+      formatString = getPlyWord(&s);
+      formatVersion = getPlyWord(&s);
+    }
+    if (w=="element") {
+      String element = getPlyWord(&s);
+      String count = getPlyWord(&s);
+      if (element=="vertex") {
+        ret->vertexCount = count.toInt();
+      }
+      if (element=="face") {
+        ret->faceCount = count.toInt();
+      }
+    }
+    if (w=="property") {
+      String type = getPlyWord(&s); // not used, always float
+      if (type == "list") 
+        continue; // not evaluated always int and vertexCount,vertex0,vertex1,vertex2,...
+      String name = getPlyWord(&s);
+      if (name == "x") ret->xProperty=ret->vertexProperties.size();
+      if (name == "y") ret->yProperty=ret->vertexProperties.size();
+      if (name == "z") ret->zProperty=ret->vertexProperties.size();
+      ret->vertexProperties.push_back(name);
+      ret->vertexStride = ret->vertexProperties.size();
+    }
+    if (w=="end_header") {
+      break;
+    }
+  }
+  {for (int i = 0; i < ret->vertexCount; i++) {
+    if (!fgets(buffer,SMPL_BUFFSIZE,in)) break;
+    char *s = buffer;
+    for (int j = 0; j < ret->vertexStride; j++) {
+      String name = getPlyWord(&s);
+      ret->vertices.push_back(name.toFloat());
+    }
+  }}
+  {for (int i = 0; i < ret->faceCount; i++) {
+    if (!fgets(buffer,SMPL_BUFFSIZE,in)) break;
+    char *s = buffer;
+    String name = getPlyWord(&s);
+    int vertexCount=-1;
+    ret->faceStartIndex.push_back(ret->faceIndices.size());
+    while(!name.empty()) {
+      if (vertexCount==-1) {
+        vertexCount=name.toInt();
+        ret->faceIndexCount.push_back(vertexCount);
+      } else {
+        ret->faceIndices.push_back(name.toInt());
+      }
+      name = getPlyWord(&s);
+    }
+  }}
+  return ret;
+}
