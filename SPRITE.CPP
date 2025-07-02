@@ -251,10 +251,10 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
       unsigned int *destP = destP0;
       float *destZ = destZ0;
       unsigned int *data2;
-      if (spriteFlags & SPRITEFLAG_FLIP_TY)
-        data2 = &data[(texHeight-1-(ty>>12))*texWidth];
-      else
+      if (spriteFlags & SPRITEFLAG_NOT_FLIP_Y)
         data2 = &data[(ty>>12)*texWidth];
+      else
+        data2 = &data[(texHeight-1-(ty>>12))*texWidth];
       unsigned int tx = tx0;
       if (spriteFlags & SPRITEFLAG_ADDITIVE) {
         for (int i = ix1-ix0; i>0; i--) {
