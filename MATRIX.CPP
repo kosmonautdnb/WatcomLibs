@@ -323,6 +323,12 @@ bool Matrix::invert() {
    return true;
 }
 
+void Matrix::normalize3x3() {
+  setColumn(0,normalize(getColumn(0)));
+  setColumn(1,normalize(getColumn(1)));
+  setColumn(2,normalize(getColumn(2)));
+}
+
 Matrix rotationMatrixX(double a) {
   return rotationMatrixAngleAxis(a,1,0,0);
 }

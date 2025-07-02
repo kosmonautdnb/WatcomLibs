@@ -19,6 +19,13 @@ public:
     w  = 1;
   }
 
+  Vector(const Vector &v, const double _w) {
+    x = v.x;
+    y = v.y;
+    z = v.z;
+    w = _w;
+  }
+
   Vector(double _x, double _y, double _z = 0.0, double _w = 1.0) {
     x = _x;
     y = _y;

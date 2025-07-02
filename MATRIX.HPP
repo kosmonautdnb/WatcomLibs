@@ -59,6 +59,7 @@ public:
   Matrix &operator /=(const Matrix &a);
 
   bool invert();
+  void normalize3x3();
 };
 
 Matrix rotationMatrixX(double a);
