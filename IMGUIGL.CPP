@@ -145,7 +145,7 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
                     for (i = j; i < j + 3; i++) {
                       ImDrawVert &a = vtx_data[idx_buffer[i]];
                       glColor4ubv((GLubyte*)&a.col);
-                      glTexCoord2f(a.uv.x, a.uv.y);
+                      glTexCoord2f(a.uv.x, 1.0-a.uv.y); // 1.0 - v is needed by OpenGL, where 0,0 is the bottom left of the image (I didn't found it in imgui)
                       glVertex2f(a.pos.x+0.75,a.pos.y+0.75);
                     }
                   }

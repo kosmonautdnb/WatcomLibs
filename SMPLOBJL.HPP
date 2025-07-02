@@ -26,6 +26,14 @@ public:
   int faceEnd;
 };
 
+class SMPL_Texture {
+public:
+  SMPL_Texture() : used(false), glHandle(0) {}
+  bool used;
+  unsigned int glHandle;
+  String fileName;
+};
+
 class SMPL_Material {
 public:
   Vector diffuse; // Kd
@@ -35,7 +43,39 @@ public:
   float specularPower; //Ns
   float refract; //Ni
   float alpha; //d,Tr
+  SMPL_Texture mapDiffuse; // map_Kd
+  SMPL_Texture mapAmbient; // map_Ka
+  SMPL_Texture mapSpecular; // map_Ks
+  SMPL_Texture mapEmissive; // map_Ke
+  SMPL_Texture mapSpecularPower; // map_Ns
+  SMPL_Texture mapRefract; // map_Ni
+  SMPL_Texture mapAlpha; // map_d
+  SMPL_Texture mapTransparency; // map_Tr
+  SMPL_Texture mapBump; // map_bump
+  SMPL_Texture mapReflectivity; // map_refl
 };
+
+// ...->loadTextures(SMPL_loadTexture);
+typedef unsigned int(*TextureLoad_t)(const String &fileName, const String &type);
+#define SMPL_LOADTEXTURE \
+unsigned int SMPL_loadTexture(const String &fileName, const String &type) {\
+  unsigned int texture = 0;\
+  if (type != "map_Kd") return texture;\
+  char *buffer = new char[MAX_LFN_PATH];\
+  if (doslfnShortPath(buffer, fileName.c_str())) {\
+    RGBAImage image = RGBAImage::fromFile(buffer);\
+    glGenTextures(1, &texture);\
+    glBindTexture(GL_TEXTURE_2D, texture);\
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,image.width,image.height,0,GL_RGBA,GL_UNSIGNED_BYTE,image.data);\
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);\
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);\
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);\
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);\
+    image.free();\
+  }\
+  delete[] buffer;\
+  return texture;\
+}
 
 class SMPL_File {
 public:
@@ -46,6 +86,7 @@ public:
   Array<SMPL_Face> faces;
   Array<SMPL_Object> objs;
   HashMap<String,SMPL_Material> materials;
+  void loadTextures(TextureLoad_t functor);
 };
 
 class SMPL_Ply {

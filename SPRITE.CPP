@@ -204,12 +204,10 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
   int txadd = (int)((double)(tx1-tx0)*4096.0/(fx1-fx0));
   int tyadd = (int)((double)(ty1-ty0)*4096.0/(fy1-fy0));
 
-  tx0 = txadd-1-(int)floor((fx0-(double)ix0)*txadd);
-  ty0 = tyadd-1-(int)floor((fy0-(double)iy0)*tyadd);
-
-  if (spriteFlags & SPRITEFLAG_NOT_SUBPIXEL) {
-    tx0 = 0;
-    ty0 = 0;
+  if (!(spriteFlags & SPRITEFLAG_NOT_SUBPIXEL)) {
+    tx0 += txadd-1-(int)floor((fx0-(double)ix0)*txadd);
+    ty0 += tyadd-1-(int)floor((fy0-(double)iy0)*tyadd);
+  } else {
     txadd = (int)((double)(tx1-tx0)*4096.0/(ix1-ix0));
     tyadd = (int)((double)(ty1-ty0)*4096.0/(iy1-iy0));
   }
@@ -252,7 +250,11 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
     for (int y = iy0; y < iy1; y++) {
       unsigned int *destP = destP0;
       float *destZ = destZ0;
-      unsigned int *data2 = &data[(ty>>12)*texWidth];
+      unsigned int *data2;
+      if (spriteFlags & SPRITEFLAG_FLIP_TY)
+        data2 = &data[(texHeight-1-(ty>>12))*texWidth];
+      else
+        data2 = &data[(ty>>12)*texWidth];
       unsigned int tx = tx0;
       if (spriteFlags & SPRITEFLAG_ADDITIVE) {
         for (int i = ix1-ix0; i>0; i--) {

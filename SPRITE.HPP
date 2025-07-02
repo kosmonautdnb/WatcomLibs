@@ -23,6 +23,7 @@ void drawBall(const class Vector &ballPos, const double ballSize, const BallHeig
 #define SPRITEFLAG_NODEPTHWRITE 8
 #define SPRITEFLAG_NODEPTHCOMPARE 16
 #define SPRITEFLAG_BYSCREENSIZE 32 // actual screen pixel size in width/height not a "3d" size (glOrtho)
+#define SPRITEFLAG_FLIP_TY 64 // for OpenGL compatibility
 void drawSprite(const class Vector &spritePos, const double spriteWidth, const double spriteHeight, const unsigned int glTexture, const unsigned int spriteColor, unsigned int spriteFlags);
 
 #endif //__SPRITE_HPP__
