@@ -2,6 +2,8 @@
 A very very basic and reduced STL like library for WatcomC (WatcomC++ is different on some points, all here works well with Watcom but e.g. not with VisualC++, it's just supposed for WatcomC++)  
 The libraries needed some tweaks, because of "different" WatcomC++ mechanics.  
 
+This should be mainly a starting point for WatcomC++ FreeDOS experiments/projects.
+
 ## OpenGL for DOS
 https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git  
 - GL.h  - an OpenGL subset with fixed function pipeline, except stencil buffer and projective textures, with some glu functions and Vesa/VGA support  
