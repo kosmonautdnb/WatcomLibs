@@ -2,18 +2,19 @@
 #include <math.h>
 
 float toonSaturation = 1.f; // 1 = original color * toonColors, 0 = direct toonColors
-float toonLuminance = 0.7f;
-float toonBaseLevel = 0.3f;
-int toonColorCount = 3;
+float toonLuminance = 1.0f;
+float toonBaseLevel = 0.f;
+int toonColorCount = 4;
 bool toonLuminances = true;
 bool toonOutline = true;
 bool toonTwoPixelOutlineX = true;
 bool toonTwoPixelOutlineY = true;
 unsigned int toonOutlineColor = 0xff000000;
-static unsigned int toonColorsTest[3]={
+static unsigned int toonColorsTest[4]={
   0xff000000,
-  0xff808080,
-  0xffe0e0e0,
+  0xff555555,
+  0xffaaaaaa,
+  0xffffffff,
 };
 unsigned int *toonColors = toonColorsTest;
 
