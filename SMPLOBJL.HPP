@@ -17,6 +17,7 @@ public:
   int t[SMPL_MAXV]; // texturecoord index
   int m; // material id
   int c; // vertex count
+  bool vertexColors; //can be painted by just using vertex colors
 };
 
 class SMPL_Object {
@@ -36,6 +37,7 @@ public:
 
 class SMPL_Material {
 public:
+  int materialId;
   Vector diffuse; // Kd
   Vector ambient; // Ka
   Vector specular; // Ks
@@ -79,6 +81,7 @@ unsigned int SMPL_loadTexture(const String &fileName, const String &type) {\
 
 class SMPL_File {
 public:
+  Array<unsigned int> colors; // per vertex color .obj property / empty
   Array<Vector> vertices;
   Array<Vector> normals;
   Array<Vector> texCoords;
@@ -87,6 +90,7 @@ public:
   Array<SMPL_Object> objs;
   HashMap<String,SMPL_Material> materials;
   void loadTextures(TextureLoad_t functor);
+  void genVertexColors(const Array<String> &vertexColorMaterials);
 };
 
 class SMPL_Ply {

@@ -1,4 +1,6 @@
+#include "gl.h" // for SMPL_File::genVertexColors
 #include "smplobjl.hpp"
+#include "set.hpp"
 
 #define SMPL_BUFFSIZE 1024
 #define SMPL_ERROR {printf("SMPLOBJL.CPP LINE:%d FILELINE:%d\n",__LINE__,line);getchar();delete ret; return NULL;}
@@ -139,6 +141,7 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
         else {
           currentMaterial = materialId;
           materialIds[materialName] = materialId;
+          ret->materials[materialName].materialId = materialId;
           ret->materialNames[materialId] = materialName;
           materialId++;
         }
@@ -199,6 +202,7 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
             SMPL_Face *f = &ret->faces.back();
             f->m = currentMaterial;
             f->c = vertexId;
+            f->vertexColors = false;
             if (vertexId>SMPL_MAXV) SMPL_ERROR;
             for (int i = 0; i < vertexId; i++) {
               f->v[i] = helper[i][0]-1;
@@ -211,6 +215,7 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
               SMPL_Face *f = &ret->faces.back();
               f->m = currentMaterial;
               f->c = 3;
+              f->vertexColors = false;
               f->v[0] = helper[0][0]-1;
               f->t[0] = helper[0][1]-1;
               f->n[0] = helper[0][2]-1;
@@ -252,6 +257,48 @@ void SMPL_File::loadTextures(TextureLoad_t functor) {
     loadTexture(functor,m.mapTransparency,"map_Tr");
     loadTexture(functor,m.mapBump,"map_Bump");
     loadTexture(functor,m.mapReflectivity,"map_refl");
+  }
+}
+
+void SMPL_File::genVertexColors(const Array<String> &vertexColorMaterials) {
+  Set<int> materialIds;
+  colors.resize(vertices.size());
+  {for (int i = 0; i < vertices.size(); i++) colors[i] = 0xffffffff;}
+  {for (int i = 0; i < vertexColorMaterials.size(); i++) materialIds.insert(materials[vertexColorMaterials[i]].materialId);}
+  for (int i = 0; i < faces.size(); i++) {
+    SMPL_Face &f = faces[i];
+    int materialId = f.m;
+    if (materialIds.has(materialId)) {
+      String &materialName = materialNames[f.m];
+      SMPL_Material &m = materials[materialName];
+      SMPL_Texture &mapDiffuse = m.mapDiffuse;
+      unsigned int glHandle = mapDiffuse.glHandle;
+      if (glHandle != 0) {
+        unsigned int *texturePointer = glGetTexturePointer(glHandle);
+        unsigned int textureWidth = glGetTextureWidth(glHandle);
+        unsigned int textureHeight = glGetTextureHeight(glHandle);
+        // only wrapmode supported is repeat
+        for (int j = 0; j < f.c; j++) {
+          unsigned int vi = f.v[j];
+          int tx = texCoords[f.t[j]].x*textureWidth;
+          int ty = texCoords[f.t[j]].y*textureHeight;
+          if (tx < 0) tx += ((-tx / textureWidth)+1) * textureWidth;
+          if (ty < 0) ty += ((-ty / textureHeight)+1) * textureHeight;
+          tx %= textureWidth;
+          ty %= textureHeight;
+          unsigned int rgba = texturePointer[tx+ty*textureWidth];
+          int r = rgba & 255;
+          int g = (rgba>>8) & 255;
+          int b = (rgba>>16) & 255;
+          int a = (rgba>>24) & 255;
+          int l = r*25 + g*60 + b*15 + a*50;
+          colors[vi] = rgba;
+        }
+        f.vertexColors = true;
+      } else {
+        f.vertexColors = true;
+      }
+    }
   }
 }
 
