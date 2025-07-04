@@ -143,6 +143,7 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
           materialIds[materialName] = materialId;
           ret->materials[materialName].materialId = materialId;
           ret->materialNames[materialId] = materialName;
+          ret->materialsById.push_back(&ret->materials[materialName]);
           materialId++;
         }
         continue;

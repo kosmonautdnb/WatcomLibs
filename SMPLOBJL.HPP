@@ -89,6 +89,7 @@ public:
   Array<SMPL_Face> faces;
   Array<SMPL_Object> objs;
   HashMap<String,SMPL_Material> materials;
+  Array<SMPL_Material*> materialsById;
   void loadTextures(TextureLoad_t functor);
   void genVertexColors(const Array<String> &vertexColorMaterials);
 };
