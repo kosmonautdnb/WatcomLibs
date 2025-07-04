@@ -35,6 +35,7 @@ Random.hpp - some basic "dependend random"
 - Charset.hpp - a tiny font to be rendered per pixel  
 - Dos.hpp - easy access to DOS functionality, comes with long file name support  
 - FXAA.hpp - full screen post process anti aliasing  https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/  
+- FXTOON.hpp - full screen post process toon shader. With or without luma modification / outlines.
 - Jsonread.hpp - a json reader https://github.com/rafagafe/tiny-json  
 - Jsonwrt.hpp - a json writer https://github.com/rafagafe/tiny-json  
 - Keymtrx.hpp - direct access to the keyboard matrix  
