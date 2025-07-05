@@ -137,6 +137,7 @@ double lengthSqr(const Vector &a);
 double dot(const Vector &a, const Vector &b);
 Vector cross(const Vector &a, const Vector &b);
 Vector normalize(const Vector &b);
+Vector reflect(const Vector &a, const Vector &b);
 
 Vector add(const Vector &a, const Vector &b);
 Vector sub(const Vector &a, const Vector &b);
@@ -197,5 +198,7 @@ Vector saturate(const Vector &a);
 Vector lerp(const Vector &a, const Vector &b, const double &c);
 Vector mix(const Vector &a, const Vector &b, const double &c);
 double distance(const Vector &a, const Vector &b);
+Vector toPolar(const Vector &a);
+Vector fromPolar(const Vector &a);
 
 #endif //__VECTOR_HPP__

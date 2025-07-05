@@ -2,6 +2,8 @@
 #include "matrix.hpp"
 #include <math.h>
 
+#define PI 3.14159265358979323846
+
 Vector &Vector::set(double _x, double _y, double _z) {
   x = _x; 
   y = _y; 
@@ -254,6 +256,11 @@ Vector &Vector::normalize() {
   if (l>0) 
     div(l); 
   return *this;
+}
+
+Vector reflect(const Vector &a, const Vector &b) {
+  // a = i, b = n, ..normalize
+  return a - 2.0 * dot(b,a) * b;
 }
 
 Vector &Vector::operator-() {
@@ -620,4 +627,17 @@ Vector mix(const Vector &a, const Vector &b, const double &c) {
 
 double distance(const Vector &a, const Vector &b) {
   return length(a-b);
+}
+
+Vector toPolar(const Vector &a) {
+  Vector n = normalize(a);
+  const double theta = atan2(n.y,n.x);
+  const double phi = acos(n.z);
+  return Vector(0.5+theta/(2.0*PI),phi/PI);
+}
+
+Vector fromPolar(const Vector &a) {
+  const double theta = (a.x - 0.5) * 2 * PI;
+  const double phi = a.y * PI;
+  return Vector(sin(phi)*cos(theta),sin(phi)*sin(theta),cos(phi));
 }

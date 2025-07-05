@@ -303,6 +303,30 @@ void SMPL_File::genVertexColors(const Array<String> &vertexColorMaterials) {
   }
 }
 
+bool SMPL_File::makeFrontFacing(bool ccw) {
+  const bool somethingChanged = false;
+  if (normals.empty()) return false;
+  {for (int i = 0; i < faces.size(); i++) {
+    SMPL_Face &f = faces[i];
+    if (f.c != 3) return false; // only triangle meshes supported
+  }}
+  {for (int i = 0; i < faces.size(); i++) {
+    SMPL_Face &f = faces[i];
+    Vector d0 = normalize(vertices[f.v[1]]-vertices[f.v[0]]);
+    Vector d1 = normalize(vertices[f.v[2]]-vertices[f.v[0]]);
+    Vector faceNormal = normalize(cross(d0,d1));
+    Vector vertexNormal0 = normalize(normals[f.n[0]]);
+    bool frontFacing = dot(faceNormal,vertexNormal0)<0;
+    if (frontFacing == ccw) {
+      int t;
+      t = f.v[0]; f.v[0] = f.v[2]; f.v[2] = t;
+      t = f.n[0]; f.n[0] = f.n[2]; f.n[2] = t;
+      t = f.t[0]; f.t[0] = f.t[2]; f.t[2] = t;
+    }
+  }}
+  return somethingChanged;
+}
+
 String getPlyWord(char **r) {
   char *s = *r;
   while((*s!=0x00)&&((*s==' ')||(*s=='\t')||(*s==0x0d)||(*s==0x0a))) {
