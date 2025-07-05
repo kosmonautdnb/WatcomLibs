@@ -258,11 +258,6 @@ Vector &Vector::normalize() {
   return *this;
 }
 
-Vector reflect(const Vector &a, const Vector &b) {
-  // a = i, b = n, ..normalize
-  return a - 2.0 * dot(b,a) * b;
-}
-
 Vector &Vector::operator-() {
   x = -x;
   y = -y;
@@ -336,6 +331,11 @@ Vector normalize(const Vector &b) {
   return r;
 }
 
+Vector reflect(const Vector &a, const Vector &b) {
+  // a = i, b = n, ..normalize
+  const double dot2NI = 2.0 * (a.x*b.x+a.y*b.y+a.z*b.z);
+  return Vector(a.x-dot2NI*b.x,a.y-dot2NI*b.y,a.z-dot2NI*b.z);
+}
 
 Vector add(const Vector &a, const Vector &b) {
   Vector r;
@@ -630,7 +630,7 @@ double distance(const Vector &a, const Vector &b) {
 }
 
 Vector toPolar(const Vector &a) {
-  Vector n = normalize(a);
+  Vector n = normalize(a).xzy()*Vector(1,1,-1);
   const double theta = atan2(n.y,n.x);
   const double phi = acos(n.z);
   return Vector(0.5+theta/(2.0*PI),phi/PI);
@@ -639,5 +639,5 @@ Vector toPolar(const Vector &a) {
 Vector fromPolar(const Vector &a) {
   const double theta = (a.x - 0.5) * 2 * PI;
   const double phi = a.y * PI;
-  return Vector(sin(phi)*cos(theta),sin(phi)*sin(theta),cos(phi));
+  return Vector(sin(phi)*cos(theta),-cos(phi),sin(phi)*sin(theta));
 }
