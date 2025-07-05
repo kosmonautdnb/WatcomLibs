@@ -7,15 +7,16 @@
 #define glToonShader() toonShader(glFrameBuffer,glFrameBufferWidth,glFrameBufferHeight);
 
 extern float toonSaturation; // 1 = original color * toonColors, 0 = direct toonColors
-extern float toonLuminance;
-extern float toonBaseLevel;
-extern int toonColorCount;
-extern bool toonLuminances;
-extern bool toonOutline;
-extern bool toonTwoPixelOutlineX;
-extern bool toonTwoPixelOutlineY;
-extern unsigned int toonOutlineColor;
-extern unsigned int *toonColors;
+extern float toonLuminance; // multiplies luminances before toon color lookup
+extern float toonBaseLevel; // brightens up the luminances before toon color lookup
+extern int toonColorCount; // used by toonColors->array[toonColorCount]
+extern bool toonLuminances; // use toon Colors?
+extern bool toonOutline; // have outlines?
+extern bool toonTwoPixelOutlineX;  // outline two pixels in X
+extern bool toonTwoPixelOutlineY; // outline two pixels in Y
+extern unsigned int toonOutlineColor; // the color of the toon outlines
+extern unsigned int *toonColors; // array[toonColorCount] of toon colors to be multiplied
+extern float nonToonAlpha; // glExplicitAlpha() used for non toon textures
 
 void toonShader(unsigned int *buffer, int width, int height);
 

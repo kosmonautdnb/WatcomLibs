@@ -17,6 +17,7 @@ static unsigned int toonColorsTest[4]={
   0xffffffff,
 };
 unsigned int *toonColors = toonColorsTest;
+float nonToonAlpha = 2.f;
 
 void toonShader(unsigned int *buffer, int width, int height) {
   unsigned int *dest = buffer;
@@ -25,6 +26,7 @@ void toonShader(unsigned int *buffer, int width, int height) {
   const int toonSaturation2 = (int)floor(toonSaturation*256.0);
   const int toonLuminance2 = (int)floor(toonLuminance*100.0);
   int *lastSpanA = new int[width];
+  const int nonToonAlpha2 = nonToonAlpha*255;
   for (int x = 0; x < width; x++) lastSpanA[x] = (dest[x]>>24)&255;
   for (int y = 0; y < height; y++)  {
     int lastA = (*dest>>24) & 255;
@@ -40,7 +42,7 @@ void toonShader(unsigned int *buffer, int width, int height) {
         *dest = t2;
         if (toonTwoPixelOutlineX && x>0) *(dest-1) = t2;
         if (toonTwoPixelOutlineY && y>0) *(dest-width) = t2;
-      } else if (toonLuminances) {
+      } else if (toonLuminances && (a != nonToonAlpha2)) {
         int luminance = r*25+g*60+b*15; // 0..100 (100*255)
         int colorNumber = (luminance*toonLuminance2+toonAdd2)/toToonColorNr;
         if ((unsigned int)colorNumber >= toonColorCount) {
