@@ -113,7 +113,7 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
   float x,y,z;
   HashMap<String,int> materialIds;
   int materialId = 0;
-  int currentMaterial = 0;
+  int currentMaterial = -1;
   SMPL_Object *currentGroup = NULL;
 
   int line = -1;
