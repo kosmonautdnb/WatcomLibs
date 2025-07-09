@@ -6,12 +6,14 @@
 #include "vector.hpp"
 #include "string.hpp"
 #include "hashmap.hpp"
+#include <string.h>
 
 #define SMPL_MAXV 4
 #define SMPL_MAXV_LOAD 24
 
 class SMPL_Face {
 public:
+  SMPL_Face() {m=-1;c=0;vertexColors=false;memset(v,0,sizeof(v));memset(n,0,sizeof(n));memset(t,0,sizeof(t));}
   int v[SMPL_MAXV]; // vertex index
   int n[SMPL_MAXV]; // normal index
   int t[SMPL_MAXV]; // texturecoord index

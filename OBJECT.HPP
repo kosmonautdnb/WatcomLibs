@@ -3,7 +3,6 @@
 
 #include "types.hpp"
 
-// keep small virtual function table in mind
 class Object {
 public:
   virtual uint32_t hash() const = 0;

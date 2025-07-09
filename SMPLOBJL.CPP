@@ -268,31 +268,27 @@ void SMPL_File::genVertexColors(const Array<String> &vertexColorMaterials) {
   {for (int i = 0; i < vertexColorMaterials.size(); i++) materialIds.insert(materials[vertexColorMaterials[i]].materialId);}
   for (int i = 0; i < faces.size(); i++) {
     SMPL_Face &f = faces[i];
-    int materialId = f.m;
+    const int materialId = f.m;
     if (materialIds.has(materialId)) {
-      String &materialName = materialNames[f.m];
-      SMPL_Material &m = materials[materialName];
-      SMPL_Texture &mapDiffuse = m.mapDiffuse;
-      unsigned int glHandle = mapDiffuse.glHandle;
+      const String &materialName = materialNames[f.m];
+      const SMPL_Material &m = materials[materialName];
+      const Vector &diffuse = m.diffuse;
+      const SMPL_Texture &mapDiffuse = m.mapDiffuse;
+      const unsigned int glHandle = mapDiffuse.glHandle;
       if (glHandle != 0) {
-        unsigned int *texturePointer = glGetTexturePointer(glHandle);
-        unsigned int textureWidth = glGetTextureWidth(glHandle);
-        unsigned int textureHeight = glGetTextureHeight(glHandle);
+        const unsigned int *texturePointer = glGetTexturePointer(glHandle);
+        const unsigned int textureWidth = glGetTextureWidth(glHandle);
+        const unsigned int textureHeight = glGetTextureHeight(glHandle);
         // only wrapmode supported is repeat
         for (int j = 0; j < f.c; j++) {
-          unsigned int vi = f.v[j];
+          const unsigned int vi = f.v[j];
           int tx = texCoords[f.t[j]].x*textureWidth;
           int ty = texCoords[f.t[j]].y*textureHeight;
           if (tx < 0) tx += ((-tx / textureWidth)+1) * textureWidth;
           if (ty < 0) ty += ((-ty / textureHeight)+1) * textureHeight;
           tx %= textureWidth;
           ty %= textureHeight;
-          unsigned int rgba = texturePointer[tx+ty*textureWidth];
-          int r = rgba & 255;
-          int g = (rgba>>8) & 255;
-          int b = (rgba>>16) & 255;
-          int a = (rgba>>24) & 255;
-          int l = r*25 + g*60 + b*15 + a*50;
+          const unsigned int rgba = texturePointer[tx+ty*textureWidth];
           colors[vi] = rgba;
         }
         f.vertexColors = true;
