@@ -32,7 +32,8 @@ https://github.com/ocornut/imgui
 Random.hpp - some basic "dependend random"
 
 ## Some useful classes
-- Charset.hpp - a tiny font to be rendered per pixel  
+- Charset.hpp - a tiny font to be rendered per pixel
+- CGLTF - a gltf loader https://github.com/jkuhlmann/cgltf 
 - Dos.hpp - easy access to DOS functionality, comes with long file name support  
 - FXAA.hpp - full screen post process anti aliasing  https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/  
 - FXTOON.hpp - full screen post process toon shader. With or without luma modification / outlines.
