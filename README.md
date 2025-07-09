@@ -35,8 +35,6 @@ Random.hpp - some basic "dependend random"
 - Charset.hpp - a tiny font to be rendered per pixel
 - CGLTF - a gltf loader https://github.com/jkuhlmann/cgltf 
 - Dos.hpp - easy access to DOS functionality, comes with long file name support  
-- FXAA.hpp - full screen post process anti aliasing  https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/  
-- FXTOON.hpp - full screen post process toon shader. With or without luma modification / outlines.
 - Jsonread.hpp - a json reader https://github.com/rafagafe/tiny-json  
 - Jsonwrt.hpp - a json writer https://github.com/rafagafe/tiny-json  
 - Keymtrx.hpp - direct access to the keyboard matrix  
@@ -50,7 +48,8 @@ Random.hpp - some basic "dependend random"
 - TINYEXPR.hpp - a math expression solver (string input)  https://github.com/codeplea/tinyexpr  
 - Image.hpp - Image loading/saving/resizing  
 - Minimp3.hpp - A mp3 decoder  https://github.com/lieff/minimp3  
-- Mpeg1.hpp - mpeg1 wrapper for PLMPEG.hpp  
+- Mpeg1.hpp - mpeg1 wrapper for PLMPEG.hpp
+- OpenGLFX.hpp - Some post processing OpenGL effects like antialiasing(FXAA(https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/ )), toon shader, motion blur
 - Psdimage.hpp - simple psd loader featuring layers  (PSD image loader by DrPetter)  
 - Quaternn.hpp - a simple Quaternion class, mainly for interpolated rotations.  
 - Speaker.hpp - speaker sample playback, and current time lookup with finer granularity  
