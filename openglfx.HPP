@@ -3,9 +3,9 @@
 
 #define glFXAA() doFXAA(glFrameBuffer, glFrameBufferWidth, glFrameBufferHeight)
 #define glToonShader() toonShader(glFrameBuffer,glFrameBufferWidth,glFrameBufferHeight);
-#define glMotionBlur() doMotionBlur(glFrameBuffer)
 #define glInitMotionBlur() allocMotionBlur(glFrameBufferWidth,glFrameBufferHeight)
 #define glCloseMotionBlur() freeMotionBlur()
+#define glMotionBlur() doMotionBlur(glFrameBuffer)
 
 // Post processing Anti Aliasing (FXAA) // from glsl at geeks3d.com
 // currently much too slow for realtime

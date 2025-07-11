@@ -91,6 +91,98 @@
  * cgltf_extras::data directly instead. You can parse this data using your own JSON parser
  * or, if you've included the cgltf implementation using the integrated JSMN JSON parser.
  */
+/**
+added by :mad:
+// simple test implementation
+cgltf_data *loadGLTF(const char *fileName) { // glt/glb
+  cgltf_options options;
+  cgltf_data *data;
+  memset(&options,0,sizeof(cgltf_options));
+  cgltf_result result = cgltf_parse_file(&options, fileName, &data);
+  if (result == cgltf_result_success) {
+    result = cgltf_load_buffers(&options, data, fileName);
+    if (result == cgltf_result_success) {
+      result = cgltf_validate(data);
+    }
+  }
+  return result == cgltf_result_success ? data : NULL;
+}
+// simple test implementation
+void paintMeshGLTF(cgltf_mesh *mesh) {
+  String meshName = String(mesh->name);
+
+  glDisable(GL_TEXTURE_2D);
+  glDisable(GL_LIGHTING);
+  for (int i = 0; i < mesh->primitives_count; i++) {
+    const cgltf_primitive &p = mesh->primitives[i];
+    if (p.type != cgltf_primitive_type_triangles)
+      continue;
+    const cgltf_accessor *index_accessor = p.indices;
+    if (!index_accessor) 
+      continue;
+    if (index_accessor->component_type != cgltf_component_type_r_16u) 
+      continue;
+    if (index_accessor->type != cgltf_type_scalar) 
+      continue;
+    const uint16_t *indices = (const uint16_t *)((const uint8_t*)index_accessor->buffer_view->buffer->data + index_accessor->buffer_view->offset + index_accessor->offset);
+
+    const cgltf_accessor *position_accessor = NULL;
+    const cgltf_accessor *normal_accessor = NULL;
+    const cgltf_accessor *color_accessor = NULL;
+    const cgltf_accessor *texcoord_accessor = NULL;
+
+    for (int j = 0; j < p.attributes_count; j++) {
+      const cgltf_attribute &attr = p.attributes[j];
+      const cgltf_accessor *accessor = attr.data;
+      switch(attr.type) {
+        case cgltf_attribute_type_position: {
+          if (accessor->component_type != cgltf_component_type_r_32f) 
+            continue;
+          if (accessor->type != cgltf_type_vec3) 
+            continue;
+          position_accessor = accessor; 
+        } break;
+        case cgltf_attribute_type_normal: {
+          if (accessor->component_type != cgltf_component_type_r_32f) 
+            continue;
+          if (accessor->type != cgltf_type_vec3) 
+            continue;
+          normal_accessor = accessor; 
+        } break;
+        case cgltf_attribute_type_color: {
+          if (accessor->component_type != cgltf_component_type_r_32f) // dunno
+            continue;
+          if (accessor->type != cgltf_type_vec4) // dunno
+            continue;
+          color_accessor = accessor; 
+        } break;
+        case cgltf_attribute_type_texcoord: {
+          if (accessor->component_type != cgltf_component_type_r_32f) 
+            continue;
+          if (accessor->type != cgltf_type_vec2) 
+            continue;
+          texcoord_accessor = accessor; 
+        } break;
+      }
+    }
+    if (!position_accessor) 
+      continue;
+    if (!normal_accessor) 
+      continue;
+    const float *positions = (const float*)((const uint8_t*)position_accessor->buffer_view->buffer->data + position_accessor->buffer_view->offset + position_accessor->offset);
+    const float *normals = (const float*)((const uint8_t*)normal_accessor->buffer_view->buffer->data + normal_accessor->buffer_view->offset + normal_accessor->offset);
+    //....
+    glBegin(GL_TRIANGLES);
+    glColor4f(1,1,1,1);
+    for (int k = 0; k < index_accessor->count; k++) {
+      int p = ((int)indices[k])*3;
+      glNormal3f(normals[p+0],normals[p+1],normals[p+2]);
+      glVertex3f(positions[p+0],positions[p+1],positions[p+2]);
+    }
+    glEnd();
+  }
+}
+**/
 #ifndef CGLTF_H_INCLUDED__
 #define CGLTF_H_INCLUDED__
 
