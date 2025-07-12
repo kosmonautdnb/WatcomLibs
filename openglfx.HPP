@@ -6,6 +6,7 @@
 #define glInitMotionBlur() allocMotionBlur(glFrameBufferWidth,glFrameBufferHeight)
 #define glCloseMotionBlur() freeMotionBlur()
 #define glMotionBlur() doMotionBlur(glFrameBuffer)
+#define glSkySphere(__texture_atan2__) doSkySphere((__texture_atan2__),glFrameBuffer,glFrameBufferWidth,glFrameBufferHeight);
 
 // Post processing Anti Aliasing (FXAA) // from glsl at geeks3d.com
 // currently much too slow for realtime
@@ -36,5 +37,16 @@ extern double motionBlurStrength;
 void allocMotionBlur(unsigned int width, unsigned int height);
 void freeMotionBlur();
 void doMotionBlur(unsigned int *frameBuffer);
+
+// Sky Sphere, much like a skybox but with a panorama texture (same format to GL_SPHERE_MAP_ATAN2)
+
+void doSkySphere(unsigned int texture_, unsigned int *frameBuffer, unsigned int width, unsigned int height);
+
+extern unsigned int _sky_sphere_rgba_to_replace; // the rgba color to replace with the sky sphere
+extern float _sky_sphere_focus_plane; // between -1 and 1 (field of view)
+extern float _sky_sphere_movement; // rotating the skybox on the y axis
+extern bool _sky_sphere_yflipped; // upside down
+extern bool _sky_sphere_xflipped;
+extern int _sky_sphere_stepWidth; // how fine granular the calculations are 16 is a good value the bigger the better the performance but less quality
 
 #endif //__OPENGLFX_HPP__
