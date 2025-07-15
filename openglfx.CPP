@@ -1,7 +1,9 @@
 #include "gl.h"
 #include "openglfx.hpp"
 #include <string.h>
+#include <stdlib.h>
 #include <math.h>
+#include "random.hpp"
 
 #define PI 3.14159265358979323846
 
@@ -237,7 +239,7 @@ void doMotionBlur(unsigned int *frameBuffer) {
   }
 }
 
-#define glSkySphere(__texture_atan2__) doSkySphere((__texture_atan2__),glFrameBuffer,glFrameBufferWidth,glFrameBufferHeight);
+// sky sphere
 
 unsigned int _sky_sphere_rgba_to_replace = 0x00000000;
 float _sky_sphere_focus_plane = 0; // between -1 and 1
@@ -245,6 +247,7 @@ float _sky_sphere_movement = 0;
 bool _sky_sphere_yflipped = false;
 bool _sky_sphere_xflipped = false;
 int _sky_sphere_stepWidth = 16;
+float _sky_z_value = 1.f;
 
 #define SKY_ENCODE\
   float nx = nxp;\
@@ -265,7 +268,7 @@ int _sky_sphere_stepWidth = 16;
   nextTextureX = tx*textureWidth; \
   nextTextureY = ty*textureHeight; 
 
-void doSkySphere(unsigned int texture_, unsigned int *frameBuffer, unsigned int width, unsigned int height) {
+void doSkySphere(unsigned int texture_, float *zBuffer, unsigned int *frameBuffer, unsigned int width, unsigned int height) {
   unsigned int *texture = glGetTexturePointer(texture_);
   unsigned int textureWidth = glGetTextureWidth(texture_);
   unsigned int textureHeight = glGetTextureHeight(texture_);
@@ -361,13 +364,199 @@ void doSkySphere(unsigned int texture_, unsigned int *frameBuffer, unsigned int 
         k = 0;
         kAdd = 0x10000/stepsXHere;
       }
-      if (*frameBuffer == _sky_sphere_rgba_to_replace) {
+      if (*zBuffer >= _sky_z_value) {
         int tx2 = (((nextTextureX-lastTextureX)*k)>>16)+lastTextureX;
         int ty2 = (((nextTextureY-lastTextureY)*k)>>16)+lastTextureY;
         *frameBuffer = texture[tx2+ty2*textureWidth];
       }
       k += kAdd;
       frameBuffer++;
+      zBuffer++;
+    }
+    _0y_nxp += _0y_nxa;
+    _0y_nyp += _0y_nya;
+    _0y_nzp += _0y_nza;
+    _1y_nxp += _1y_nxa;
+    _1y_nyp += _1y_nya;
+    _1y_nzp += _1y_nza;
+  }
+}
+
+// sky plane
+
+float _sky_plane_movex_0 = 0;
+float _sky_plane_movez_0 = 0;
+float _sky_plane_scale_0=0.1;
+float _sky_plane_movex_1 = 0;
+float _sky_plane_movez_1 = 0;
+float _sky_plane_scale_1=0.075;
+float _sky_plane_focus_plane = 0; // between -1 and 1
+int _sky_plane_stepWidth = 16;
+
+#define SKY_PLANE\
+  float nx = nxp;\
+  float ny = nyp;\
+  float nz = nzp;\
+  const float l = sqrt(nx*nx+ny*ny+nz*nz);\
+  if (l>0) {\
+    nx /= l;\
+    ny /= l;\
+    nz /= l;\
+  }\
+  if (nz!=0.f) {\
+    nextTextureX = (nx/ny*_sky_plane_scale_0+_sky_plane_movex_0)*textureWidth; \
+    nextTextureY = (nz/ny*_sky_plane_scale_0+_sky_plane_movez_0)*textureHeight;\
+    if (nextTextureX < 0) \
+      nextTextureX += (((-nextTextureX)+textureWidth-1)/textureWidth)*textureWidth;\
+    else\
+      nextTextureX %= textureWidth;\
+    if (nextTextureY < 0) \
+       nextTextureY += (((-nextTextureY)+textureHeight-1)/textureHeight)*textureHeight;\
+    else\
+      nextTextureY %= textureHeight;\
+  }\
+  if (nz!=0.f) {\
+    nextTextureX2 = (nx/ny*_sky_plane_scale_1+_sky_plane_movex_1)*textureWidth; \
+    nextTextureY2 = (nz/ny*_sky_plane_scale_1+_sky_plane_movez_1)*textureHeight;\
+    if (nextTextureX2 < 0) \
+      nextTextureX2 += (((-nextTextureX2)+textureWidth-1)/textureWidth)*textureWidth;\
+    else\
+      nextTextureX2 %= textureWidth;\
+    if (nextTextureY2 < 0) \
+       nextTextureY2 += (((-nextTextureY2)+textureHeight-1)/textureHeight)*textureHeight;\
+    else\
+      nextTextureY2 %= textureHeight;\
+  } 
+
+void doSkyPlane(unsigned int texture_, float *zBuffer, unsigned int *frameBuffer, unsigned int width, unsigned int height) {
+
+  unsigned int *texture = glGetTexturePointer(texture_);
+  unsigned int textureWidth = glGetTextureWidth(texture_);
+  unsigned int textureHeight = glGetTextureHeight(texture_);
+
+  double modelView[16];
+  double projection[16];
+  int view[4];
+  glGetDoublev(GL_MODELVIEW_MATRIX,modelView);
+  glGetDoublev(GL_PROJECTION_MATRIX,projection);
+  glGetIntegerv(GL_VIEWPORT, view);
+
+  double midX,midY,midZ;
+  double blX,blY,blZ;
+  double brX,brY,brZ;
+  double tlX,tlY,tlZ;
+  double trX,trY,trZ;
+  float xv = width/2;
+  float yv = height/2;
+  gluUnProject(width/2, height/2, -1, modelView, projection, view, &midX, &midY, &midZ);
+  gluUnProject(width/2-xv, height/2-yv, _sky_sphere_focus_plane, modelView, projection, view, &blX, &blY, &blZ);
+  gluUnProject(width/2+xv, height/2-yv, _sky_sphere_focus_plane, modelView, projection, view, &brX, &brY, &brZ);
+  gluUnProject(width/2-xv, height/2+yv, _sky_sphere_focus_plane, modelView, projection, view, &tlX, &tlY, &tlZ);
+  gluUnProject(width/2+xv, height/2+yv, _sky_sphere_focus_plane, modelView, projection, view, &trX, &trY, &trZ);
+
+  float _00_nx = tlX-midX;
+  float _00_ny = tlY-midY;
+  float _00_nz = tlZ-midZ;
+  float _01_nx = trX-midX;
+  float _01_ny = trY-midY;
+  float _01_nz = trZ-midZ;
+  float _10_nx = blX-midX;
+  float _10_ny = blY-midY;
+  float _10_nz = blZ-midZ;
+  float _11_nx = brX-midX;
+  float _11_ny = brY-midY;
+  float _11_nz = brZ-midZ;
+
+  float l;
+  l = sqrt(_00_nx*_00_nx+_00_ny*_00_ny+_00_nz*_00_nz); if (l>0) {_00_nx/=l;_00_ny/=l;_00_nz/=l;}
+  l = sqrt(_01_nx*_01_nx+_01_ny*_01_ny+_01_nz*_01_nz); if (l>0) {_01_nx/=l;_01_ny/=l;_01_nz/=l;}
+  l = sqrt(_11_nx*_11_nx+_11_ny*_11_ny+_11_nz*_11_nz); if (l>0) {_11_nx/=l;_11_ny/=l;_11_nz/=l;}
+  l = sqrt(_10_nx*_10_nx+_10_ny*_10_ny+_10_nz*_10_nz); if (l>0) {_10_nx/=l;_10_ny/=l;_10_nz/=l;}
+
+  float _0y_nxa = (_10_nx - _00_nx)/height;
+  float _0y_nya = (_10_ny - _00_ny)/height;
+  float _0y_nza = (_10_nz - _00_nz)/height;
+  float _0y_nxp = _00_nx;
+  float _0y_nyp = _00_ny;
+  float _0y_nzp = _00_nz;
+
+  float _1y_nxa = (_11_nx - _01_nx)/height;
+  float _1y_nya = (_11_ny - _01_ny)/height;
+  float _1y_nza = (_11_nz - _01_nz)/height;
+  float _1y_nxp = _01_nx;
+  float _1y_nyp = _01_ny;
+  float _1y_nzp = _01_nz;
+
+  for (int y = 0; y < height; y++) {
+    float nxp = _0y_nxp;
+    float nyp = _0y_nyp;
+    float nzp = _0y_nzp;
+    float nxa = (_1y_nxp-_0y_nxp)/width;
+    float nya = (_1y_nyp-_0y_nyp)/width;
+    float nza = (_1y_nzp-_0y_nzp)/width;
+    int stepsXHere = 0;
+    int nextXHere = 0;
+    int k = 0;
+    int kAdd = 0;
+    int nextTextureX,nextTextureY,lastTextureX,lastTextureY;
+    int nextTextureX2,nextTextureY2,lastTextureX2,lastTextureY2;
+    SKY_PLANE
+    for (int x = 0; x < width; x++) {
+      if (x >= nextXHere) {
+        lastTextureX = nextTextureX;
+        lastTextureY = nextTextureY;
+        lastTextureX2 = nextTextureX2;
+        lastTextureY2 = nextTextureY2;
+        stepsXHere = _sky_sphere_stepWidth;
+        nextXHere += stepsXHere;
+        nxp += nxa * stepsXHere;
+        nyp += nya * stepsXHere;
+        nzp += nza * stepsXHere;
+        SKY_PLANE
+        if ((fabs(nextTextureX-lastTextureX)>textureWidth/2||fabs(nextTextureY-lastTextureY)>textureHeight/2) ||
+          (fabs(nextTextureX2-lastTextureX2)>textureWidth/2||fabs(nextTextureY2-lastTextureY2)>textureHeight/2))
+        {
+          nextXHere -= stepsXHere;
+          nxp -= nxa * stepsXHere;
+          nyp -= nya * stepsXHere;
+          nzp -= nza * stepsXHere;
+          stepsXHere = 1;
+          nextXHere += stepsXHere;
+          nxp += nxa * stepsXHere;
+          nyp += nya * stepsXHere;
+          nzp += nza * stepsXHere;
+          SKY_PLANE
+        }
+        k = 0;
+        kAdd = 0x10000/stepsXHere;
+      }
+      if (*zBuffer >= _sky_z_value && ny>0.0) {
+        int tx_0 = (((nextTextureX-lastTextureX)*k)>>16)+lastTextureX;
+        int ty_0 = (((nextTextureY-lastTextureY)*k)>>16)+lastTextureY;
+        unsigned int k_0 = texture[tx_0+ty_0*textureWidth];
+        int tx_1 = (((nextTextureX2-lastTextureX2)*k)>>16)+lastTextureX2;
+        int ty_1 = (((nextTextureY2-lastTextureY2)*k)>>16)+lastTextureY2;
+        unsigned int k_1 = texture[tx_1+ty_1*textureWidth];
+        unsigned int a_0 = (k_0 >> 24) & 255;
+        unsigned int a_1 = (k_1 >> 24) & 255;
+        if (ny<0.1) {
+          float fa = ny/0.1;
+          a_0*=fa;
+          a_1*=fa;
+        }
+        unsigned int rb = (*frameBuffer & 0x00ff00ff);
+        rb += ((((k_0 & 0x00ff00ff)-rb)*a_0)>>8);
+        rb &= 0x00ff00ff;
+        rb += ((((k_1 & 0x00ff00ff)-rb)*a_1)>>8) & 0x00ff00ff; 
+        unsigned int g = (*frameBuffer & 0x0000ff00);
+        g += ((((k_0 & 0x0000ff00)-g)*a_0)>>8);
+        g &= 0x0000ff00;
+        g += ((((k_1 & 0x0000ff00)-g)*a_1)>>8) & 0x0000ff00;
+        *frameBuffer = rb|g;
+      }
+      k += kAdd;
+      frameBuffer++;
+      zBuffer++;
     }
     _0y_nxp += _0y_nxa;
     _0y_nyp += _0y_nya;
