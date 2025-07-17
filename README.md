@@ -1,8 +1,9 @@
 # TemplateLib_WatcomC
-A very very basic and reduced STL like library for WatcomC (WatcomC++ is different on some points, all here works well with Watcom but e.g. not with VisualC++, it's just supposed for WatcomC++)  
-The libraries needed some tweaks, because of "different" WatcomC++ mechanics.  
+A very simple and stripped-down STL-like library for WatcomC (WatcomC++ differs in some respects; everything here works well with Watcom, but not with VisualC++, for example, because it's "designed" only for WatcomC++).
 
-This should be mainly a starting point for your WatcomC++ FreeDOS experiments/projects. There aren't much WatcomC++ + FreeDOS sources on the web, yet. I tried to collect some newschool/useful stuff and to promote my DOS OpenGL implementation.
+All the libraries had to be slightly adapted due to the "different" WatcomC++ mechanics.
+
+This should primarily serve as a starting point for your WatcomC++ FreeDOS experiments/projects. There aren't many WatcomC++ + FreeDOS sources available online yet. I've tried to gather some new and useful content and promote my DOS OpenGL implementation.
 
 ## OpenGL for DOS
 https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git  
