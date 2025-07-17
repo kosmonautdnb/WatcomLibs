@@ -1,9 +1,7 @@
 #include "gl.h"
 #include "openglfx.hpp"
 #include <string.h>
-#include <stdlib.h>
 #include <math.h>
-#include "random.hpp"
 
 #define PI 3.14159265358979323846
 
