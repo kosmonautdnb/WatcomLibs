@@ -37,6 +37,7 @@ Random.hpp - some basic "dependend random"
 - Dos.hpp - easy access to DOS functionality, comes with long file name support  
 - Jsonread.hpp - a json reader https://github.com/rafagafe/tiny-json  
 - Jsonwrt.hpp - a json writer https://github.com/rafagafe/tiny-json  
+- Parson.hpp - another json reader/writer https://github.com/kgabis/parson
 - Keymtrx.hpp - direct access to the keyboard matrix  
 - PLMPEG.hpp - MPEG1 (Video/Sound) Replay Single Header library https://github.com/phoboslab/pl_mpeg  
 - SMPLOBJL.hpp - a basic/tiny wavefront .OBJ/.MTL mesh loader  
@@ -46,7 +47,8 @@ Random.hpp - some basic "dependend random"
 - STBTEXT.hpp - Text editor basics  https://github.com/nothings/obbg/tree/master/stb  
 - STBTTF.hpp - Truetype text/font renderer  https://github.com/nothings/obbg/tree/master/stb  
 - TINYEXPR.hpp - a math expression solver (string input)  https://github.com/codeplea/tinyexpr  
-- Image.hpp - Image loading/saving/resizing  
+- TSpline.hpp - a advanced spline evaluation/rendering library https://github.com/msteinbeck/tinyspline
+-  Image.hpp - Image loading/saving/resizing  
 - Minimp3.hpp - A mp3 decoder  https://github.com/lieff/minimp3  
 - Mpeg1.hpp - mpeg1 wrapper for PLMPEG.hpp
 - OpenGLFX.hpp - Some post processing OpenGL effects like antialiasing(FXAA(https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/ )), toon shader, motion blur
