@@ -11,7 +11,7 @@ https://github.com/kosmonautdnb/WatcomGL
 - GLIMPL.cpp - complete OpenGL implementation  
 
 ## ImGui v1.43 included and working
-(needs OpenGLForDos)  
+(needs WatcomGL)  
 https://github.com/ocornut/imgui  
 - IMCONFIG.H  
 - IMGUI.CPP  
