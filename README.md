@@ -23,6 +23,10 @@ https://github.com/ocornut/imgui
 #include "gl.h"  
 #include "imguigl.hpp"  
 
+extern double mouseX, mouseY;  
+extern int mouseButtons;  
+extern int currentKey;
+
 void main() {  
 &emsp;glVesa(640,480,32);  
 &emsp;InitImGui(640, 480);  
