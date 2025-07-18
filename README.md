@@ -24,18 +24,18 @@ https://github.com/ocornut/imgui
 #include "imguigl.hpp"  
 
 void main() {  
-&nbsp;glVesa(640,480,32);  
-&nbsp;InitImGui(640, 480);  
-&nbsp;while(true) {  
-&nbsp;&nbsp;ImGuiNewFrame();  
-&nbsp;&nbsp;ImGui::Begin("window");  
-&nbsp;&nbsp;ImGui::End();  
-&nbsp;&nbsp;glClearColor(0.1f,0.2f,0.3f,1);  
-&nbsp;&nbsp;glClear(GL_COLOR_BUFFER_BIT);  
-&nbsp;&nbsp;ImGui::Render();  
-&nbsp;&nbsp;glRefresh();  
-&nbsp;}  
-&nbsp;glDone();  
+&emsp;glVesa(640,480,32);  
+&emsp;InitImGui(640, 480);  
+&emsp;while(true) {  
+&emsp;&emsp;ImGuiNewFrame();  
+&emsp;&emsp;ImGui::Begin("window");  
+&emsp;&emsp;ImGui::End();  
+&emsp;&emsp;glClearColor(0.1f,0.2f,0.3f,1);  
+&emsp;&emsp;glClear(GL_COLOR_BUFFER_BIT);  
+&emsp;&emsp;ImGui::Render();  
+&emsp;&emsp;glRefresh();  
+&emsp;}  
+&emsp;glDone();  
 }  
 
 ## Some basic types
