@@ -19,6 +19,25 @@ https://github.com/ocornut/imgui
 - IMGUIGL.HPP  
 - FileDLG.hpp - a DOS file dialog window written for IMGUI  
 
+#### Howto ImGui
+#include "gl.h"  
+#include "imguigl.hpp"  
+
+void main() {  
+&nbsp;glVesa(640,480,32);  
+&nbsp;InitImGui(640, 480);  
+&nbsp;while(true) {  
+&nbsp;&nbsp;ImGuiNewFrame();  
+&nbsp;&nbsp;ImGui::Begin("window");  
+&nbsp;&nbsp;ImGui::End();  
+&nbsp;&nbsp;glClearColor(0.1f,0.2f,0.3f,1);  
+&nbsp;&nbsp;glClear(GL_COLOR_BUFFER_BIT);  
+&nbsp;&nbsp;ImGui::Render();  
+&nbsp;&nbsp;glRefresh();  
+&nbsp;}  
+&nbsp;glDone();  
+}  
+
 ## Some basic types
 - Types.hpp - a bit like "stdint"   
 - Object.hpp - a bit like "java"  
