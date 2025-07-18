@@ -19,7 +19,7 @@ https://github.com/ocornut/imgui
 - IMGUIGL.HPP  
 - FileDLG.hpp - a DOS file dialog window written for IMGUI  
 
-#### ImGui howto:
+#### &emsp;ImGui howto:
 #include "gl.h"  
 #include "imguigl.hpp"  
 
