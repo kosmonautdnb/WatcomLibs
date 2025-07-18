@@ -31,7 +31,9 @@ https://github.com/ocornut/imgui
 &emsp;&emsp;while(true) {  
 &emsp;&emsp;&emsp;ImGuiNewFrame();  
 &emsp;&emsp;&emsp;ImGui::Begin("default window");  
-&emsp;&emsp;&emsp;if (ImGui::Button("button")) {}  
+&emsp;&emsp;&emsp;if (ImGui::Button("button1")) {}  
+&emsp;&emsp;&emsp;ImGui::SameLine();  
+&emsp;&emsp;&emsp;if (ImGui::Button("button1")) {}  
 &emsp;&emsp;&emsp;ImGui::End();  
 &emsp;&emsp;&emsp;glClearColor(0.1f,0.2f,0.3f,1);  
 &emsp;&emsp;&emsp;glClear(GL_COLOR_BUFFER_BIT);  
