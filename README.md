@@ -1,5 +1,4 @@
 # WatcomLibs
-A very simple and stripped-down STL-like library for WatcomC (WatcomC++ differs in some respects; everything here works well with Watcom, but not with VisualC++, for example, because it's "designed" only for WatcomC++).
 
 All the libraries had to be slightly adapted due to the "different" WatcomC++ mechanics.
 
