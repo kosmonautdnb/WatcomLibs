@@ -23,9 +23,7 @@ https://github.com/ocornut/imgui
 #include "gl.h"  
 #include "imguigl.hpp"  
 
-extern double mouseX, mouseY;  
-extern int mouseButtons;  
-extern int currentKey;
+// be aware to take mouseX, mouseY, mouseButtons. currentKey and so on from imguigl.hpp  
 
 void main() {  
 &emsp;glVesa(640,480,32);  
