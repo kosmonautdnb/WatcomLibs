@@ -20,26 +20,26 @@ https://github.com/ocornut/imgui
 - FileDLG.hpp - a DOS file dialog window written for IMGUI  
 
 #### &emsp;ImGui howto:
-#include "gl.h"  
-#include "imguigl.hpp"  
+&emsp;#include "gl.h"  
+&emsp;#include "imguigl.hpp"  
 
-// be aware to take mouseX, mouseY, mouseButtons. currentKey and so on from imguigl.hpp  
+&emsp;// be aware to take mouseX, mouseY, mouseButtons. currentKey and so on from imguigl.hpp  
 
-void main() {  
-&emsp;glVesa(640,480,32);  
-&emsp;InitImGui(640, 480);  
-&emsp;while(true) {  
-&emsp;&emsp;ImGuiNewFrame();  
-&emsp;&emsp;ImGui::Begin("default window");  
-&emsp;&emsp;if (ImGui::Button("button")) {}  
-&emsp;&emsp;ImGui::End();  
-&emsp;&emsp;glClearColor(0.1f,0.2f,0.3f,1);  
-&emsp;&emsp;glClear(GL_COLOR_BUFFER_BIT);  
-&emsp;&emsp;ImGui::Render();  
-&emsp;&emsp;glRefresh();  
+&emsp;void main() {  
+&emsp;&emsp;glVesa(640,480,32);  
+&emsp;&emsp;InitImGui(640, 480);  
+&emsp;&emsp;while(true) {  
+&emsp;&emsp;&emsp;ImGuiNewFrame();  
+&emsp;&emsp;&emsp;ImGui::Begin("default window");  
+&emsp;&emsp;&emsp;if (ImGui::Button("button")) {}  
+&emsp;&emsp;&emsp;ImGui::End();  
+&emsp;&emsp;&emsp;glClearColor(0.1f,0.2f,0.3f,1);  
+&emsp;&emsp;&emsp;glClear(GL_COLOR_BUFFER_BIT);  
+&emsp;&emsp;&emsp;ImGui::Render();  
+&emsp;&emsp;&emsp;glRefresh();  
+&emsp;&emsp;}  
+&emsp;&emsp;glDone();  
 &emsp;}  
-&emsp;glDone();  
-}  
 
 ## Some basic types
 - Types.hpp - a bit like "stdint"   
