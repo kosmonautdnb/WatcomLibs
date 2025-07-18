@@ -6,7 +6,7 @@ All the libraries had to be slightly adapted due to the "different" WatcomC++ me
 This should primarily serve as a starting point for your WatcomC++ FreeDOS experiments/projects. There aren't many WatcomC++ + FreeDOS sources available online yet. I've tried to gather some new and useful content and promote my DOS OpenGL implementation.
 
 ## OpenGL for DOS
-https://github.com/kosmonautdnb/OpenGLForDos-WatcomC.git  
+https://github.com/kosmonautdnb/WatcomGL
 - GL.h  - an OpenGL subset with fixed function pipeline, except stencil buffer and projective textures, with some glu functions and Vesa/VGA support  
 - GLIMPL.cpp - complete OpenGL implementation  
 
