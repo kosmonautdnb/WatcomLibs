@@ -1,11 +1,11 @@
-# TemplateLib_WatcomC
+# WatcomLibs
 A very simple and stripped-down STL-like library for WatcomC (WatcomC++ differs in some respects; everything here works well with Watcom, but not with VisualC++, for example, because it's "designed" only for WatcomC++).
 
 All the libraries had to be slightly adapted due to the "different" WatcomC++ mechanics.
 
-This should primarily serve as a starting point for your WatcomC++ FreeDOS experiments/projects. There aren't many WatcomC++ + FreeDOS sources available online yet. I've tried to gather some new and useful content and promote my DOS OpenGL implementation.
+This should primarily serve as a starting point for your WatcomC++ FreeDOS experiments/projects. There aren't many WatcomC++ + FreeDOS sources available online yet. I've tried to gather some new and useful content and promote my DOS OpenGL implementation "WatcomGL".
 
-## OpenGL for DOS
+## WatcomGL (an OpenGL emulation for DOS)
 https://github.com/kosmonautdnb/WatcomGL
 - GL.h  - an OpenGL subset with fixed function pipeline, except stencil buffer and projective textures, with some glu functions and Vesa/VGA support  
 - GLIMPL.cpp - complete OpenGL implementation  
