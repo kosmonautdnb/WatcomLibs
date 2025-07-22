@@ -251,6 +251,10 @@ double Vector::lengthSqr() const {
   return x*x+y*y+z*z;
 }
 
+double Vector::manhatten() const {
+  return fabs(x)+fabs(y)+fabs(z);
+}
+
 Vector &Vector::normalize() {
   double l = length(); 
   if (l>0) 
@@ -311,6 +315,10 @@ double length(const Vector &a) {
 
 double lengthSqr(const Vector &a) {
   return a.lengthSqr();
+}
+
+double manhatten(const Vector &a) {
+  return a.manhatten();
 }
 
 double dot(const Vector &a, const Vector &b) {
@@ -536,6 +544,26 @@ Vector min(const Vector &a,const Vector &b) {
   return r;
 }
 
+static double __inline fastfloor(double a) {
+  int i = (int)a;
+  if (i > a) i--;
+  return i;
+}
+
+static double __inline mod(double a, double b) {
+  // glsl way
+  return a - (b*fastfloor(a/b));
+}
+
+Vector mod(const Vector &a, const Vector &b) {
+  Vector r;
+  r.x = mod(a.x,b.x);
+  r.y = mod(a.y,b.y);
+  r.z = mod(a.z,b.z);
+  r.w = a.w;
+  return r;
+}
+
 Vector abs(const Vector &a) {
   Vector r;
   r.x = fabs(a.x);
@@ -641,3 +669,34 @@ Vector fromPolar(const Vector &a) {
   const double phi = a.y * PI;
   return Vector(sin(phi)*cos(theta),-cos(phi),sin(phi)*sin(theta));
 }
+
+static float __inline clamp(float v, float mn, float mx) {
+  return v < mn ? mn : (v > mx ? mx : v);
+}
+
+unsigned int toRGBA(const Vector &a) {
+  int r = (int)clamp(a.x*255.f,0.f,255.f);
+  int g = (int)clamp(a.y*255.f,0.f,255.f);
+  int b = (int)clamp(a.z*255.f,0.f,255.f);
+  int a_ = (int)clamp(a.w*255.f,0.f,255.f);
+  return r|(g<<8)|(b<<16)|(a_<<24);
+}
+
+unsigned int toRGB(const Vector &a) {
+  int r = (int)clamp(a.x*255.f,0.f,255.f);
+  int g = (int)clamp(a.y*255.f,0.f,255.f);
+  int b = (int)clamp(a.z*255.f,0.f,255.f);
+  return r|(g<<8)|(b<<16)|0xff000000;
+}
+
+Vector rotateX(const Vector &a, double angle) {
+  return Vector(a.x,cos(angle)*a.y-sin(angle)*a.z,sin(angle)*a.y+cos(angle)*a.z);
+}
+ 
+Vector rotateY(const Vector &a, double angle) {
+  return Vector(cos(angle)*a.x+sin(angle)*a.z,a.y,-sin(angle)*a.x+cos(angle)*a.z);
+}
+ 
+Vector rotateZ(const Vector &a, double angle) {
+  return Vector(cos(angle)*a.x-sin(angle)*a.y,sin(angle)*a.x+cos(angle)*a.y,a.z);
+} 

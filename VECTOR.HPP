@@ -26,7 +26,7 @@ public:
     w = _w;
   }
 
-  Vector(double _x, double _y, double _z = 0.0, double _w = 1.0) {
+  Vector(double _x, double _y = 0.0, double _z = 0.0, double _w = 1.0) {
     x = _x;
     y = _y;
     z = _z;
@@ -76,6 +76,7 @@ public:
 
   double length() const;
   double lengthSqr() const;
+  double manhatten() const;
 
   Vector &normalize();
 
@@ -134,6 +135,7 @@ public:
 
 double length(const Vector &a);
 double lengthSqr(const Vector &a);
+double manhatten(const Vector &a);
 double dot(const Vector &a, const Vector &b);
 Vector cross(const Vector &a, const Vector &b);
 Vector normalize(const Vector &b);
@@ -186,6 +188,7 @@ Vector operator/(const Matrix &a, const Vector &b);
 
 Vector max(const Vector &a, const Vector &b);
 Vector min(const Vector &a, const Vector &b);
+Vector mod(const Vector &a, const Vector &b);
 Vector abs(const Vector &a);
 Vector sin(const Vector &a);
 Vector cos(const Vector &a);
@@ -200,5 +203,11 @@ Vector mix(const Vector &a, const Vector &b, const double &c);
 double distance(const Vector &a, const Vector &b);
 Vector toPolar(const Vector &a);
 Vector fromPolar(const Vector &a);
+unsigned int toRGBA(const Vector &a);
+unsigned int toRGB(const Vector &a);
+
+Vector rotateX(const Vector &a, double angle); 
+Vector rotateY(const Vector &a, double angle); 
+Vector rotateZ(const Vector &a, double angle); 
 
 #endif //__VECTOR_HPP__
