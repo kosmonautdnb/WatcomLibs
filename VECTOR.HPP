@@ -26,7 +26,7 @@ public:
     w = _w;
   }
 
-  Vector(double _x, double _y = 0.0, double _z = 0.0, double _w = 1.0) {
+  Vector(double _x, double _y, double _z = 0.0, double _w = 1.0) { // atleast vec2, if only x would be left it would override double in some template cases
     x = _x;
     y = _y;
     z = _z;
