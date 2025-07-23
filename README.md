@@ -56,7 +56,8 @@ Random.hpp - some basic "dependend random"
 ## Some useful classes
 - Charset.hpp - a tiny font to be rendered per pixel
 - CGLTF - a gltf loader https://github.com/jkuhlmann/cgltf 
-- Dos.hpp - easy access to DOS functionality, comes with long file name support  
+- Dos.hpp - easy access to DOS functionality, comes with long file name support
+- Genann.hpp - a simple neural net. https://github.com/codeplea/genann
 - Jsonread.hpp - a json reader https://github.com/rafagafe/tiny-json  
 - Jsonwrt.hpp - a json writer https://github.com/rafagafe/tiny-json  
 - Parson.hpp - another json reader/writer https://github.com/kgabis/parson
