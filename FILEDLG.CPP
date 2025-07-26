@@ -254,7 +254,7 @@ void FileDialog::filter() {
     s++;
   }
 
-  if (set.spHas(set,"*.*")) 
+  if (set.spHas(set,"*")) 
     return;
   for (i = files.size() - 1; i >= 0; i--) {
     if (files[i].attributes & DOS_ATTR_SUBDIR) continue;
