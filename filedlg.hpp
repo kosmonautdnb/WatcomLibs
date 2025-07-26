@@ -45,7 +45,7 @@ public:
   void oneFolderUp();
   void filter();
   void sort();
-  String sizeString(const int a, const int64_t s);
+  String sizeString(const int a, const int32_t s);
   String dateString(const FileTime &a);
   String attributeString(const int a);
 };

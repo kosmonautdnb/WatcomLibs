@@ -4,6 +4,7 @@
 
 #ifndef NOT_DOS
 #include "imguigl.hpp"
+#include "gl.h"
 #define FDWIDTH 400
 #define FDHEIGHT 434
 #define FDXTAB 100
@@ -221,13 +222,13 @@ void FileDialog::syncFileData() {
 }
 
 void FileDialog::oneFolderUp() {
-  int64_t i = currentPath.findLast("/");
+  int32_t i = currentPath.findLast("/");
   i = currentPath.findLast(i,"/"); 
   if (i >= 0) currentPath = currentPath.substr(0,i) + "/";
 }
 
 void FileDialog::filter() {
-  int64_t i;
+  int32_t i;
   for (i = files.size() - 1; i >= 0; i--) {
     if (files[i].name.name == ".") {files.erase(i,1); break;}
   }
@@ -235,14 +236,15 @@ void FileDialog::filter() {
   String current;
   spHashMap<String, bool> set;
   int currentItem = 0;
+
   while (true) {
     char c = *s;
     if (c == ',') {
-      if (currentItem==currentFileFormatsItem) set[toLower(current)] = true;
+      if (currentItem==currentFileFormatsItem) set[toLower(current.substr(current.findLast(".")+1))] = true;
       current = "";
     } else
     if (c == 0x00) {
-      if (currentItem==currentFileFormatsItem) set[toLower(current)] = true;
+      if (currentItem==currentFileFormatsItem) set[toLower(current.substr(current.findLast(".")+1))] = true;
       if (*(s+1)==0x00) break;
       current = "";
       currentItem++;
@@ -251,6 +253,7 @@ void FileDialog::filter() {
     }
     s++;
   }
+
   if (set.spHas(set,"*.*")) 
     return;
   for (i = files.size() - 1; i >= 0; i--) {
@@ -293,7 +296,7 @@ String FileDialog::dateString(const FileTime &a) {
   return String(a.day) + "." + String(a.month) + "." + String(a.year) + " " + String(a.hour) + ":" + String(a.minute);
 }
 
-String FileDialog::sizeString(const int a, const int64_t s) {
+String FileDialog::sizeString(const int a, const int32_t s) {
   if (a & DOS_ATTR_SUBDIR) return "<DIR>";
   if (s < 1024*1024)
     return String(s)+"b";
