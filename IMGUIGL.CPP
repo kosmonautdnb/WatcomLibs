@@ -90,6 +90,8 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
   int height = viewPort[3];
   ImVec2 white = imGuiWhitePixel();
 
+  glVertex4f(0,0,0,1);
+
   for (int n = 0; n < draw_data->CmdListsCount; n++)
   {
       const ImDrawList* cmd_list = draw_data->CmdLists[n];
@@ -157,6 +159,9 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
 
   }
 
+  glDisable(GL_BLEND);
+  glDisable(GL_ALPHA_TEST);
+  glDisable(GL_TEXTURE_2D); 
   glDisable(GL_SCISSOR_TEST);
   glScissor(0,0,glFrameBufferWidth,glFrameBufferHeight);
   drawMouseArrow(mouseX, mouseY);

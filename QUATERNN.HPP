@@ -49,6 +49,8 @@ public:
     return "[" + ::toString(x) + "," + ::toString(y) + "," + ::toString(z) + "," + ::toString(w) + "]";
   }
 
+  void identity() {x=0;y=0;z=0;w=1;}
+
   Vector complex() const;
 
   double real() const;

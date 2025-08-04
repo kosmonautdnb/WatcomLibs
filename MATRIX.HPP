@@ -75,6 +75,9 @@ Vector transformTransposed(const Vector &a, const Matrix &b);
 Vector transform3x3(const Vector &a, const Matrix &b);
 Vector transformTransposed3x3(const Vector &a, const Matrix &b);
 
+Vector project(const Vector &a, const Matrix &b);
+Vector projectTransposed(const Vector &a, const Matrix &b);
+
 Matrix mul(const Matrix &a, const Matrix &b);
 Matrix operator *(const Matrix &a, const Matrix &b);
 Matrix operator /(const Matrix &a, const Matrix &b);

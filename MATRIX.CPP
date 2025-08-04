@@ -422,6 +422,32 @@ Vector transformTransposed3x3(const Vector &a, const Matrix &b) {
   return r;
 }
 
+Vector project(const Vector &a, const Matrix &b) {
+  Vector r;
+  r.x = b.GET(0,0)*a.x+b.GET(0,1)*a.y+b.GET(0,2)*a.z+b.GET(0,3)*a.w;
+  r.y = b.GET(1,0)*a.x+b.GET(1,1)*a.y+b.GET(1,2)*a.z+b.GET(1,3)*a.w;
+  r.z = b.GET(2,0)*a.x+b.GET(2,1)*a.y+b.GET(2,2)*a.z+b.GET(2,3)*a.w;
+  r.w = b.GET(3,0)*a.x+b.GET(3,1)*a.y+b.GET(3,2)*a.z+b.GET(3,3)*a.w;
+  r.x /= r.w;
+  r.y /= r.w;
+  r.z /= r.w;
+  r.w /= r.w;
+  return r;
+}
+
+Vector projectTransposed(const Vector &a, const Matrix &b) {
+  Vector r;
+  r.x = b.GET(0,0)*a.x+b.GET(1,0)*a.y+b.GET(2,0)*a.z+b.GET(3,0)*a.w;
+  r.y = b.GET(0,1)*a.x+b.GET(1,1)*a.y+b.GET(2,1)*a.z+b.GET(3,1)*a.w;
+  r.z = b.GET(0,2)*a.x+b.GET(1,2)*a.y+b.GET(2,2)*a.z+b.GET(3,2)*a.w;
+  r.w = b.GET(0,3)*a.x+b.GET(1,3)*a.y+b.GET(2,3)*a.z+b.GET(3,3)*a.w;
+  r.x /= r.w;
+  r.y /= r.w;
+  r.z /= r.w;
+  r.w /= r.w;
+  return r;
+}
+
 Matrix mul(const Matrix &a, const Matrix &b) {
   Matrix c = a;
   c.mul(b);
