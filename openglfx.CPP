@@ -571,41 +571,22 @@ float gaussianTap5Weight1 = 0.244f;
 float gaussianTap5Weight2 = 0.403f;
 
 #define BLOOMKERNEL\
-      r=g=b=0;\
-      v = weight0;\
-      r+=(rgba0&255)*v;\
-      g+=((rgba0>>8)&255)*v;\
-      b+=((rgba0>>16)&255)*v;\
-      v = weight1;\
-      r+=(rgba1&255)*v;\
-      g+=((rgba1>>8)&255)*v;\
-      b+=((rgba1>>16)&255)*v;\
-      v = weight2;\
-      r+=(rgba2&255)*v;\
-      g+=((rgba2>>8)&255)*v;\
-      b+=((rgba2>>16)&255)*v;\
-      v = weight1;\
-      r+=(rgba3&255)*v;\
-      g+=((rgba3>>8)&255)*v;\
-      b+=((rgba3>>16)&255)*v;\
-      v = weight0;\
-      r+=(rgba4&255)*v;\
-      g+=((rgba4>>8)&255)*v;\
-      b+=((rgba4>>16)&255)*v;\
-      r/=weights;\
-      g/=weights;\
-      b/=weights;\
+      rgb=((((rgba0&0x00ff00ff)+(rgba4&0x00ff00ff))*weight0+((rgba1&0x00ff00ff)+(rgba3&0x00ff00ff))*weight1+(rgba2&0x00ff00ff)*weight2)>>8) & 0x00ff00ff;\
+    rgb|=((((rgba0&0x0000ff00)+(rgba4&0x0000ff00))*weight0+((rgba1&0x0000ff00)+(rgba3&0x0000ff00))*weight1+(rgba2&0x0000ff00)*weight2)>>8)&0x0000ff00;\
 
 void bloomX(unsigned int *buffer, unsigned int width, unsigned int height, int tap0, int tap1) {
   int weight0 =  gaussianTap5Weight0 * 0x100;
   int weight1 =  gaussianTap5Weight1 * 0x100;
   int weight2 =  gaussianTap5Weight2 * 0x100; // center
   int weights = (weight0+weight1+weight2+weight1+weight0);
+  weight0 = weight0*256/weights;
+  weight1 = weight1*256/weights;
+  weight2 = weight2*256/weights;
   unsigned int *newBuffer = new unsigned int[width*height];
   for (int y = 0; y < height; y++) {
     unsigned int *s = &buffer[y*width];
     unsigned int *d = &newBuffer[y*width];
-    int r,g,b,v;
+    int rgb;
     for (int x = 0; x < width; x++) {
       int t0x = x - tap0; if (t0x < 0) t0x = 0;
       int t1x = x - tap1; if (t1x < 0) t1x = 0;
@@ -617,7 +598,7 @@ void bloomX(unsigned int *buffer, unsigned int width, unsigned int height, int t
       unsigned int rgba3 = s[t3x];
       unsigned int rgba4 = s[t4x];
       BLOOMKERNEL
-      *d++=r|(g<<8)|(b<<16)|(rgba2&0xff000000);
+      *d++=rgb;
     }
   }
   memcpy(buffer,newBuffer,width*height*sizeof(unsigned int));
@@ -629,11 +610,14 @@ void bloomY(unsigned int *buffer, unsigned int width, unsigned int height, int t
   int weight1 =  gaussianTap5Weight1 * 0x100;
   int weight2 =  gaussianTap5Weight2 * 0x100; // center
   int weights = (weight0+weight1+weight2+weight1+weight0);
+  weight0 = weight0*256/weights;
+  weight1 = weight1*256/weights;
+  weight2 = weight2*256/weights;
   unsigned int *newBuffer = new unsigned int[width*height];
   for (int x = 0; x < width; x++) {
     unsigned int *s = &buffer[x];
     unsigned int *d = &newBuffer[x];
-    int r,g,b,v;
+    int rgb,v;
     for (int y = 0; y < height; y++) {
       int t0y = y - tap0; if (t0y < 0) t0y = 0;
       int t1y = y - tap1; if (t1y < 0) t1y = 0;
@@ -645,7 +629,7 @@ void bloomY(unsigned int *buffer, unsigned int width, unsigned int height, int t
       unsigned int rgba3 = s[t3y*width];
       unsigned int rgba4 = s[t4y*width];
       BLOOMKERNEL
-      *d=r|(g<<8)|(b<<16)|(rgba2&0xff000000);
+      *d=rgb;
       d+=width;
     }
   }
