@@ -51,6 +51,7 @@ public:
   }
    
   Vector &set(double _x, double _y, double _z);
+  Vector &set(double _x, double _y, double _z, double _w);
   Vector &set(double v);
   Vector &set(const Vector &b);
 

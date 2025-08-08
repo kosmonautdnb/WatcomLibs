@@ -564,3 +564,147 @@ void doSkyPlane(unsigned int texture_, float *zBuffer, unsigned int *frameBuffer
     _1y_nzp += _1y_nza;
   }
 }
+
+// GAUSSIANBLOOM FILTER
+float gaussianTap5Weight0 = 0.054f;
+float gaussianTap5Weight1 = 0.244f;
+float gaussianTap5Weight2 = 0.403f;
+
+#define BLOOMKERNEL\
+      r=g=b=0;\
+      v = weight0;\
+      r+=(rgba0&255)*v;\
+      g+=((rgba0>>8)&255)*v;\
+      b+=((rgba0>>16)&255)*v;\
+      v = weight1;\
+      r+=(rgba1&255)*v;\
+      g+=((rgba1>>8)&255)*v;\
+      b+=((rgba1>>16)&255)*v;\
+      v = weight2;\
+      r+=(rgba2&255)*v;\
+      g+=((rgba2>>8)&255)*v;\
+      b+=((rgba2>>16)&255)*v;\
+      v = weight1;\
+      r+=(rgba3&255)*v;\
+      g+=((rgba3>>8)&255)*v;\
+      b+=((rgba3>>16)&255)*v;\
+      v = weight0;\
+      r+=(rgba4&255)*v;\
+      g+=((rgba4>>8)&255)*v;\
+      b+=((rgba4>>16)&255)*v;\
+      r/=weights;\
+      g/=weights;\
+      b/=weights;\
+
+void bloomX(unsigned int *buffer, unsigned int width, unsigned int height, int tap0, int tap1) {
+  int weight0 =  gaussianTap5Weight0 * 0x100;
+  int weight1 =  gaussianTap5Weight1 * 0x100;
+  int weight2 =  gaussianTap5Weight2 * 0x100; // center
+  int weights = (weight0+weight1+weight2+weight1+weight0);
+  unsigned int *newBuffer = new unsigned int[width*height];
+  for (int y = 0; y < height; y++) {
+    unsigned int *s = &buffer[y*width];
+    unsigned int *d = &newBuffer[y*width];
+    int r,g,b,v;
+    for (int x = 0; x < width; x++) {
+      int t0x = x - tap0; if (t0x < 0) t0x = 0;
+      int t1x = x - tap1; if (t1x < 0) t1x = 0;
+      int t3x = x + tap1; if (t3x > width-1) t3x = width-1;
+      int t4x = x + tap0; if (t4x > width-1) t4x = width-1;
+      unsigned int rgba0 = s[t0x];
+      unsigned int rgba1 = s[t1x];
+      unsigned int rgba2 = s[x];
+      unsigned int rgba3 = s[t3x];
+      unsigned int rgba4 = s[t4x];
+      BLOOMKERNEL
+      *d++=r|(g<<8)|(b<<16)|(rgba2&0xff000000);
+    }
+  }
+  memcpy(buffer,newBuffer,width*height*sizeof(unsigned int));
+  delete[] newBuffer;
+}
+
+void bloomY(unsigned int *buffer, unsigned int width, unsigned int height, int tap0, int tap1) {
+  int weight0 =  gaussianTap5Weight0 * 0x100;
+  int weight1 =  gaussianTap5Weight1 * 0x100;
+  int weight2 =  gaussianTap5Weight2 * 0x100; // center
+  int weights = (weight0+weight1+weight2+weight1+weight0);
+  unsigned int *newBuffer = new unsigned int[width*height];
+  for (int x = 0; x < width; x++) {
+    unsigned int *s = &buffer[x];
+    unsigned int *d = &newBuffer[x];
+    int r,g,b,v;
+    for (int y = 0; y < height; y++) {
+      int t0y = y - tap0; if (t0y < 0) t0y = 0;
+      int t1y = y - tap1; if (t1y < 0) t1y = 0;
+      int t3y = y + tap1; if (t3y > height-1) t3y = height-1;
+      int t4y = y + tap0; if (t4y > height-1) t4y = height-1;
+      unsigned int rgba0 = s[t0y*width];
+      unsigned int rgba1 = s[t1y*width];
+      unsigned int rgba2 = s[y*width];
+      unsigned int rgba3 = s[t3y*width];
+      unsigned int rgba4 = s[t4y*width];
+      BLOOMKERNEL
+      *d=r|(g<<8)|(b<<16)|(rgba2&0xff000000);
+      d+=width;
+    }
+  }
+  memcpy(buffer,newBuffer,width*height*sizeof(unsigned int));
+  delete[] newBuffer;
+}
+
+
+void bloom(unsigned int *frameBuffer, unsigned int width, unsigned int height, int passes, float threshold, float gain) {
+  unsigned int *bloomBuffer = new unsigned int[width*height];
+  int iThreshold = threshold*256.f;
+  int iGain = gain*256.f;
+  {for (int i = 0; i < width*height; i++) {
+    unsigned int rgba = frameBuffer[i];
+    int r = rgba & 255;
+    int g = (rgba>>8) & 255;
+    int b = (rgba>>16) & 255;
+    int a = (rgba>>24) & 255;
+    r = (r * a)>>8;
+    g = (g * a)>>8;
+    b = (b * a)>>8;
+    r -= iThreshold;
+    g -= iThreshold;
+    b -= iThreshold;
+    r = (r * iGain)>>8;
+    g = (g * iGain)>>8;
+    b = (b * iGain)>>8;
+    if (r < 0) r = 0;
+    if (g < 0) g = 0;
+    if (b < 0) b = 0;
+    if (r > 255) r = 255;
+    if (g > 255) g = 255;
+    if (b > 255) b = 255;
+    bloomBuffer[i] = r|(g<<8)|(b<<16)|(rgba&0xff000000);
+  }}
+  {for (int i = passes-1; i >= 0; i--) {
+    int kernelSize = pow(2,i);
+    bloomX(bloomBuffer,width,height,kernelSize*2,kernelSize*1);
+  }}
+  {for (int i = passes-1; i >= 0; i--) {
+    int kernelSize = pow(2,i);
+    bloomY(bloomBuffer,width,height,kernelSize*2,kernelSize*1);
+  }}
+  {for (int i = 0; i < width*height; i++) {
+    unsigned int rgba0 = bloomBuffer[i];
+    unsigned int rgba1 = frameBuffer[i];
+    int r = rgba0 & 255;
+    int g = (rgba0>>8) & 255;
+    int b = (rgba0>>16) & 255;
+    r = (r * iGain)>>8;
+    g = (g * iGain)>>8;
+    b = (b * iGain)>>8;
+    r += rgba1 & 255;
+    g += (rgba1>>8) & 255;
+    b += (rgba1>>16) & 255;
+    if (r > 255) r = 255;
+    if (g > 255) g = 255;
+    if (b > 255) b = 255;
+    frameBuffer[i] = r|(g<<8)|(b<<16)|(rgba1&0xff000000);
+  }}
+  delete[] bloomBuffer;
+}

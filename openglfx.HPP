@@ -8,6 +8,7 @@
 #define glMotionBlur() doMotionBlur(glFrameBuffer)
 #define glSkySphere(__texture_atan2__) doSkySphere((__texture_atan2__),glDepthBuffer,glFrameBuffer,glFrameBufferWidth,glFrameBufferHeight);
 #define glSkyPlane(__texture__) doSkyPlane(__texture__,glDepthBuffer,glFrameBuffer,glFrameBufferWidth,glFrameBufferHeight);
+#define glBloom(__passes__,__threshold__,__gain__) bloom(glFrameBuffer,glFrameBufferWidth,glFrameBufferHeight,__passes__,__threshold__,__gain__);
 
 // Post processing Anti Aliasing (FXAA) // from glsl at geeks3d.com
 // currently much too slow for realtime
@@ -62,5 +63,8 @@ extern float _sky_plane_movez_1;
 extern float _sky_plane_scale_1;
 extern float _sky_plane_focus_plane; // between -1 and 1 (field of view)
 extern int _sky_plane_stepWidth; // how fine granular the calculations are 16 is a good value the bigger the better the performance but less quality
+
+// A gaussian bloom
+void bloom(unsigned int *frameBuffer, unsigned int width, unsigned int height, int passes, float threshold, float gain);
 
 #endif //__OPENGLFX_HPP__

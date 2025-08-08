@@ -11,6 +11,14 @@ Vector &Vector::set(double _x, double _y, double _z) {
   return *this;
 }
 
+Vector &Vector::set(double _x, double _y, double _z, double _w) {
+  x = _x; 
+  y = _y; 
+  z = _z; 
+  w = _w; 
+  return *this;
+}
+
 Vector &Vector::set(double v) {
   x = v; 
   y = v; 

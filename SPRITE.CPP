@@ -274,7 +274,7 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
             if (rh > 255) rh = 255;
             if (gh > 255) gh = 255;
             if (bh > 255) bh = 255;
-            *destP = rh|(gh<<8)|(bh<<16)|0xff000000;
+            *destP = rh|(gh<<8)|(bh<<16)|(spriteColor&0xff000000);
           }
           tx += txadd;
           destZ++;
@@ -301,7 +301,7 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
               if (rh > 255) rh = 255;
               if (gh > 255) gh = 255;
               if (bh > 255) bh = 255;
-              *destP = rh|(gh<<8)|(bh<<16)|0xff000000;
+              *destP = rh|(gh<<8)|(bh<<16)|(spriteColor&0xff000000);
             }
             tx += txadd;
             destZ++;
@@ -323,7 +323,7 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
                 rh += ((((rt*sp_r)>>8) - rh)*a)>>8;
                 gh += ((((gt*sp_g)>>8) - gh)*a)>>8;
                 bh += ((((bt*sp_b)>>8) - bh)*a)>>8;
-                *destP = rh|(gh<<8)|(bh<<16)|0xff000000;
+                *destP = rh|(gh<<8)|(bh<<16)|(spriteColor&0xff000000);
               }
             }
             tx += txadd;
