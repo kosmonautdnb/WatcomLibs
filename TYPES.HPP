@@ -51,5 +51,18 @@ typedef unsigned int UINT;
 #define snprintf_x5(__a__,__b__,__c__,__d__,__e__) snprintf(__a__,__b__,__c__,__d__,__e__)
 #endif
 
+__inline int clampf(float v, float l, float h) {return v<l?l:(v>h?h:v);}
+__inline int clampd(double v, double l, double h) {return v<l?l:(v>h?h:v);}
+__inline int clampi(int v, int l, int h) {return v<l?l:(v>h?h:v);}
+__inline int clampui(unsigned int v, unsigned int l, unsigned int h) {return v<l?l:(v>h?h:v);}
+__inline int maxi(int a, int b) {return a>b?a:b;}
+__inline int maxui(unsigned int a, unsigned int b) {return a>b?a:b;}
+__inline int maxf(float a, float b) {return a>b?a:b;}
+__inline int maxd(double a, double b) {return a>b?a:b;}
+__inline int mini(int a, int b) {return a<b?a:b;}
+__inline int minui(unsigned int a, unsigned int b) {return a<b?a:b;}
+__inline int minf(float a, float b) {return a<b?a:b;}
+__inline int mind(double a, double b) {return a<b?a:b;}
+
 
 #endif //__TYPES_HPP__

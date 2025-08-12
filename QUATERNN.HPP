@@ -42,7 +42,7 @@ public:
   virtual bool equals(Object *a) const {
     Quaternion *v = dynamic_cast<Quaternion*>(a);
     if (v == NULL) return false;
-    return ::equals(x,v->x) && ::equals(y,v->y) && ::equals(z,v->z);
+    return ::equals(x,v->x) && ::equals(y,v->y) && ::equals(z,v->z) && ::equals(w,v->w);
   }
   
   virtual String toString() const {
