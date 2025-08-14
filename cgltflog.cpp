@@ -37,8 +37,20 @@ void logPtr(const char *name, void *ptr) {
   logIndent();printf("%s #%08x\n",name,(unsigned int)ptr);
 }
 
+void logCountPtr(const char *name, int c, void *ptr) {
+  logIndent();printf("%s[%d] #%08x\n",name,c,(unsigned int)ptr);
+}
+
+void logPtrN(const char *name, void *ptr) {
+  printf("%s #%08x;",name,(unsigned int)ptr);
+}
+
 void logCount(const char *name, int count) {
   logIndent();printf("%s count:%d\n",name,count);
+}
+
+void logCountN(const char *name, int count) {
+  printf("%s count:%d;",name,count);
 }
 
 void logPtr2(const char *name, void *ptr, int count) {
@@ -49,8 +61,32 @@ void log(const char *v) {
   logIndent();printf("%s\n",v);
 }
 
+void log2(const char *v, void *k) {
+  logIndent();printf("%s #%08x\n",v,(int)k);
+}
+
+void logN(const char *v) {
+  printf("%s;",v);
+}
+
+void logN2(const char *v, void *k) {
+  printf("%s #%08x;",v,(int)k);
+}
+
+void logLF() {
+  printf("\n");
+}
+
 void logString(const char *n, const char *v) {
   logIndent();printf("%s: %s\n",n,v!=NULL?v:"<NULL>");
+}
+
+void logString2(const char *n, const char *v, void *k) {
+  logIndent();printf("%s: %s #%08x\n",n,v!=NULL?v:"<NULL>",(int)k);
+}
+
+void logString3(const char *n, const char *v) {
+  logIndent();printf("%s: %s #%08x\n",v,n,(int)0);
 }
 
 void logBool(const char *n, const bool v) {
@@ -71,19 +107,21 @@ void logCountString(const char *n, int c, const char *v) {
 
 void logExtras(cgltf_extras *v) {
   indent++;
-  log("extras-begin {");
+  logIndent();
+  logN2("extras-begin {",v);
   indent++;
-  logCount("start_offset",v->start_offset);
-  logCount("end_offset",v->end_offset);
-  logPtr("data",v->data);
+  logCountN("start_offset",v->start_offset);
+  logCountN("end_offset",v->end_offset);
+  logPtrN("data",v->data);
   indent--;
-  log("} extras-end");
+  logN("} extras-end");
+  logLF();
   indent--;
 }
 
 void logAsset(cgltf_asset *v) {
   indent++;
-  log("asset-begin {");
+  log2("asset-begin {",v);
   indent++;
   logString("copyright",v->copyright);
   logString("generator",v->generator);
@@ -98,7 +136,7 @@ void logAsset(cgltf_asset *v) {
 
 void logMemoryOptions(cgltf_memory_options *v) {
   indent++;
-  log("memory_options-begin {");
+  log2("memory_options-begin {",v);
   indent++;
   logPtr("alloc_func",v->alloc_func);
   logPtr("free_func",v->free_func);
@@ -110,7 +148,7 @@ void logMemoryOptions(cgltf_memory_options *v) {
 
 void logFileOptions(cgltf_file_options *v) {
   indent++;
-  log("file_options-begin {");
+  log2("file_options-begin {",v);
   indent++;
   logPtr("read",v->read);
   logPtr("release",v->release);
@@ -218,7 +256,7 @@ void logDataFreeMethod(const char *name, cgltf_data_free_method p) {
 
 void logBuffer(const char *name, cgltf_buffer *v) {
   indent++;
-  logString("buffer-begin {",name);
+  logString2("buffer-begin {",name,v);
   indent++;
   logString("name",v->name);
   logInt("size",v->size);
@@ -234,7 +272,7 @@ void logBuffer(const char *name, cgltf_buffer *v) {
 
 void logBufferView(const char *name, cgltf_buffer_view *v) {
   indent++;
-  logString("bufferview-begin {",name);
+  logString2("bufferview-begin {",name,v);
   indent++;
   logString("name",v->name);
   logBuffer("buffer",v->buffer);
@@ -254,7 +292,7 @@ void logBufferView(const char *name, cgltf_buffer_view *v) {
 
 void logAccessor(const char *name, cgltf_accessor *v) {
   indent++;
-  logString("------- accessor-begin {",name);
+  logString2("------- accessor-begin {",name,v);
   indent++;
   logString("name",v->name);
   logComponentType("component_type",v->component_type);
@@ -278,9 +316,9 @@ void logAccessor(const char *name, cgltf_accessor *v) {
 }
 
 void logImage(const char *name, cgltf_image *v) {
-  if (v == NULL) {log("image-empty");return; }
+  if (v == NULL) {logString3("image-empty",name);return; }
   indent++;
-  logString("image-begin {",name);
+  logString2("image-begin {",name,v);
   indent++;
   logString("name",v->name);
   logString("uri",v->uri);
@@ -318,9 +356,9 @@ void logWrapMode(const char *name, cgltf_wrap_mode p) {
 }
 
 void logSampler(const char *name, cgltf_sampler *v) {
-  if (v == NULL) {log("sampler-empty");return; }
+  if (v == NULL) {logString3("sampler-empty",name);return; }
   indent++;
-  logString("sampler-begin {",name);
+  logString2("sampler-begin {",name,v);
   indent++;
   logString("name",v->name);
   logFilterType("mag_filter",v->mag_filter);
@@ -335,9 +373,9 @@ void logSampler(const char *name, cgltf_sampler *v) {
 }
 
 void logTexture(const char *name, cgltf_texture *v) {
-  if (v == NULL) {log("texture-empty");return; }
+  if (v == NULL) {logString3("texture-empty",name);return; }
   indent++;
-  logString("texture-begin {",name);
+  logString2("texture-begin {",name,v);
   indent++;
   logString("name",v->name);
   logImage("image",v->image);
@@ -355,7 +393,7 @@ void logTexture(const char *name, cgltf_texture *v) {
 
 void logTextureTransform(const char *name, cgltf_texture_transform *v) {
   indent++;
-  logString("textureTransform-begin {",name);
+  logString2("textureTransform-begin {",name,v);
   indent++;
   logFloat("offset[0]",v->offset[0]);
   logFloat("offset[1]",v->offset[1]);
@@ -369,7 +407,7 @@ void logTextureTransform(const char *name, cgltf_texture_transform *v) {
 
 void logTextureView(const char *name,cgltf_texture_view *v) {
   indent++;
-  logString("textureView-begin {",name);
+  logString2("textureView-begin {",name,v);
   indent++;
   logTexture("texture",v->texture);
   logInt("texcoord",v->texcoord);
@@ -383,7 +421,7 @@ void logTextureView(const char *name,cgltf_texture_view *v) {
 
 void logMetallicRoughness(const char *name,cgltf_pbr_metallic_roughness *v) {
   indent++;
-  logString("pbr_metallic_roughness-begin {",name);
+  logString2("pbr_metallic_roughness-begin {",name,v);
   indent++;
   logTextureView("base_color_texture",&v->base_color_texture);
   logTextureView("metallic_roughness_texture",&v->metallic_roughness_texture);
@@ -400,7 +438,7 @@ void logMetallicRoughness(const char *name,cgltf_pbr_metallic_roughness *v) {
 
 void logSpecularGlossiness(const char *name,cgltf_pbr_specular_glossiness *v) {
   indent++;
-  logString("pbr_specular_glossiness-begin {",name);
+  logString2("pbr_specular_glossiness-begin {",name,v);
   indent++;
   logTextureView("diffuse_texture",&v->diffuse_texture);
   logTextureView("specular_glossiness_texture",&v->specular_glossiness_texture);
@@ -419,7 +457,7 @@ void logSpecularGlossiness(const char *name,cgltf_pbr_specular_glossiness *v) {
 
 void logClearCoat(const char *name, cgltf_clearcoat *v) {
   indent++;
-  logString("clearcoat-begin {",name);
+  logString2("clearcoat-begin {",name,v);
   indent++;
   logTextureView("clearcoat_texture",&v->clearcoat_texture);
   logTextureView("clearcoat_roughness_texture",&v->clearcoat_roughness_texture);
@@ -437,7 +475,7 @@ void logIor(const char *name, cgltf_ior *v) {
 
 void logSpecular(const char *name, cgltf_specular *v) {
   indent++;
-  logString("specular-begin {",name);
+  logString2("specular-begin {",name,v);
   indent++;
   logTextureView("specular_texture",&v->specular_texture);
   logTextureView("specular_color_texture",&v->specular_color_texture);
@@ -452,7 +490,7 @@ void logSpecular(const char *name, cgltf_specular *v) {
 
 void logSheen(const char *name, cgltf_sheen *v) {
   indent++;
-  logString("sheen-begin {",name);
+  logString2("sheen-begin {",name,v);
   indent++;
   logTextureView("sheen_color_texture",&v->sheen_color_texture);
   logFloat("sheen_color_factor[0]",v->sheen_color_factor[0]);
@@ -467,7 +505,7 @@ void logSheen(const char *name, cgltf_sheen *v) {
 
 void logTransmission(const char *name, cgltf_transmission *v) {
   indent++;
-  logString("transmission-begin {",name);
+  logString2("transmission-begin {",name,v);
   indent++;
   logTextureView("transmission_texture",&v->transmission_texture);
   logFloat("transmission_factor",v->transmission_factor);
@@ -478,7 +516,7 @@ void logTransmission(const char *name, cgltf_transmission *v) {
 
 void logVolume(const char *name, cgltf_volume *v) {
   indent++;
-  logString("volume-begin {",name);
+  logString2("volume-begin {",name,v);
   indent++;
   logTextureView("thickness_texture",&v->thickness_texture);
   logFloat("thickness_factor",v->thickness_factor);
@@ -497,7 +535,7 @@ void logEmissiveStrength(const char *name, cgltf_emissive_strength *v) {
 
 void logIridescence(const char *name, cgltf_iridescence *v) {
   indent++;
-  logString("iridiscence-begin {",name);
+  logString2("iridiscence-begin {",name,v);
   indent++;
   logFloat("iridescence_factor",v->iridescence_factor);
   logTextureView("iridescence_texture",&v->iridescence_texture);
@@ -512,7 +550,7 @@ void logIridescence(const char *name, cgltf_iridescence *v) {
 
 void logDiffuseTransmission(const char *name, cgltf_diffuse_transmission *v) {
   indent++;
-  logString("diffuseTransmission-begin {",name);
+  logString2("diffuseTransmission-begin {",name,v);
   indent++;
   logTextureView("diffuse_transmission_texture",&v->diffuse_transmission_texture);
   logFloat("diffuse_transmission_factor",v->diffuse_transmission_factor);
@@ -527,7 +565,7 @@ void logDiffuseTransmission(const char *name, cgltf_diffuse_transmission *v) {
 
 void logAnisotropy(const char *name, cgltf_anisotropy *v) {
   indent++;
-  logString("anisotropy-begin {",name);
+  logString2("anisotropy-begin {",name,v);
   indent++;
   logFloat("anisotropy_strength",v->anisotropy_strength);
   logFloat("anisotropy_rotation",v->anisotropy_rotation);
@@ -559,7 +597,7 @@ void logAlphaMode(const char *name, cgltf_alpha_mode p) {
 
 void logMaterial(const char *name, cgltf_material *v) {
   indent++;
-  logString("material-begin {",name);
+  logString2("material-begin {",name,v);
   log("-----------------------------------");
   indent++;
   logString("name",v->name);
@@ -724,10 +762,446 @@ void logMeshes(cgltf_mesh *meshes, int count) {
   indent--;
 }
 
-int main(int argc, const char *argv) {
+void logAccessors(cgltf_accessor *accessors, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_accessor *v = &accessors[i];
+    logCountString("accessor[%d]",i,"");
+    indent++;
+    logAccessor("",v);
+    indent--;
+  }
+  indent--;
+}
 
-  const char *fileName = "c:/meshes/fawn/fawn~1.glt";
-  //const char *fileName = "c:/meshes/fawn/fawn.glb";
+void logBufferViews(cgltf_buffer_view *bufferViews, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_buffer_view *v = &bufferViews[i];
+    logCountString("bufferView[%d]",i,"");
+    indent++;
+    logBufferView("",v);
+    indent--;
+  }
+  indent--;
+}
+
+void logBuffers(cgltf_buffer *buffers, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_buffer *v = &buffers[i];
+    logCountString("buffer[%d]",i,"");
+    indent++;
+    logBuffer("",v);
+    indent--;
+  }
+  indent--;
+}
+
+void logImages(cgltf_image *images, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_image *v = &images[i];
+    logCountString("image[%d]",i,"");
+    indent++;
+    logImage("",v);
+    indent--;
+  }
+  indent--;
+}
+
+void logTextures(cgltf_texture *textures, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_texture *v = &textures[i];
+    logCountString("texture[%d]",i,"");
+    indent++;
+    logTexture("",v);
+    indent--;
+  }
+  indent--;
+}
+
+void logSamplers(cgltf_sampler *samplers, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_sampler *v = &samplers[i];
+    logCountString("sampler[%d]",i,"");
+    indent++;
+    logSampler("",v);
+    indent--;
+  }
+  indent--;
+}
+
+void logNode(const char *name, cgltf_node *v) {
+  if (v == NULL) {logString3("node-empty:",name);return; }
+  indent++;
+  logString2("node-begin {",name,v);
+  indent++;
+  logString("name",v->name);
+  logPtr("parent(node*)",v->parent);
+  for (int i = 0; i < v->children_count; i++)
+    logCountPtr("children",i,v->children[i]);
+  logPtr("skin(skin*)",v->skin);
+  logPtr("mesh(mesh*)",v->mesh);
+  logPtr("camera(camera*)",v->camera);
+  logPtr("camera(light*)",v->light);
+  logPtr2("weights",v->weights,v->weights_count);
+  logBool("has_translation",v->has_translation);
+  logBool("has_rotation",v->has_rotation);
+  logBool("has_scale",v->has_scale);
+  logBool("has_matrix",v->has_matrix);
+  logFloat("translation[0]",v->translation[0]);
+  logFloat("translation[1]",v->translation[1]);
+  logFloat("translation[2]",v->translation[2]);
+  logFloat("rotation[0]",v->rotation[0]);
+  logFloat("rotation[1]",v->rotation[1]);
+  logFloat("rotation[2]",v->rotation[2]);
+  logFloat("rotation[3]",v->rotation[3]);
+  logFloat("scale[0]",v->scale[0]);
+  logFloat("scale[1]",v->scale[1]);
+  logFloat("scale[2]",v->scale[2]);
+  logFloat("matrix[0]",v->matrix[0]);
+  logBool("has_mesh_gpu_instancing",v->has_mesh_gpu_instancing);
+  log("mesh_gpu_instancing (not logged)");
+  logExtras(&v->extras);
+  logPtr2("extensions",v->extensions,v->extensions_count);
+  indent--;
+  logString("} node-end",name);
+  indent--;
+}
+
+void logJoints(const char *name, cgltf_node **joints, int count) {
+  indent++;
+  logString("joints-begin {",name);
+  indent++;
+
+  for (int i = 0; i < count; i++) {
+    cgltf_node *v = joints[i];
+    logCountString("joint[%d]",i,"");
+    indent++;
+    logNode("",v);
+    indent--;
+  }
+  
+  indent--;
+  logString("} joints-end",name);
+  indent--;
+}
+
+void logSkin(char *name, cgltf_skin *v) {
+  indent++;
+  logString2("skin-begin {",name,v);
+  indent++;
+  logJoints("joints", v->joints,v->joints_count);
+  logNode("skeleton(node*)", v->skeleton);
+  logAccessor("inverse_bind_matrices", v->inverse_bind_matrices);
+  logExtras(&v->extras);
+  logPtr2("extensions",v->extensions,v->extensions_count);
+  indent--;
+  logString("} skin-end",name);
+  indent--;
+}
+
+void logSkins(cgltf_skin *skins, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_skin *v = &skins[i];
+    logCountString("skin[%d]",i,"");
+    indent++;
+    logSkin("",v);
+    indent--;
+  }
+  indent--;
+}
+
+void logCameraType(const char *name, cgltf_camera_type p) {
+  const char *s = "[]";
+  switch(p) {
+  case cgltf_camera_type_invalid: {s = "invalid";} break;
+  case cgltf_camera_type_perspective: {s = "perspective";} break;
+  case cgltf_camera_type_orthographic: {s = "orthographic";} break;
+  }
+  logIndent();printf("%s:(%d)->%s\n",name,p,s);
+}
+
+void logCameraPerspective(cgltf_camera_perspective *v) {
+  indent++;
+  logString2("perspective","",v);
+  logBool("has_aspect_ratio",v->has_aspect_ratio);
+  logFloat("aspect_ratio",v->aspect_ratio);
+  logFloat("yfov",v->yfov);
+  logBool("has_zfar",v->has_zfar);
+  logFloat("zfar",v->zfar);
+  logFloat("znear",v->znear);
+  logExtras(&v->extras);
+  indent--;
+}
+
+void logCameraOrthographic(cgltf_camera_orthographic *v) {
+  indent++;
+  logString2("orthographics","",v);
+  logFloat("xmag",v->xmag);
+  logFloat("ymag",v->ymag);
+  logFloat("zfar",v->zfar);
+  logFloat("znear",v->znear);
+  logExtras(&v->extras);
+  indent--;
+}
+
+void logCamera(char *name, cgltf_camera *v) {
+  indent++;
+  logString2("camera-begin {",name,v);
+  indent++;
+  logString("name",v->name);
+  logCameraType("type",v->type);
+  logCameraPerspective(&v->data.perspective);
+  logCameraOrthographic(&v->data.orthographic);
+  logExtras(&v->extras);
+  logPtr2("extensions",v->extensions,v->extensions_count);
+  indent--;
+  logString("} camera-end",name);
+  indent--;
+}
+
+void logCameras(cgltf_camera *cameras, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_camera *v = &cameras[i];
+    logCountString("camera[%d]",i,"");
+    indent++;
+    logCamera("",v);
+    indent--;
+  }
+  indent--;
+}
+
+void logLightType(const char *name, cgltf_light_type p) {
+  const char *s = "[]";
+  switch(p) {
+  case cgltf_light_type_invalid: {s = "invalid";} break;
+  case cgltf_light_type_directional: {s = "directional";} break;
+  case cgltf_light_type_point: {s = "point";} break;
+  case cgltf_light_type_spot: {s = "spot";} break;
+  }
+  logIndent();printf("%s:(%d)->%s\n",name,p,s);
+}
+
+void logLight(char *name, cgltf_light *v) {
+  indent++;
+  logString2("light-begin {",name,v);
+  indent++;
+  logString("name",v->name);
+  logFloat("color[0]",v->color[0]);
+  logFloat("color[1]",v->color[1]);
+  logFloat("color[2]",v->color[2]);
+  logFloat("intensity",v->intensity);
+  logLightType("type",v->type);
+  logFloat("range",v->range);
+  logFloat("spot_inner_cone_angle",v->spot_inner_cone_angle);
+  logFloat("spot_outer_cone_angle",v->spot_outer_cone_angle);
+  logExtras(&v->extras);
+  indent--;
+  logString("} light-end",name);
+  indent--;
+}
+
+void logLights(cgltf_light *lights, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_light *v = &lights[i];
+    logCountString("light[%d]",i,"");
+    indent++;
+    logLight("",v);
+    indent--;
+  }
+  indent--;
+}
+
+void logNodes(cgltf_node *nodes, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_node *v = &nodes[i];
+    logCountString("node[%d]",i,"");
+    indent++;
+    logNode("",v);
+    indent--;
+  }
+  indent--;
+}
+
+void logNodes2(cgltf_node **nodes, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_node *v = nodes[i];
+    logCountString("node[%d]",i,"");
+    indent++;
+    logNode("",v);
+    indent--;
+  }
+  indent--;
+}
+
+void logScene(char *name, cgltf_scene *v) {
+  indent++;
+  logString2("scene-begin {",name,v);
+  indent++;
+  logString("name",v->name);
+  logNodes2(v->nodes, v->nodes_count);
+  logExtras(&v->extras);
+  logPtr2("extensions",v->extensions,v->extensions_count);
+  indent--;
+  logString("} scene-end",name);
+  indent--;
+}
+
+void logScenes(cgltf_scene *scenes, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_scene *v = &scenes[i];
+    logCountString("scene[%d]",i,"");
+    indent++;
+    logScene("",v);
+    indent--;
+  }
+  indent--;
+}
+
+void logInterpolationType(const char *name, cgltf_interpolation_type p) {
+  const char *s = "[]";
+  switch(p) {
+  case cgltf_interpolation_type_linear: {s = "linear";} break;
+  case cgltf_interpolation_type_step: {s = "step";} break;
+  case cgltf_interpolation_type_cubic_spline: {s = "cubic_spline";} break;
+  }
+  logIndent();printf("%s:(%d)->%s\n",name,p,s);
+}
+
+void logAnimationSampler(const char *name,cgltf_animation_sampler *v) {
+  indent++;
+  logString2("animation_sampler-begin {",name,v);
+  indent++;
+  logAccessor("input",v->input);
+  logAccessor("output",v->output);
+  logInterpolationType("interpolation",v->interpolation);
+  logExtras(&v->extras);
+  logPtr2("extensions",v->extensions,v->extensions_count);
+  indent--;
+  logString("} animation_sampler-end",name);
+  indent--;
+}
+
+void logAnimationSamplers(const char *name,cgltf_animation_sampler *samplers, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_animation_sampler *v = &samplers[i];
+    logCountString("sampler[%d]",i,"");
+    indent++;
+    logAnimationSampler("",v);
+    indent--;
+  }
+  indent--;
+}
+
+void logAnimationPathType(const char *name, cgltf_animation_path_type p) {
+  const char *s = "[]";
+  switch(p) {
+  case cgltf_animation_path_type_invalid: {s = "invalid";} break;
+  case cgltf_animation_path_type_translation: {s = "translation";} break;
+  case cgltf_animation_path_type_rotation: {s = "rotation";} break;
+  case cgltf_animation_path_type_scale: {s = "scale";} break;
+  case cgltf_animation_path_type_weights: {s = "weights";} break;
+  }
+  logIndent();printf("%s:(%d)->%s\n",name,p,s);
+}
+
+void logAnimationChannel(const char *name,cgltf_animation_channel *v) {
+  indent++;
+  logString2("animation_channel-begin {",name,v);
+  indent++;
+  logAnimationSampler("sampler",v->sampler);
+  logNode("target_node",v->target_node);
+  logAnimationPathType("animation_path_type", v->target_path);
+  logExtras(&v->extras);
+  logPtr2("extensions",v->extensions,v->extensions_count);
+  indent--;
+  logString("} animation_channel-end",name);
+  indent--;
+}
+
+void logAnimationChannels(const char *name,cgltf_animation_channel *channels, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_animation_channel *v = &channels[i];
+    logCountString("channel[%d]",i,"");
+    indent++;
+    logAnimationChannel("",v);
+    indent--;
+  }
+  indent--;
+}
+
+void logAnimation(char *name, cgltf_animation *v) {
+  indent++;
+  logString2("animation-begin {",name,v);
+  indent++;
+  logString("name",v->name);
+  logAnimationSamplers("samplers",v->samplers,v->samplers_count);
+  logAnimationChannels("channels",v->channels,v->channels_count);
+  logExtras(&v->extras);
+  logPtr2("extensions",v->extensions,v->extensions_count);
+  indent--;
+  logString("} animation-end",name);
+  indent--;
+}
+
+void logAnimations(cgltf_animation *animations, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_animation *v = &animations[i];
+    logCountString("animation[%d]",i,"");
+    indent++;
+    logAnimation("",v);
+    indent--;
+  }
+  indent--;
+}
+
+void logMaterialVariant(char *name, cgltf_material_variant *v) {
+  indent++;
+  logString2("material-variant-begin {",name,v);
+  indent++;
+  logString("name",v->name);
+  logExtras(&v->extras);
+  indent--;
+  logString("} material-variant-end",name);
+  indent--;
+}
+
+
+void logMaterialVariants(cgltf_material_variant *variants, int count) {
+  indent++;
+  for (int i = 0; i < count; i++) {
+    cgltf_material_variant *v = &variants[i];
+    logCountString("variant[%d]",i,"");
+    indent++;
+    logMaterialVariant("",v);
+    indent--;
+  }
+  indent--;
+}
+
+
+int main(int argc, const char *argv[]) {
+
+  printf("gltf-logger\n");
+  printf("------------------------\n");
+  if (argc != 2) {
+    printf("usage: gltflog.exe <glt file>or<glb file>\n");
+    exit(0);
+  }
+  const char *fileName = argv[1];
   printf("trying to load:\"%s\"\n",fileName);
   cgltf_data *data = loadGLTF(fileName);
   if (data==NULL) {printf("failed to load:\"%s\"\n", fileName); exit(0);}
@@ -740,5 +1214,65 @@ int main(int argc, const char *argv) {
   log("..... cgltf_meshes");
   log("------------------------");
   logMeshes(data->meshes, data->meshes_count);
+  log("------------------------");
+  log("..... cgltf_accessors");
+  log("------------------------");
+  log("not logged");
+  //logAccessors(data->accessors, data->accessors_count);
+  log("------------------------");
+  log("..... cgltf_buffer_views");
+  log("------------------------");
+  log("not logged");
+  //logBufferViews(data->buffer_views, data->buffer_views_count);
+  log("------------------------");
+  log("..... cgltf_buffers");
+  log("------------------------");
+  logBuffers(data->buffers, data->buffers_count);
+  log("------------------------");
+  log("..... cgltf_images");
+  log("------------------------");
+  logImages(data->images, data->images_count);
+  log("------------------------");
+  log("..... cgltf_textures");
+  log("------------------------");
+  logTextures(data->textures, data->textures_count);
+  log("------------------------");
+  log("..... cgltf_samplers");
+  log("------------------------");
+  logSamplers(data->samplers, data->samplers_count);
+  log("------------------------");
+  log("..... cgltf_skins");
+  log("------------------------");
+  logSkins(data->skins, data->skins_count);
+  log("------------------------");
+  log("..... cgltf_cameras");
+  log("------------------------");
+  logCameras(data->cameras, data->cameras_count);
+  log("------------------------");
+  log("..... cgltf_lights");
+  log("------------------------");
+  logLights(data->lights, data->lights_count);
+  log("------------------------");
+  log("..... cgltf_nodes");
+  log("------------------------");
+  logNodes(data->nodes, data->nodes_count);
+  log("------------------------");
+  log("..... cgltf_scenes");
+  log("------------------------");
+  logScenes(data->scenes, data->scenes_count);
+  log("------------------------");
+  log("..... cgltf_scene");
+  log("------------------------");
+  logScene("scene",data->scene);
+  log("------------------------");
+  log("..... cgltf_animations");
+  log("------------------------");
+  log("not logged");
+  //logAnimations(data->animations, data->animations_count);
+  log("------------------------");
+  log("..... cgltf_material_variants");
+  log("------------------------");
+  logMaterialVariants(data->variants,data->variants_count);
+
   return 0;
 }
