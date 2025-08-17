@@ -56,38 +56,38 @@ https://github.com/ocornut/imgui
 Random.hpp - some basic "dependend random"
 
 ## Some useful classes
-- Charset.hpp - a tiny font to be rendered per pixel
+- CHARSET.HPP - a tiny font to be rendered per pixel
 - CGLTF - a gltf loader https://github.com/jkuhlmann/cgltf
 - CGLTF_EX.MPL - an example of displaying bones and skinning in OpenGL for CGLTF 
-- Gtflog.cpp - just a temporary / very simple logger for CGLTF file structure.
-- Dos.hpp - easy access to DOS functionality, comes with long file name support
-- Genann.hpp - a simple neural net. https://github.com/codeplea/genann
-- Jsonread.hpp - a json reader https://github.com/rafagafe/tiny-json  
-- Jsonwrt.hpp - a json writer https://github.com/rafagafe/tiny-json  
-- Parson.hpp - another json reader/writer https://github.com/kgabis/parson
-- Keymtrx.hpp - direct access to the keyboard matrix  
-- Marching.hpp - Marching Cubes and Marching Tetraeders.
-- PLMPEG.hpp - MPEG1 (Video/Sound) Replay Single Header library https://github.com/phoboslab/pl_mpeg  
-- SMPLOBJL.hpp - a basic/tiny wavefront .OBJ/.MTL mesh loader  
-- SPRITE.hpp - a sprite (and 3D sphereParticle/ball) renderer compatible with OpenGL  
-- STBIMGRS.hpp - a image rescale library (many filters)  https://github.com/nothings/obbg/tree/master/stb  
-- STBRECT.hpp - Texture atlas generator  https://github.com/nothings/obbg/tree/master/stb  
-- STBTEXT.hpp - Text editor basics  https://github.com/nothings/obbg/tree/master/stb  
-- STBTTF.hpp - Truetype text/font renderer  https://github.com/nothings/obbg/tree/master/stb  
-- TINYEXPR.hpp - a math expression solver (string input)  https://github.com/codeplea/tinyexpr  
-- TSpline.hpp - a advanced spline evaluation/rendering library https://github.com/msteinbeck/tinyspline
--  Image.hpp - Image loading/saving/resizing  
-- Minimp3.hpp - A mp3 decoder  https://github.com/lieff/minimp3  
-- Mpeg1.hpp - mpeg1 wrapper for PLMPEG.hpp
-- OpenGLFX.hpp - Some post processing OpenGL effects like antialiasing(FXAA(https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/ )), toon shader, motion blur
-- Psdimage.hpp - simple psd loader featuring layers  (PSD image loader by DrPetter)  
-- Quaternn.hpp - a simple Quaternion class, mainly for interpolated rotations.  
-- Speaker.hpp - speaker sample playback, and current time lookup with finer granularity  
-- Stbimage.hpp - loader for different image formats. Wrapped in image.hpp  https://github.com/nothings/obbg/tree/master/stb  
-- Stbimgwr.hpp - writer for different image formats. Wrapped in image.hpp  https://github.com/nothings/obbg/tree/master/stb  
-- Textures.hpp - a basic "texture cache"  
-- Truetype.hpp - true type font rendering (also in OpenGL). Wrapped in Truetype.hpp  
-- Ufbx.hpp - an .fbx loader, however too big for WatcomC to diggest/compile https://github.com/ufbx/ufbx   
+- GTFLOG.CPP - just a temporary / very simple logger for CGLTF file structure.
+- DOS.HPP - easy access to DOS functionality, comes with long file name support
+- GENANN.HPP - a simple neural net. https://github.com/codeplea/genann
+- JSONREAD.HPP - a json reader https://github.com/rafagafe/tiny-json  
+- JSONWRT.HPP - a json writer https://github.com/rafagafe/tiny-json  
+- PARSON.HPP - another json reader/writer https://github.com/kgabis/parson
+- KEYMTRX.HPP - direct access to the keyboard matrix  
+- MARCHING.HPP - Marching Cubes and Marching Tetraeders.
+- PLMPEG.HPP - MPEG1 (Video/Sound) Replay Single Header library https://github.com/phoboslab/pl_mpeg  
+- SMPLOBJL.HPP - a basic/tiny wavefront .OBJ/.MTL mesh loader  
+- SPRITE.HPP - a sprite (and 3D sphereParticle/ball) renderer compatible with OpenGL  
+- STBIMGRS.HPP - a image rescale library (many filters)  https://github.com/nothings/obbg/tree/master/stb  
+- STBRECT.HPP - Texture atlas generator  https://github.com/nothings/obbg/tree/master/stb  
+- STBTEXT.HPP - Text editor basics  https://github.com/nothings/obbg/tree/master/stb  
+- STBTTF.HPP - Truetype text/font renderer  https://github.com/nothings/obbg/tree/master/stb  
+- TINYEXPR.HPP - a math expression solver (string input)  https://github.com/codeplea/tinyexpr  
+- TSPLINE.HPP - a advanced spline evaluation/rendering library https://github.com/msteinbeck/tinyspline
+- IMAGE.HPP - Image loading/saving/resizing  
+- MINIMP3.HPP - A mp3 decoder  https://github.com/lieff/minimp3  
+- MPEG1.HPP - mpeg1 wrapper for PLMPEG.hpp
+- OPENGLFX.HPP - Some post processing OpenGL effects like antialiasing(FXAA(https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/ )), toon shader, motion blur
+- PSDIMAGE.HPP - simple psd loader featuring layers  (PSD image loader by DrPetter)  
+- QUATERNN.HPP - a simple Quaternion class, mainly for interpolated rotations.  
+- SPEAKER.HPP - speaker sample playback, and current time lookup with finer granularity  
+- STBIMAGE.HPP - loader for different image formats. Wrapped in image.hpp  https://github.com/nothings/obbg/tree/master/stb  
+- STBIMGWR.HPP - writer for different image formats. Wrapped in image.hpp  https://github.com/nothings/obbg/tree/master/stb  
+- TEXTURES.HPP - a basic "texture cache"  
+- TRUETYPE.HPP - true type font rendering (also in OpenGL). Wrapped in Truetype.hpp  
+- UFBX.HPP - an .fbx loader, however too big for WatcomC to diggest/compile https://github.com/ufbx/ufbx   
 
 ### WatcomC with 256 MB of memory instead of the 32 MB with Dos4gw
 
