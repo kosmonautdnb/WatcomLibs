@@ -60,6 +60,10 @@ public:
 
   bool invert();
   void normalize3x3();
+  void translate(const Vector &v);
+  void translateTransposed(const Vector &v);
+  void scale3(const Vector &v);
+  void scale3Transposed(const Vector &v);
 };
 
 Matrix rotationMatrixX(double a);
@@ -69,6 +73,7 @@ Matrix rotationMatrixAngleAxis(double a, double x, double y, double z);
 Matrix rotationMatrixAngleAxis(double a, const Vector &b);
 
 Matrix inverse(const Matrix &a);
+Matrix transpose(const Matrix &a);
 
 Vector transform(const Vector &a, const Matrix &b);
 Vector transformTransposed(const Vector &a, const Matrix &b);

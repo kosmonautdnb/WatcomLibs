@@ -26,6 +26,13 @@ public:
     w = _w;
   }
 
+  Quaternion(const Vector &v) {
+    x = v.x;
+    y = v.y;
+    z = v.z;
+    w = v.w;
+  }
+
   Quaternion(double _x, double _y, double _z, double _w) {
     x = _x;
     y = _y;

@@ -177,11 +177,31 @@ Quaternion rotationMatrixToQuaternion(const Matrix &m) {
 }
 
 Quaternion slerp(const Quaternion &q0, const Quaternion &q1, double t) {
-  double omega = acos(clamp(q0.x*q1.x+q0.y*q1.y+q0.z*q1.z+q0.w*q1.w,-1.0,1.0));
-  if (fabs(omega)<1e-10) omega = 1e-10;
-  double som = sin(omega);
-  double st0 = sin((1-t)*omega)/som;
-  double st1 = sin(t*omega)/som;
+//  double omega = acos(clamp(q0.x*q1.x+q0.y*q1.y+q0.z*q1.z+q0.w*q1.w,-1.0,1.0));
+//  if (fabs(omega)<1e-10) omega = 1e-10;
+//  double som = sin(omega);
+//  double st0 = sin((1-t)*omega)/som;
+//  double st1 = sin(t*omega)/som;
+//  return Quaternion(q0.x*st0+q1.x*st1,q0.y*st0+q1.y*st1,q0.z*st0+q1.z*st1,q0.w*st0+q1.w*st1);
+  double cosHalfTheta=q0.x*q1.x+q0.y*q1.y+q0.z*q1.z+q0.w*q1.w;
+  if (fabs(cosHalfTheta)>=1) return q0;
+  bool reverse = false;
+  if (cosHalfTheta<0) {
+    cosHalfTheta = -cosHalfTheta;
+    reverse = true;
+  }
+  double halfTheta=acos(cosHalfTheta);
+  double sinHalfTheta=sqrt(1-cosHalfTheta*cosHalfTheta);
+  
+  double som = sin(halfTheta);
+  double st0 = sin((1-t)*halfTheta)/som;
+  double st1 = sin(t*halfTheta)/som;
+  if (fabs(sinHalfTheta)<0.001) {
+    st0 = 1-t;
+    st1 = t;
+  }
+  if (reverse)
+    return Quaternion(q0.x*st0-q1.x*st1,q0.y*st0-q1.y*st1,q0.z*st0-q1.z*st1,q0.w*st0-q1.w*st1);
   return Quaternion(q0.x*st0+q1.x*st1,q0.y*st0+q1.y*st1,q0.z*st0+q1.z*st1,q0.w*st0+q1.w*st1);
 }
 

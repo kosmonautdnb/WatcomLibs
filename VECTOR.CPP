@@ -33,6 +33,16 @@ Vector &Vector::set(const Vector &b) {
   return *this;
 }
 
+double Vector::get(int index) const {
+  switch(index) {
+  case 0: return x; break;
+  case 1: return y; break;
+  case 2: return z; break;
+  case 3: return w; break;
+  }
+  return -1;
+}
+
 Vector &Vector::zero() {
   x = 0; 
   y = 0; 
