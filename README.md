@@ -44,16 +44,16 @@ https://github.com/ocornut/imgui
 &emsp;}  
 
 ## Some basic types
-- Types.hpp - a bit like "stdint"   
-- Object.hpp - a bit like "java"  
-- Array.hpp - a bit like std::vector  
-- HashMap.hpp - a bit like std:map   
-- Set.hpp - a bit like std::set
-- String.hpp - a bit like std::string  
-- Pair.hpp - a bit like std::pair  
-- Vector.hpp - some 3d vector stuff (w is handled differently than xyz) with virtual function table overhead (Object.hpp)  
-- Matrix.hpp - some 3d matrix stuff with virtual function table overhead (Object.hpp)  
-Random.hpp - some basic "dependend random"
+- TYPES.HPP - a bit like "stdint"   
+- OBJECT.HPP - a bit like "java"  
+- ARRAY.HPP - a bit like std::vector  
+- HASHMAP.HPP - a bit like std:map   
+- SET.HPP - a bit like std::set
+- STRING.HPP - a bit like std::string  
+- PAIR.HPP - a bit like std::pair  
+- VECTOR.HPP - some 3d vector stuff (w is handled differently than xyz) with virtual function table overhead (Object.hpp)  
+- MATRIX.HPP - some 3d matrix stuff with virtual function table overhead (Object.hpp)  
+- RANDOM.HPP - some basic "dependend random"  
 
 ## Some useful classes
 - CHARSET.HPP - a tiny font to be rendered per pixel
