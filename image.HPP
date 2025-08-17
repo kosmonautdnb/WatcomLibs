@@ -36,7 +36,7 @@ public:
   // PNM (PPM and PGM binary only)
   // HDR
   static RGBAImage fromFile(const char *fileName);
-  static RGBAImage fromMemory(uint8_t *fileData, uint32_t fileLength);
+  static RGBAImage fromMemory(const uint8_t *fileData, uint32_t fileLength);
 
   bool savePNG(const char *fileName);
   bool saveJPEG(const char *fileName, int quality = 100);
@@ -44,6 +44,7 @@ public:
   bool saveBMP(const char *fileName);
 
   RGBAImage getResized(int width, int height);
+  void flipY();
 };
 
 #endif //__IMAGE_HPP__

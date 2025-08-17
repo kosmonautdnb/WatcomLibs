@@ -18,7 +18,7 @@ RGBAImage RGBAImage::fromFile(const char *fileName) {
   return r;
 }
 
-RGBAImage RGBAImage::fromMemory(uint8_t *fileData, uint32_t fileLength) {
+RGBAImage RGBAImage::fromMemory(const uint8_t *fileData, uint32_t fileLength) {
   RGBAImage r;
   int width, height, channels;
   r.data = (uint32_t*)stbi_load_from_memory(fileData, fileLength, &width, &height, &channels, 4);
@@ -49,4 +49,15 @@ RGBAImage RGBAImage::getResized(int width, int height) {
   r.height = height;
   r.data = (uint32_t*)stbir_resize_uint8_linear( (uint8_t*)data,  this->width,  this->height, this->width * 4, NULL, r.width, r.height, r.width * 4, STBIR_RGBA );
   return r;
+}
+
+void RGBAImage::flipY() {
+  unsigned int *flipped = new unsigned int[width*height];
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      flipped[x+(height-1-y)*width] = data[x+y*width];
+    }
+  }
+  delete[] data;
+  data = flipped;
 }
