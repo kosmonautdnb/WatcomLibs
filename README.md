@@ -21,7 +21,6 @@ https://github.com/ocornut/imgui
 - IMGUI.H  
 - IMGUIGL.CPP  
 - IMGUIGL.HPP  
-- FILEDLG.HPP - a DOS file dialog window written for IMGUI  
 
 #### &emsp;ImGui howto:
 &emsp;#include "gl.h"  
@@ -46,22 +45,23 @@ https://github.com/ocornut/imgui
 &emsp;}  
 
 ## Some basic types
-- TYPES.HPP - a bit like "stdint"   
-- OBJECT.HPP - a bit like "java"  
 - ARRAY.HPP - a bit like std::vector  
 - HASHMAP.HPP - a bit like std:map   
+- MATRIX.HPP - some 3d matrix stuff with virtual function table overhead (Object.hpp)  
+- OBJECT.HPP - a bit like "java"  
+- PAIR.HPP - a bit like std::pair  
+- RANDOM.HPP - some basic "dependend random"  
 - SET.HPP - a bit like std::set
 - STRING.HPP - a bit like std::string  
-- PAIR.HPP - a bit like std::pair  
+- TYPES.HPP - a bit like "stdint"   
 - VECTOR.HPP - some 3d vector stuff (w is handled differently than xyz) with virtual function table overhead (Object.hpp)  
-- MATRIX.HPP - some 3d matrix stuff with virtual function table overhead (Object.hpp)  
-- RANDOM.HPP - some basic "dependend random"  
 
 ## Some useful classes
 - CHARSET.HPP - a tiny font to be rendered per pixel
 - CGLTF - a gltf loader https://github.com/jkuhlmann/cgltf
 - CGLTF_EX.MPL - an example of displaying bones and skinning in OpenGL for CGLTF 
 - DOS.HPP - easy access to DOS functionality, comes with long file name support
+- FILEDLG.HPP - a DOS file dialog window written for IMGUI  
 - GENANN.HPP - a simple neural net. https://github.com/codeplea/genann
 - GTFLOG.CPP - just a temporary / very simple logger for CGLTF file structure.
 - IMAGE.HPP - Image loading/saving/resizing  
