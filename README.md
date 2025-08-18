@@ -82,7 +82,7 @@ https://github.com/ocornut/imgui
 - STBIMAGE.HPP - loader for different image formats. Wrapped in image.hpp  https://github.com/nothings/obbg/tree/master/stb  
 - STBIMGRS.HPP - a image rescale library (many filters)  https://github.com/nothings/obbg/tree/master/stb  
 - STBIMGWR.HPP - writer for different image formats. Wrapped in image.hpp  https://github.com/nothings/obbg/tree/master/stb  
-- STBPERLIN.HPP - 2D and 3D Perlin Noise and fractal brownian motion (fbm) Noise. For "position dependend" random. https://github.com/nothings/obbg/tree/master/stb  
+- STBPERLIN.HPP - 3D Perlin Noise and fractal brownian motion (fbm) Noise. For "position dependend" random. https://github.com/nothings/obbg/tree/master/stb  
 - STBTEXT.HPP - Text editor basics  https://github.com/nothings/obbg/tree/master/stb  
 - STBTTF.HPP - Truetype text/font renderer  https://github.com/nothings/obbg/tree/master/stb  
 - STBRECT.HPP - Texture atlas generator  https://github.com/nothings/obbg/tree/master/stb  
