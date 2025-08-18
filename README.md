@@ -6,6 +6,8 @@ This should primarily serve as a starting point for your WatcomC++ FreeDOS exper
 
 This repository lives at: https://github.com/kosmonautdnb/WatcomLibs.git  
 
+DOS is case agnostic. Filenames are upper case because it's DOS default.
+
 ## WatcomGL / OpenGL
 https://github.com/kosmonautdnb/WatcomGL
 - GL.h  - an OpenGL subset with fixed function pipeline, except stencil buffer and projective textures, with some glu functions and Vesa/VGA support  
