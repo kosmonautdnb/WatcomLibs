@@ -79,9 +79,9 @@ https://github.com/ocornut/imgui
 - SMPLOBJL.HPP - a basic/tiny wavefront .OBJ/.MTL mesh loader  
 - SPEAKER.HPP - speaker sample playback, and current time lookup with finer granularity  
 - SPRITE.HPP - a sprite (and 3D sphereParticle/ball) renderer compatible with OpenGL  
-- STBIMAGE.HPP - loader for different image formats. Wrapped in image.hpp  https://github.com/nothings/obbg/tree/master/stb  
+- STBIMAGE.HPP - loader for different image formats. Like PNG,JPG,BMP,TGA,GIF,PSD. Wrapped in image.hpp  https://github.com/nothings/obbg/tree/master/stb  
 - STBIMGRS.HPP - a image rescale library (many filters)  https://github.com/nothings/obbg/tree/master/stb  
-- STBIMGWR.HPP - writer for different image formats. Wrapped in image.hpp  https://github.com/nothings/obbg/tree/master/stb  
+- STBIMGWR.HPP - writer for different image formats. Like PNG,JPG,BMP,TGA,GIF,PSD. Wrapped in image.hpp  https://github.com/nothings/obbg/tree/master/stb  
 - STBPERLIN.HPP - 3D Perlin Noise and fractal brownian motion (fbm) Noise. For "position dependend" random. https://github.com/nothings/obbg/tree/master/stb  
 - STBTEXT.HPP - Text editor basics  https://github.com/nothings/obbg/tree/master/stb  
 - STBTTF.HPP - Truetype text/font renderer  https://github.com/nothings/obbg/tree/master/stb  
