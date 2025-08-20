@@ -10,6 +10,7 @@
 #include "quaternn.hpp"
 #include "gl.h"
 #include "keymtrix.hpp"
+#include "image.hpp"
 
 cgltf_data *loadGLTF(const char *fileName) { // glt/glb
   cgltf_options options;
@@ -463,6 +464,28 @@ Vector viewDir() {
 
 Vector sideDir() {
   return viewDir().zyx()*Vector(1,1,-1);
+}
+
+unsigned int cgltfTexture(cgltf_image *v, int width=-1, int height=-1) {
+  cgltf_buffer_view *view = v->buffer_view;
+  const char *mime_type = v->mime_type;
+  unsigned int r = 0;
+
+  const uint8_t *data = (uint8_t*)view->buffer->data+view->offset;
+  const int size = view->size;
+
+  RGBAImage image = RGBAImage::fromMemory(data, size);
+  image.flipY();
+  glGenTextures(1, &r);
+  glBindTexture(GL_TEXTURE_2D, r);
+  glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,image.width,image.height,0,GL_RGBA,GL_UNSIGNED_BYTE,image.data);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  image.free();
+
+  return r;
 }
 
 int main(int argc, const char *argv[]) {
