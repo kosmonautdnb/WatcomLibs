@@ -64,7 +64,7 @@ https://github.com/ocornut/imgui
 - FILEDLG.HPP - a DOS file dialog window written for IMGUI  
 - GENANN.HPP - a simple neural net. https://github.com/codeplea/genann
 - GTFLOG.CPP - just a temporary / very simple logger for CGLTF file structure.
-- IMAGE.HPP - Image loading/saving/resizing  
+- IMAGE.HPP - Image loading/saving/resizing PNG,JPG,BMP,TGA,GIF and others  
 - JSONREAD.HPP - a json reader https://github.com/rafagafe/tiny-json  
 - JSONWRT.HPP - a json writer https://github.com/rafagafe/tiny-json  
 - KEYMTRX.HPP - direct access to the keyboard matrix  
