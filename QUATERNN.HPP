@@ -84,9 +84,9 @@ public:
 
   Vector rotateVector(const Vector &v) const;
 
-  void rollPitchYaw(double roll, double pitch, double yaw);
+  void yawPitchRoll(double yaw, double pitch, double roll);
 
-  Vector getRollPitchYaw() const;
+  Vector getYawPitchRoll() const;
 
   Quaternion slerp(const Quaternion &q1, double t) const;
   Quaternion nslerp(const Quaternion &q1, double t) const;

@@ -97,36 +97,36 @@ Vector Quaternion::rotateVector(const Vector &v) const {
   return Vector((((*this)*Quaternion(v,0))*conjugate()).complex(),1.0);
 }
 
-void Quaternion::rollPitchYaw(double roll, double pitch, double yaw) {
-  const double c1 = cos(yaw*0.5);
-  const double c2 = cos(pitch*0.5);
-  const double c3 = cos(roll*0.5);
-  const double s1 = sin(yaw*0.5);
-  const double s2 = sin(pitch*0.5);
-  const double s3 = sin(roll*0.5);
+void Quaternion::yawPitchRoll(double yaw, double pitch, double roll) {
+  const double c1 = cos(roll*0.5);
+  const double c2 = cos(yaw*0.5);
+  const double c3 = cos(pitch*0.5);
+  const double s1 = sin(roll*0.5);
+  const double s2 = sin(yaw*0.5);
+  const double s3 = sin(pitch*0.5);
   x = c1*c2*s3 - s1*s2*c3;
   y = c1*s2*c3 + s1*c2*s3;
   z = s1*c2*c3 - c1*s2*s3;
   w = c1*c2*c3 + s1*s2*s3;
 }
 
-Vector Quaternion::getRollPitchYaw() const {
+Vector Quaternion::getYawPitchRoll() const {
   Vector euler;
   const static double PI_OVER_2 = PI*0.5;
   const static double EPSILON = 1e-10;
-  euler.y=asin(2.0*(w*y-x*z));
-  if (PI_OVER_2-fabs(euler.y) > EPSILON) {
+  euler.x=asin(2.0*(w*y-x*z));
+  if (PI_OVER_2-fabs(euler.x) > EPSILON) {
     double sqw,sqx,sqy,sqz;
     sqx = x*x;
     sqy = y*y;
     sqz = z*z;
     sqw = w*w;
     euler.z = atan2(2.0*(x*y+w*z),sqx-sqy-sqz+sqw);
-    euler.x = atan2(2.0*(w*x+y*z),sqw-sqx-sqy+sqz);
+    euler.y = atan2(2.0*(w*x+y*z),sqw-sqx-sqy+sqz);
   } else {
     euler.z = atan2(2*y*z-2*x*w,2*x*z+2*y*w);
-    euler.x = 0;
-    if (euler.y<0)
+    euler.y = 0;
+    if (euler.x<0)
       euler.z = PI-euler.z;
   }
   euler.w = 0;
