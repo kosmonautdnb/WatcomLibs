@@ -343,20 +343,6 @@ void Matrix::translateTransposed(const Vector &v) {
 
 void Matrix::scale3(const Vector &v) {
   MAT(m,0,0) *= v.x;
-  MAT(m,0,1) *= v.x;
-  MAT(m,0,2) *= v.x;
-
-  MAT(m,1,0) *= v.y;
-  MAT(m,1,1) *= v.y;
-  MAT(m,1,2) *= v.y;
-
-  MAT(m,2,0) *= v.z;
-  MAT(m,2,1) *= v.z;
-  MAT(m,2,2) *= v.z;
-}
-
-void Matrix::scale3Transposed(const Vector &v) {
-  MAT(m,0,0) *= v.x;
   MAT(m,1,0) *= v.x;
   MAT(m,2,0) *= v.x;
 
@@ -366,6 +352,20 @@ void Matrix::scale3Transposed(const Vector &v) {
 
   MAT(m,0,2) *= v.z;
   MAT(m,1,2) *= v.z;
+  MAT(m,2,2) *= v.z;
+}
+
+void Matrix::scale3Transposed(const Vector &v) {
+  MAT(m,0,0) *= v.x;
+  MAT(m,0,1) *= v.x;
+  MAT(m,0,2) *= v.x;
+
+  MAT(m,1,0) *= v.y;
+  MAT(m,1,1) *= v.y;
+  MAT(m,1,2) *= v.y;
+
+  MAT(m,2,0) *= v.z;
+  MAT(m,2,1) *= v.z;
   MAT(m,2,2) *= v.z;
 }
 
