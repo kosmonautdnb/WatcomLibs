@@ -62,7 +62,7 @@ __inline unsigned int maxui(unsigned int a, unsigned int b) {return a>b?a:b;}
 __inline float maxf(float a, float b) {return a>b?a:b;}
 __inline double maxd(double a, double b) {return a>b?a:b;}
 __inline int mini(int a, int b) {return a<b?a:b;}
-__inline int minui(unsigned int a, unsigned int b) {return a<b?a:b;}
+__inline unsigned int minui(unsigned int a, unsigned int b) {return a<b?a:b;}
 __inline float minf(float a, float b) {return a<b?a:b;}
 __inline double mind(double a, double b) {return a<b?a:b;}
 
