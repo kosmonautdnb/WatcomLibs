@@ -60,6 +60,7 @@ https://github.com/ocornut/imgui
 - CHARSET.HPP - a tiny font to be rendered per pixel
 - CGLTF - a gltf loader https://github.com/jkuhlmann/cgltf
 - CGLTF_EX.MPL - an example of displaying bones and skinning in OpenGL for CGLTF 
+- COLL.HPP - simple cube collision and simple capsule collision (a velocity stretched circle).  
 - DOS.HPP - easy access to DOS functionality, comes with long file name support
 - FILEDLG.HPP - a DOS file dialog window written for IMGUI  
 - GENANN.HPP - a simple neural net. https://github.com/codeplea/genann
