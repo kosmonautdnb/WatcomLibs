@@ -95,9 +95,10 @@ public:
 
   bool collided(CLCube &c2) {
     // Separating Axis Theorem
+    const double EPSILON = 0.00001;
     Matrix m1,m2;
-    m1.identity();  m1.translate(center);  m1 *= rotation.rotationMatrix();  m1.scale3(size);
-    m2.identity(); m2.translate(c2.center); m2 *= c2.rotation.rotationMatrix(); m2.scale3(c2.size);
+    m1.identity();  m1.translate(center.xyz());  m1 *= rotation.rotationMatrix();  m1.scale3(size);
+    m2.identity(); m2.translate(c2.center.xyz()); m2 *= c2.rotation.rotationMatrix(); m2.scale3(c2.size);
     Vector axis[15];
     for (int j = 0; j < 15; j++) {
       if (j < 6) {
@@ -115,16 +116,18 @@ public:
         int k1 = k % 3;
         int k2 = k / 3;
         axis[j] = cross(axis[k1],axis[k2+3]);
-        if (length(axis[j])<0.0000001) 
+        if (length(axis[j])<EPSILON) 
           continue;
       }
-      // no axis normalize needed
+      axis[j] = normalize(axis[j]); // for right coordinates
+      axis[j].w = 0; // not needed
       double min1,min2,max1,max2;
       for (int i = 0; i < 8; i++) {
         Vector p;
         p.x = (i & 1) ? -1 : 1;
         p.y = (i & 2) ? -1 : 1;
         p.z = (i & 4) ? -1 : 1;
+        p.w = 1;
         Vector p1 = m1 * p;
         Vector p2 = m2 * p;
         double dist1 = dot(p1,axis[j]);
@@ -134,20 +137,20 @@ public:
         if (i == 0||dist1>max1) max1 = dist1;
         if (i == 0||dist2>max2) max2 = dist2;
       }
-      //bool collision = (max1>min2&&max2>min1);
-      bool collision = (min1>min2&&min1<max2)||(min2>min1&&min2<max1);
+      const bool collision = (max1>min2+EPSILON&&max2>min1+EPSILON);
       if (!collision) 
         return false;
     }
-    return true; // all axis reported a collision (but check collisionVector length later, too...(because something seems not 100% alright here))
+    return true; // all axis reported a collision (no separating plane possible)
   }
 
   Vector collisionVector(CLCube &c2) {
     // Separating Axis Theorem
     // object must have collided before
+    const double EPSILON = 0.00001;
     Matrix m1,m2;
-    m1.identity();  m1.translate(center);  m1 *= rotation.rotationMatrix();  m1.scale3(size);
-    m2.identity(); m2.translate(c2.center); m2 *= c2.rotation.rotationMatrix(); m2.scale3(c2.size);
+    m1.identity();  m1.translate(center.xyz());  m1 *= rotation.rotationMatrix();  m1.scale3(size);
+    m2.identity(); m2.translate(c2.center.xyz()); m2 *= c2.rotation.rotationMatrix(); m2.scale3(c2.size);
     Vector axis[15];
     double minOverlap;
     Vector collisionAxis;
@@ -168,16 +171,18 @@ public:
         int k1 = k % 3;
         int k2 = k / 3;
         axis[j] = cross(axis[k1],axis[k2+3]);
-        if (length(axis[j])<0.0000001) 
+        if (length(axis[j])<EPSILON) 
           continue;
       }
       axis[j] = normalize(axis[j]); // for right coordinates
+      axis[j].w = 0; // not needed
       double min1,min2,max1,max2;
       for (int i = 0; i < 8; i++) {
         Vector p;
         p.x = (i & 1) ? -1 : 1;
         p.y = (i & 2) ? -1 : 1;
         p.z = (i & 4) ? -1 : 1;
+        p.w = 1;
         Vector p1 = m1 * p;
         Vector p2 = m2 * p;
         double dist1 = dot(p1,axis[j]);
