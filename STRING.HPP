@@ -276,8 +276,20 @@ public:
     return k;
   }
 
+  static String fromDouble(double v) {
+    String k;
+    k.resize(32);
+    snprintf_x4(&(k[0]),32,"%f",v);
+    k.resize(strlen(k.c_str()));
+    return k;
+  }
+
   float toFloat() {
     return (float)atof(c_str());
+  }  
+
+  double toDouble() {
+    return (double)atof(c_str());
   }  
 
   char *c_str() const {
