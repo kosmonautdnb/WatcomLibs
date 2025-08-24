@@ -155,6 +155,19 @@ Matrix &Matrix::operator/=(const Matrix &a) {
   return *this;
 }
 
+Matrix Matrix::rotationMatrix3x3() {
+  Matrix result;
+  result.identity();
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+      result.set(i,j,this->get(i,j));
+    }
+  }  
+  result.normalize3x3();
+  return result;
+}
+
+
 #define SWAP_ROWS_DOUBLE(a, b) { double *_tmp = a; (a)=(b); (b)=_tmp; }
 #define MAT(m,r,c) (m)[(c)*4+(r)]
 
