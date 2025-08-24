@@ -188,7 +188,7 @@ static Matrix getMatrixHere(GLTFJoint *j) {
   Matrix matrixHere; matrixHere.identity();
   if (j->hasScaling) {matrixHere.scale3(j->scaling);}
   if (j->hasRotation) {matrixHere = j->rotation.rotationMatrix()*matrixHere;}
-  if (j->hasTranslation) {matrixHere.translate(j->translation);}
+  if (j->hasTranslation) {matrixHere.setColumn(3,j->translation);}
   if (j->hasMatrix) {matrixHere = j->matrix;}
   return matrixHere;
 }
