@@ -5,6 +5,15 @@
 #include "matrix.hpp"
 #include "quaternn.hpp"
 
+//---
+// :Collision Types:
+//---
+// Capsule+Capsule
+// Sphere+Sphere
+// Cube+Cube
+// Cube+Sphere
+//---
+
 // Capsule-Collision
 // absolute height of capsule = tip to base
 // width of the capsule = radius;
@@ -24,6 +33,7 @@ public:
     return A + saturated(t) * AB;
   }
 
+  // CAPSULE+CAPSULE
   bool collided(const CLCapsule &b, Vector *collisionVector = NULL) {
     const CLCapsule &a = *this;
     Vector ad = a.tip-a.base;
@@ -83,6 +93,32 @@ public:
   }
 };
 
+// Sphere-Collision
+class CLSphere {
+public:
+  Vector center;
+  double radius;
+
+  CLSphere() {}
+  CLSphere(const Vector &center,const double &radius) : center(center), radius(radius) {}
+
+  // SPHERE+SPHERE
+  bool collided(CLSphere &c2, Vector *collisionVector) {
+    Vector k = c2.center - center;
+    const double l = length(k);
+    const double d = c2.radius + radius;
+    const bool intersects = l < c2.radius + radius;
+    if (collisionVector!=NULL) {
+      if (intersects) {
+        *collisionVector = normalize(k)*(d - l);
+      } else 
+        *collisionVector = Vector();
+    }
+    return intersects;
+  }
+
+};
+
 // Cube-Collision
 class CLCube {
 public:
@@ -93,6 +129,7 @@ public:
   CLCube() {}
   CLCube(const Vector &center,const Vector &size,const Vector &rotation) : center(center), size(size), rotation(rotation) {}
 
+  // CUBE+CUBE
   bool collided(CLCube &c2) {
     // Separating Axis Theorem
     const double EPSILON = 0.00001;
@@ -144,6 +181,7 @@ public:
     return true; // all axis reported a collision (no separating plane possible)
   }
 
+  // CUBE+CUBE
   Vector collisionVector(CLCube &c2) {
     // Separating Axis Theorem
     // object must have collided before
@@ -198,6 +236,131 @@ public:
         minOverlap = overlap;
         collisionAxis = axis[j];
         if (dot(collisionAxis,center-c2.center)>0) collisionAxis = -collisionAxis;
+      }
+    }
+    return minOverlap*collisionAxis;
+  }
+
+  // CUBE+SPHERE
+  bool collided(CLSphere &s2) {
+    // Separating Axis Theorem
+    const double EPSILON = 0.00001;
+    Matrix m1;
+    m1.identity();  m1.translate(center.xyz());  m1 *= rotation.rotationMatrix();  m1.scale3(size);
+    Vector axis[4];
+    for (int j = 0; j < 4; j++) {
+      switch(j) {
+        case 0: axis[j] = rotation.rotationMatrix()*Vector(1,0,0); break;
+        case 1: axis[j]  = rotation.rotationMatrix()*Vector(0,1,0); break;
+        case 2: axis[j] = rotation.rotationMatrix()*Vector(0,0,1); break;
+        case 3: {
+          // search nearest cube vertex to the center of sphere
+          double le;
+          for (int i = 0; i < 8; i++) {
+            Vector p;
+            p.x = (i & 1) ? -1 : 1;
+            p.y = (i & 2) ? -1 : 1;
+            p.z = (i & 4) ? -1 : 1;
+            p.w = 1;
+            Vector p1 = m1 * p;
+            Vector e = p1 - s2.center;
+            if (i==0||length(e)<le) {
+              le = length(e);
+              axis[j] = e;
+            }
+          }
+        } break;
+      }
+      axis[j] = normalize(axis[j]); // for right coordinates
+      axis[j].w = 0; // not needed
+      double min1,min2,max1,max2;
+      // cube min max
+      for (int i = 0; i < 8; i++) {
+        Vector p;
+        p.x = (i & 1) ? -1 : 1;
+        p.y = (i & 2) ? -1 : 1;
+        p.z = (i & 4) ? -1 : 1;
+        p.w = 1;
+        Vector p1 = m1 * p;
+        double dist1 = dot(p1,axis[j]);
+        if (i == 0||dist1<min1) min1 = dist1;
+        if (i == 0||dist1>max1) max1 = dist1;
+      }
+      // sphere min max
+      double dist2 = dot(s2.center,axis[j])+s2.radius;
+      min2 = dist2;
+      max2 = dist2;
+      dist2 = dot(s2.center,axis[j])-s2.radius;
+      if (dist2<min2) min2 = dist2;
+      if (dist2>max2) max2 = dist2;
+      const bool collision = (max1>min2+EPSILON&&max2>min1+EPSILON);
+      if (!collision)
+        return false;
+    }
+    return true; // all axis reported a collision (no separating plane possible)
+  }
+
+  // CUBE+SPHERE
+  Vector collisionVector(CLSphere &s2) {
+    // Separating Axis Theorem
+    const double EPSILON = 0.00001;
+    Matrix m1;
+    m1.identity();  m1.translate(center.xyz());  m1 *= rotation.rotationMatrix();  m1.scale3(size);
+    Vector axis[4];
+    double minOverlap;
+    Vector collisionAxis;
+    bool first = true;
+    for (int j = 0; j < 4; j++) {
+      switch(j) {
+        case 0: axis[j] = rotation.rotationMatrix()*Vector(1,0,0); break;
+        case 1: axis[j]  = rotation.rotationMatrix()*Vector(0,1,0); break;
+        case 2: axis[j] = rotation.rotationMatrix()*Vector(0,0,1); break;
+        case 3: {
+          // search nearest cube vertex to the center of sphere
+          double le;
+          for (int i = 0; i < 8; i++) {
+            Vector p;
+            p.x = (i & 1) ? -1 : 1;
+            p.y = (i & 2) ? -1 : 1;
+            p.z = (i & 4) ? -1 : 1;
+            p.w = 1;
+            Vector p1 = m1 * p;
+            Vector e = p1 - s2.center;
+            if (i==0||length(e)<le) {
+              le = length(e);
+              axis[j] = e;
+            }
+          }
+        } break;
+      }
+      axis[j] = normalize(axis[j]); // for right coordinates
+      axis[j].w = 0; // not needed
+      double min1,min2,max1,max2;
+      // cube min max
+      for (int i = 0; i < 8; i++) {
+        Vector p;
+        p.x = (i & 1) ? -1 : 1;
+        p.y = (i & 2) ? -1 : 1;
+        p.z = (i & 4) ? -1 : 1;
+        p.w = 1;
+        Vector p1 = m1 * p;
+        double dist1 = dot(p1,axis[j]);
+        if (i == 0||dist1<min1) min1 = dist1;
+        if (i == 0||dist1>max1) max1 = dist1;
+      }
+      // sphere min max
+      double dist2 = dot(s2.center,axis[j])+s2.radius;
+      min2 = dist2;
+      max2 = dist2;
+      dist2 = dot(s2.center,axis[j])-s2.radius;
+      if (dist2<min2) min2 = dist2;
+      if (dist2>max2) max2 = dist2;
+      double overlap = mind(max2,max1) - maxd(min2,min1);
+      if (first || overlap<minOverlap) {
+        first = false;
+        minOverlap = overlap;
+        collisionAxis = axis[j];
+        if (dot(collisionAxis,center-s2.center)>0) collisionAxis = -collisionAxis;
       }
     }
     return minOverlap*collisionAxis;
