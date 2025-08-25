@@ -11,7 +11,7 @@
 // Capsule+Capsule
 // Sphere+Sphere
 // Cube+Cube
-// Cube+Sphere
+// Cube+Sphere // not perfect
 //---
 
 // Capsule-Collision
@@ -25,7 +25,7 @@ public:
   Vector tip,base;
   double radius;
 
-  Vector closestPointOnLineSegment(const Vector &A, const Vector &B, const Vector &Point) {
+  Vector closestPointOnLineSegment(const Vector &A, const Vector &B, const Vector &Point) const {
     Vector AB = B - A;
     double k = dot(AB,AB);
     if (k == 0) k = 1;
@@ -34,7 +34,7 @@ public:
   }
 
   // CAPSULE+CAPSULE
-  bool collided(const CLCapsule &b, Vector *collisionVector = NULL) {
+  bool collided(const CLCapsule &b, Vector *collisionVector = NULL) const {
     const CLCapsule &a = *this;
     Vector ad = a.tip-a.base;
     Vector bd = b.tip-b.base;
@@ -103,7 +103,7 @@ public:
   CLSphere(const Vector &center,const double &radius) : center(center), radius(radius) {}
 
   // SPHERE+SPHERE
-  bool collided(CLSphere &c2, Vector *collisionVector) {
+  bool collided(const CLSphere &c2, Vector *collisionVector) const {
     Vector k = c2.center - center;
     const double l = length(k);
     const double d = c2.radius + radius;
@@ -130,7 +130,7 @@ public:
   CLCube(const Vector &center,const Vector &size,const Vector &rotation) : center(center), size(size), rotation(rotation) {}
 
   // CUBE+CUBE
-  bool collided(CLCube &c2) {
+  bool collided(const CLCube &c2) const {
     // Separating Axis Theorem
     const double EPSILON = 0.00001;
     Matrix m1,m2;
@@ -182,7 +182,7 @@ public:
   }
 
   // CUBE+CUBE
-  Vector collisionVector(CLCube &c2) {
+  Vector collisionVector(const CLCube &c2) const {
     // Separating Axis Theorem
     // object must have collided before
     const double EPSILON = 0.00001;
@@ -241,8 +241,8 @@ public:
     return minOverlap*collisionAxis;
   }
 
-  // CUBE+SPHERE
-  bool collided(CLSphere &s2) {
+  // CUBE+SPHERE // not perfect, closest point to sphere center may also be an edge point, a face point, not just the closest cube vertex
+  bool collided(const CLSphere &s2) const {
     // Separating Axis Theorem
     const double EPSILON = 0.00001;
     Matrix m1;
@@ -300,8 +300,8 @@ public:
     return true; // all axis reported a collision (no separating plane possible)
   }
 
-  // CUBE+SPHERE
-  Vector collisionVector(CLSphere &s2) {
+  // CUBE+SPHERE // not perfect, closest point to sphere center may also be an edge point, a face point, not just the closest cube vertex
+  Vector collisionVector(const CLSphere &s2) const {
     // Separating Axis Theorem
     const double EPSILON = 0.00001;
     Matrix m1;
