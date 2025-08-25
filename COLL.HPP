@@ -11,7 +11,7 @@
 // Capsule+Capsule
 // Sphere+Sphere
 // Cube+Cube
-// Cube+Sphere // not perfect
+// Cube+Sphere
 //---
 
 // Capsule-Collision
@@ -241,7 +241,7 @@ public:
     return minOverlap*collisionAxis;
   }
 
-  // CUBE+SPHERE // not perfect, closest point to sphere center may also be an edge point, a face point, not just the closest cube vertex
+  // CUBE+SPHERE
   bool collided(const CLSphere &s2) const {
     // Separating Axis Theorem
     const double EPSILON = 0.00001;
@@ -255,20 +255,24 @@ public:
         case 2: axis[j] = rotation.rotationMatrix()*Vector(0,0,1); break;
         case 3: {
           // search nearest cube vertex to the center of sphere
-          double le;
-          for (int i = 0; i < 8; i++) {
-            Vector p;
-            p.x = (i & 1) ? -1 : 1;
-            p.y = (i & 2) ? -1 : 1;
-            p.z = (i & 4) ? -1 : 1;
-            p.w = 1;
-            Vector p1 = m1 * p;
-            Vector e = p1 - s2.center;
-            if (i==0||length(e)<le) {
-              le = length(e);
-              axis[j] = e;
-            }
-          }
+          //double le;
+          //for (int i = 0; i < 8; i++) { // not perfect, closest point to sphere center may also be an edge point, a face point, not just the closest cube vertex
+          //  Vector p;
+          //  p.x = (i & 1) ? -1 : 1;
+          //  p.y = (i & 2) ? -1 : 1;
+          //  p.z = (i & 4) ? -1 : 1;
+          //  p.w = 1;
+          //  Vector p1 = m1 * p;
+          //  Vector e = p1 - s2.center;
+          //  if (i==0||length(e)<le) {
+          //    le = length(e);
+          //    axis[j] = e;
+          //  }
+          //}
+          Vector mc = inverse(m1)*s2.center;
+          mc = clamp(mc,-1,1);
+          mc = m1 * mc;
+          axis[j] = mc - s2.center;
         } break;
       }
       axis[j] = normalize(axis[j]); // for right coordinates
@@ -300,7 +304,7 @@ public:
     return true; // all axis reported a collision (no separating plane possible)
   }
 
-  // CUBE+SPHERE // not perfect, closest point to sphere center may also be an edge point, a face point, not just the closest cube vertex
+  // CUBE+SPHERE
   Vector collisionVector(const CLSphere &s2) const {
     // Separating Axis Theorem
     const double EPSILON = 0.00001;
@@ -317,20 +321,24 @@ public:
         case 2: axis[j] = rotation.rotationMatrix()*Vector(0,0,1); break;
         case 3: {
           // search nearest cube vertex to the center of sphere
-          double le;
-          for (int i = 0; i < 8; i++) {
-            Vector p;
-            p.x = (i & 1) ? -1 : 1;
-            p.y = (i & 2) ? -1 : 1;
-            p.z = (i & 4) ? -1 : 1;
-            p.w = 1;
-            Vector p1 = m1 * p;
-            Vector e = p1 - s2.center;
-            if (i==0||length(e)<le) {
-              le = length(e);
-              axis[j] = e;
-            }
-          }
+          //double le;
+          //for (int i = 0; i < 8; i++) { // not perfect, closest point to sphere center may also be an edge point, a face point, not just the closest cube vertex
+          //  Vector p;
+          //  p.x = (i & 1) ? -1 : 1;
+          //  p.y = (i & 2) ? -1 : 1;
+          //  p.z = (i & 4) ? -1 : 1;
+          //  p.w = 1;
+          //  Vector p1 = m1 * p;
+          //  Vector e = p1 - s2.center;
+          //  if (i==0||length(e)<le) {
+          //    le = length(e);
+          //    axis[j] = e;
+          //  }
+          //}
+          Vector mc = inverse(m1)*s2.center;
+          mc = clamp(mc,-1,1);
+          mc = m1 * mc;
+          axis[j] = mc - s2.center;
         } break;
       }
       axis[j] = normalize(axis[j]); // for right coordinates
