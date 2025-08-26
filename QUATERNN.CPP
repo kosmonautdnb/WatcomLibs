@@ -104,10 +104,10 @@ void Quaternion::yawPitchRoll(double yaw, double pitch, double roll) {
   const double s1 = sin(roll*0.5);
   const double s2 = sin(yaw*0.5);
   const double s3 = sin(pitch*0.5);
-  x = c1*c2*s3 - s1*s2*c3;
-  y = c1*s2*c3 + s1*c2*s3;
-  z = s1*c2*c3 - c1*s2*s3;
-  w = c1*c2*c3 + s1*s2*s3;
+  this->x = c1*c2*s3 - s1*s2*c3;
+  this->y = c1*s2*c3 + s1*c2*s3;
+  this->z = s1*c2*c3 - c1*s2*s3;
+  this->w = c1*c2*c3 + s1*s2*s3;
 }
 
 Vector Quaternion::getYawPitchRoll() const {
