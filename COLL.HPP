@@ -272,7 +272,7 @@ public:
           Vector mc = inverse(m1)*s2.center;
           mc = clamp(mc,-1,1);
           mc = m1 * mc;
-          axis[j] = mc - s2.center;
+          axis[j] = s2.center - mc;
         } break;
       }
       axis[j] = normalize(axis[j]); // for right coordinates
@@ -338,7 +338,7 @@ public:
           Vector mc = inverse(m1)*s2.center;
           mc = clamp(mc,-1,1);
           mc = m1 * mc;
-          axis[j] = mc - s2.center;
+          axis[j] = s2.center - mc;
         } break;
       }
       axis[j] = normalize(axis[j]); // for right coordinates
