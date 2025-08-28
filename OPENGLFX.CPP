@@ -365,7 +365,7 @@ void doSkySphere(unsigned int texture_, float *zBuffer, unsigned int *frameBuffe
       if (*zBuffer >= _sky_z_value) {
         int tx2 = (((nextTextureX-lastTextureX)*k)>>16)+lastTextureX;
         int ty2 = (((nextTextureY-lastTextureY)*k)>>16)+lastTextureY;
-        *frameBuffer = texture[tx2+ty2*textureWidth];
+        *frameBuffer = texture[tx2+ty2*textureWidth]|0xff000000;
       }
       k += kAdd;
       frameBuffer++;
@@ -550,7 +550,7 @@ void doSkyPlane(unsigned int texture_, float *zBuffer, unsigned int *frameBuffer
         g += ((((k_0 & 0x0000ff00)-g)*a_0)>>8);
         g &= 0x0000ff00;
         g += ((((k_1 & 0x0000ff00)-g)*a_1)>>8) & 0x0000ff00;
-        *frameBuffer = rb|g;
+        *frameBuffer = rb|g|0xff000000;
       }
       k += kAdd;
       frameBuffer++;
