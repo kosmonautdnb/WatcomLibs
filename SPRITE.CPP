@@ -9,6 +9,8 @@ double spritePixelCenterY = 0.5;  // currently is different to glSpritePixelCent
 double spriteTexelCenterX = 0.0; // currently is different to glSpriteTexelCenterX
 double spriteTexelCenterY = 0.0; // currently is different to glSpriteTexelCenterY
 
+#define SPRITESHIFT 14
+
 BallHeightMap *genBallHeightMap(const int width, const int height) {
   BallHeightMap *r = new BallHeightMap(width,height);
   for (int y = 0; y < height; y++) {
@@ -81,8 +83,8 @@ void drawBall(const class Vector &ballPos, const double ballSize, const BallHeig
   int tx1 = ballHeightMap->width;
   int ty1 = ballHeightMap->height;
 
-  int txadd = (int)((double)(tx1-tx0)*4096.0/(fx1-fx0));
-  int tyadd = (int)((double)(ty1-ty0)*4096.0/(fy1-fy0));
+  int txadd = (int)((double)(tx1-tx0)*(1<<SPRITESHIFT)/(fx1-fx0));
+  int tyadd = (int)((double)(ty1-ty0)*(1<<SPRITESHIFT)/(fy1-fy0));
 
   tx0 = txadd-1-(int)floor((fx0-(double)ix0)*txadd);
   ty0 = tyadd-1-(int)floor((fy0-(double)iy0)*tyadd);
@@ -121,11 +123,12 @@ void drawBall(const class Vector &ballPos, const double ballSize, const BallHeig
     for (int y = iy0; y < iy1; y++) {
       unsigned int *destP = destP0;
       float *destZ = destZ0;
-      float *data2 = &data[(ty>>12)*ballHeightMap->width];
+      float *data2 = &data[(ty>>SPRITESHIFT)*ballHeightMap->width];
       unsigned int tx = tx0;
       for (int i = ix1-ix0; i>0; i--) {
-         //if ((tx>>12)*(ty>>12)>=ballHeightMap->width*ballHeightMap->height) {glDone;exit(0);}
-         const float depth = data2[tx>>12];
+
+         //if ((tx>>SPRITESHIFT)*(ty>>SPRITESHIFT)>=ballHeightMap->width*ballHeightMap->height) {glDone;exit(0);}
+         const float depth = data2[tx>>SPRITESHIFT];
          if (depth != 0.f) {
             float zp = zp0+zpa*depth;
             if (zp<=*destZ) {
@@ -201,15 +204,15 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
   int tx1 = texWidth;
   int ty1 = texHeight;
 
-  int txadd = (int)((double)(tx1-tx0)*4096.0/(fx1-fx0));
-  int tyadd = (int)((double)(ty1-ty0)*4096.0/(fy1-fy0));
+  int txadd = (int)((double)(tx1-tx0)*(1<<SPRITESHIFT)/(fx1-fx0));
+  int tyadd = (int)((double)(ty1-ty0)*(1<<SPRITESHIFT)/(fy1-fy0));
 
   if (!(spriteFlags & SPRITEFLAG_NOT_SUBPIXEL)) {
     tx0 += txadd-1-(int)floor((fx0-(double)ix0)*txadd);
     ty0 += tyadd-1-(int)floor((fy0-(double)iy0)*tyadd);
   } else {
-    txadd = (int)((double)(tx1-tx0)*4096.0/(ix1-ix0));
-    tyadd = (int)((double)(ty1-ty0)*4096.0/(iy1-iy0));
+    txadd = (int)((double)(tx1-tx0)*(1<<SPRITESHIFT)/(ix1-ix0));
+    tyadd = (int)((double)(ty1-ty0)*(1<<SPRITESHIFT)/(iy1-iy0));
   }
 
   if (ix0<viewport[0]) {tx0+=(viewport[0]-ix0)*txadd;ix0 = viewport[0];}
@@ -252,13 +255,13 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
       float *destZ = destZ0;
       unsigned int *data2;
       if (spriteFlags & SPRITEFLAG_NOT_FLIP_Y)
-        data2 = &data[(ty>>12)*texWidth];
+        data2 = &data[(ty>>SPRITESHIFT)*texWidth];
       else
-        data2 = &data[(texHeight-1-(ty>>12))*texWidth];
+        data2 = &data[(texHeight-1-(ty>>SPRITESHIFT))*texWidth];
       unsigned int tx = tx0;
       if (spriteFlags & SPRITEFLAG_ADDITIVE) {
         for (int i = ix1-ix0; i>0; i--) {
-          const unsigned int rgba = data2[tx>>12];
+          const unsigned int rgba = data2[tx>>SPRITESHIFT];
           int a = (((rgba>>24)&255)*sp_a)>>8;
           if (zp0<=*destZ) {
             if (depthWrite) *destZ = zp0;
@@ -284,7 +287,7 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
       else { // SPRITEFLAG_ADDITIVE else
         if (spriteFlags & SPRITEFLAG_PREMULTIPLIED_ALPHA) {
           for (int i = ix1-ix0; i>0; i--) {
-            const unsigned int rgba = data2[tx>>12];
+            const unsigned int rgba = data2[tx>>SPRITESHIFT];
             int a = (((rgba>>24)&255)*sp_a)>>8;
             if (zp0<=*destZ) {
               if (depthWrite) *destZ = zp0;
@@ -309,7 +312,7 @@ void drawSprite(const class Vector &spritePos, const double spriteWidth, const d
           }
         } else { // SPRITEFLAG_PREMULTIPLIED_ALPHA else
           for (int i = ix1-ix0; i>0; i--) {
-            const unsigned int rgba = data2[tx>>12];
+            const unsigned int rgba = data2[tx>>SPRITESHIFT];
             int a = (((rgba>>24)&255)*sp_a)>>8;
             if (a != 0) {
               if (zp0<=*destZ) {
