@@ -2,7 +2,7 @@
 #define __OPENGLFX_HPP__
 
 #define glFXAA() doFXAA(glFrameBuffer, glFrameBufferWidth, glFrameBufferHeight)
-#define glToonShader() toonShader(glFrameBuffer,glFrameBufferWidth,glFrameBufferHeight);
+#define glToonShader() toonShader(glFrameBuffer,glDepthBuffer,glFrameBufferWidth,glFrameBufferHeight);
 #define glInitMotionBlur() allocMotionBlur(glFrameBufferWidth,glFrameBufferHeight)
 #define glCloseMotionBlur() freeMotionBlur()
 #define glMotionBlur() doMotionBlur(glFrameBuffer)
@@ -31,7 +31,9 @@ extern bool toonTwoPixelOutlineY; // outline two pixels in Y
 extern unsigned int toonOutlineColor; // the color of the toon outlines
 extern unsigned int *toonColors; // array[toonColorCount] of toon colors to be multiplied
 extern float nonToonAlpha; // glExplicitAlpha() used for non toon textures
-void toonShader(unsigned int *buffer, int width, int height);
+extern bool toonUseDepthBuffer; // so it looks like outlines even with stuff in front
+extern bool toonDepthInvert; // sometimes needed
+void toonShader(unsigned int *buffer, float *depth, int width, int height);
 
 // Frame rate dependend motion blur..
 

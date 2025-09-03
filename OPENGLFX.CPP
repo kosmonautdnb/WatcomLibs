@@ -143,8 +143,10 @@ static unsigned int toonColorsTest[4]={
 };
 unsigned int *toonColors = toonColorsTest;
 float nonToonAlpha = 2.f;
+bool toonUseDepthBuffer = true;
+bool toonDepthInvert = false;
 
-void toonShader(unsigned int *buffer, int width, int height) {
+void toonShader(unsigned int *buffer, float *depth, int width, int height) {
   unsigned int *dest = buffer;
   const int toToonColorNr = (100*100*255/toonColorCount);
   const int toonAdd2 = (int)floor(toonBaseLevel*100)*(100*255);
@@ -163,10 +165,23 @@ void toonShader(unsigned int *buffer, int width, int height) {
       int a = (rgba>>24) & 255;
       bool outlineHere =  (a != lastA)||(a != lastSpanA[x]);
       if (outlineHere && toonOutline) {
-        const unsigned int t2 = (toonOutlineColor & 0x00ffffff)|(a<<24);
-        *dest = t2;
-        if (toonTwoPixelOutlineX && x>0) *(dest-1) = t2;
-        if (toonTwoPixelOutlineY && y>0) *(dest-width) = t2;
+        if (toonUseDepthBuffer) {
+          float fa = depth[x+y*width];
+          float fLastA = x>0?depth[x-1+y*width]:depth[x+y*width];
+          float fLastSpanA = y>0?depth[x+(y-1)*width]:depth[x+y*width];
+          bool v1 = a > lastA;
+          bool v2 = a > lastSpanA[x];
+          bool d1 = fa > fLastA;
+          bool d2 = fa > fLastSpanA;
+          if (a!=lastA&&(v1^d1^toonDepthInvert)) outlineHere = false;
+          if (a!=lastSpanA[x]&&(v2^d2^toonDepthInvert)) outlineHere = false;
+        }
+        if (outlineHere) {
+          const unsigned int t2 = (toonOutlineColor & 0x00ffffff)|(a<<24);
+          *dest = t2;
+          if (toonTwoPixelOutlineX && x>0) *(dest-1) = t2;
+          if (toonTwoPixelOutlineY && y>0) *(dest-width) = t2;
+        }
       } else if (toonLuminances && (a != nonToonAlpha2)) {
         int luminance = r*25+g*60+b*15; // 0..100 (100*255)
         int colorNumber = (luminance*toonLuminance2+toonAdd2)/toToonColorNr;
