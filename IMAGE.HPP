@@ -45,6 +45,7 @@ public:
 
   RGBAImage getResized(int width, int height);
   void flipY();
+  void setAlpha(int alpha = 255);
 };
 
 #endif //__IMAGE_HPP__

@@ -61,3 +61,12 @@ void RGBAImage::flipY() {
   delete[] data;
   data = flipped;
 }
+
+void RGBAImage::setAlpha(int alpha) {
+  unsigned int alpha2 = alpha << 24;
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      data[x+y*width]=(data[x+y*width]&0x00ffffff)|alpha2;
+    }
+  }
+}

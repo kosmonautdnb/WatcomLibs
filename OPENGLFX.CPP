@@ -132,8 +132,8 @@ float toonBaseLevel = 0.f;
 int toonColorCount = 4;
 bool toonLuminances = true;
 bool toonOutline = true;
-bool toonTwoPixelOutlineX = true;
-bool toonTwoPixelOutlineY = true;
+bool toonTwoPixelOutlineX = false;
+bool toonTwoPixelOutlineY = false;
 unsigned int toonOutlineColor = 0xff000000;
 static unsigned int toonColorsTest[4]={
   0xff000000,
