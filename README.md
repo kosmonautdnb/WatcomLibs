@@ -59,7 +59,7 @@ https://github.com/ocornut/imgui
 ## Some useful classes
 - CHARSET.HPP - a tiny font to be rendered per pixel
 - CGLTF - a gltf loader https://github.com/jkuhlmann/cgltf
-- CGLTF_EX.MPL - an example of displaying bones and skinning in OpenGL for CGLTF 
+- CGLTFA - simple and fast coded GLTF scene object and skinning displayer
 - COLL.HPP - simple collisions (includes capsules, velocity stretched spheres).  
 - DOS.HPP - easy access to DOS functionality, comes with long file name support
 - FILEDLG.HPP - a DOS file dialog window written for IMGUI  
