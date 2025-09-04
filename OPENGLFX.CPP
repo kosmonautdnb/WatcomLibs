@@ -166,16 +166,16 @@ void toonShader(unsigned int *buffer, float *depth, int width, int height) {
       bool outlineHere =  (a != lastA)||(a != lastSpanA[x]); // actually it needs to be something like a<lastA or a>nextA
       if (outlineHere && toonOutline) {
         unsigned int *dest2 = dest;
-        if(!(a>lastA&&a>lastSpanA[x])) { // correction for each "other side"
-          if (x>0&&a>lastA)dest2--;
-          if (y>0&&a>lastSpanA[x])dest2-=width;
+        bool v1 = a > lastA;
+        bool v2 = a > lastSpanA[x];
+        if(!((v1^toonDepthInvert)&&(v2^toonDepthInvert))) { // correction for each "other side"
+          if (x>0&&(v1^toonDepthInvert))dest2--;
+          if (y>0&&(v2^toonDepthInvert))dest2-=width;
         }
         if (toonUseDepthBuffer && outlineHere) {
           float fa = depth[x+y*width];
           float fLastA = x>0?depth[x-1+y*width]:depth[x+y*width];
           float fLastSpanA = y>0?depth[x+(y-1)*width]:depth[x+y*width];
-          bool v1 = a > lastA;
-          bool v2 = a > lastSpanA[x];
           bool d1 = fa > fLastA;
           bool d2 = fa > fLastSpanA;
           if (a!=lastA&&(v1^d1^toonDepthInvert)) outlineHere = false;
