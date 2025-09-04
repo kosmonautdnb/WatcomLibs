@@ -163,9 +163,14 @@ void toonShader(unsigned int *buffer, float *depth, int width, int height) {
       int g = (rgba>>8) & 255;
       int b = (rgba>>16) & 255;
       int a = (rgba>>24) & 255;
-      bool outlineHere =  (a != lastA)||(a != lastSpanA[x]);
+      bool outlineHere =  (a != lastA)||(a != lastSpanA[x]); // actually it needs to be something like a<lastA or a>nextA
       if (outlineHere && toonOutline) {
-        if (toonUseDepthBuffer) {
+        unsigned int *dest2 = dest;
+        if(!(a>lastA&&a>lastSpanA[x])) { // correction for each "other side"
+          if (x>0&&a>lastA)dest2--;
+          if (y>0&&a>lastSpanA[x])dest2-=width;
+        }
+        if (toonUseDepthBuffer && outlineHere) {
           float fa = depth[x+y*width];
           float fLastA = x>0?depth[x-1+y*width]:depth[x+y*width];
           float fLastSpanA = y>0?depth[x+(y-1)*width]:depth[x+y*width];
@@ -178,9 +183,9 @@ void toonShader(unsigned int *buffer, float *depth, int width, int height) {
         }
         if (outlineHere) {
           const unsigned int t2 = (toonOutlineColor & 0x00ffffff)|(a<<24);
-          *dest = t2;
-          if (toonTwoPixelOutlineX && x>0) *(dest-1) = t2;
-          if (toonTwoPixelOutlineY && y>0) *(dest-width) = t2;
+          *dest2 = t2;
+          if (toonTwoPixelOutlineX && x>0) *(dest2-1) = t2;
+          if (toonTwoPixelOutlineY && y>0) *(dest2-width) = t2;
         }
       } else if (toonLuminances && (a != nonToonAlpha2)) {
         int luminance = r*25+g*60+b*15; // 0..100 (100*255)
