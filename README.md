@@ -51,7 +51,7 @@ https://github.com/ocornut/imgui
 - OBJECT.HPP - a bit like "java"  
 - PAIR.HPP - a bit like std::pair  
 - RANDOM.HPP - some basic "dependend random"
-  - SET.HPP - a bit like std::set
+- SET.HPP - a bit like std::set
 - STRING.HPP - a bit like std::string  
 - TYPES.HPP - a bit like "stdint"   
 - VECTOR.HPP - some 3d vector stuff (w is handled differently than xyz)  
