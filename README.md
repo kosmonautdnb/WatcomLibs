@@ -62,7 +62,7 @@ https://github.com/ocornut/imgui
 - CGLTFA - simple and fast coded GLTF scene object and skinning displayer
 - COLL.HPP - simple collisions (includes capsules, velocity stretched spheres).  
 - DOS.HPP - easy access to DOS functionality, comes with long file name support
-- ENC_H264.HPP - an h264 encoder (with .cpp example). MINIH264. https://github.com/lieff/minih264
+- ENC_H264.HPP - an h264 encoder (with .cpp example). MINIH264. https://github.com/lieff/minih264 (ffmpeg -i your_file.h264 -vcodec copy output.mkv)
 - FILEDLG.HPP - a DOS file dialog window written for IMGUI  
 - GENANN.HPP - a simple neural net. https://github.com/codeplea/genann
 - GTFLOG.CPP - just a temporary / very simple logger for CGLTF file structure.
