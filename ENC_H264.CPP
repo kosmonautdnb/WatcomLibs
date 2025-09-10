@@ -24,92 +24,6 @@ uint8_t *coded_data;
 FILE *fin, *fout;
 int sizeof_coded_data, frame_size, g_w, g_h, _qp;
 
-#ifdef __WIN32__ // :mad:
-// only vs2017 have aligned_alloc
-#define ALIGNED_ALLOC(n, size) malloc(size)
-#else
-#define ALIGNED_ALLOC(n, size) aligned_alloc(n, (size + n - 1)/n*n)
-#endif
-
-#if H264E_MAX_THREADS
-#include "system.h"
-typedef struct
-{
-    void *event_start;
-    void *event_done;
-    void (*callback)(void*);
-    void *job;
-    void *thread;
-    int terminated;
-} h264e_thread_t;
-
-static int minih264_thread_func(void *arg)
-{
-    h264e_thread_t *t = (h264e_thread_t *)arg;
-    thread_name("h264");
-    for (;;)
-    {
-        event_wait(t->event_start, INFINITE);
-        if (t->terminated)
-            break;
-        t->callback(t->job);
-        event_set(t->event_done);
-    }
-    return 0;
-}
-
-void *h264e_thread_pool_init(int max_threads)
-{
-    int i;
-    h264e_thread_t *threads = (h264e_thread_t *)calloc(sizeof(h264e_thread_t), max_threads);
-    if (!threads)
-        return 0;
-    for (i = 0; i < max_threads; i++)
-    {
-        h264e_thread_t *t = threads + i;
-        t->event_start = event_create(0, 0);
-        t->event_done  = event_create(0, 0);
-        t->thread = thread_create(minih264_thread_func, t);
-    }
-    return threads;
-}
-
-void h264e_thread_pool_close(void *pool, int max_threads)
-{
-    int i;
-    h264e_thread_t *threads = (h264e_thread_t *)pool;
-    for (i = 0; i < max_threads; i++)
-    {
-        h264e_thread_t *t = threads + i;
-        t->terminated = 1;
-        event_set(t->event_start);
-        thread_wait(t->thread);
-        thread_close(t->thread);
-        event_destroy(t->event_start);
-        event_destroy(t->event_done);
-    }
-    free(pool);
-}
-
-void h264e_thread_pool_run(void *pool, void (*callback)(void*), void *callback_job[], int njobs)
-{
-    h264e_thread_t *threads = (h264e_thread_t*)pool;
-    int i;
-    for (i = 0; i < njobs; i++)
-    {
-        h264e_thread_t *t = threads + i;
-        t->callback = (void (*)(void *))callback;
-        t->job = callback_job[i];
-        event_set(t->event_start);
-    }
-    for (i = 0; i < njobs; i++)
-    {
-        h264e_thread_t *t = threads + i;
-        event_wait(t->event_done, INFINITE);
-    }
-}
-#endif
-
 struct
 {
     const char *input_file;
@@ -374,17 +288,6 @@ static void psnr_print(rd_t rd)
 
 static int pixel_of_chessboard(double x, double y)
 {
-#if 0
-    int mid = (fabs(x) < 4 && fabs(y) < 4);
-    int i = (int)(x);
-    int j = (int)(y);
-    int cx, cy;
-    cx = (i & 16) ? 255 : 0;
-    cy = (j & 16) ? 255 : 0;
-    if ((i & 15) == 0) cx *= (x - i);
-    if ((j & 15) == 0) cx *= (y - j);
-    return (cx + cy + 1) >> 1;
-#else
     int mid = (fabs(x ) < 4 && fabs(y) < 4);
     int i = (int)(x);
     int j = (int)(y);
@@ -397,7 +300,6 @@ static int pixel_of_chessboard(double x, double y)
     int s    = (int)((c00 * (1 - (x - i)) + c01*(x - i))*(1 - (y - j)) +
                      (c10 * (1 - (x - i)) + c11*(x - i))*((y - j)) + 0.5);
     return s < 0 ? 0 : s > 255 ? 255 : s;
-#endif
 }
 
 static void gen_chessboard_rot(unsigned char *p, int w, int h, int frm)
@@ -444,6 +346,8 @@ int main(int argc, char *argv[])
     {
         g_w = 1024;
         g_h = 768;
+        g_w = 320;
+        g_h = 200;
     }
 
     if (!fnout)
@@ -474,20 +378,9 @@ int main(int argc, char *argv[])
     create_param.vbv_size_bytes = cmdline->kbps*1000/8*2; // 2 seconds vbv buffer for quality, so rate control can allocate more bits for intra frame
     create_param.temporal_denoise_flag = cmdline->denoise;
 
-#if H264E_MAX_THREADS
-    void *thread_pool = NULL;
-    create_param.max_threads = cmdline->threads;
-    if (cmdline->threads)
-    {
-        thread_pool = h264e_thread_pool_init(cmdline->threads);
-        create_param.token = thread_pool;
-        create_param.run_func_in_thread = h264e_thread_pool_run;
-    }
-#endif
-
     frame_size = g_w*g_h*3/2;
-    buf_in   = (uint8_t*)ALIGNED_ALLOC(64, frame_size);
-    buf_save = (uint8_t*)ALIGNED_ALLOC(64, frame_size);
+    buf_in   = (uint8_t*)malloc(frame_size);
+    buf_save = (uint8_t*)malloc(frame_size);
 
     if (!buf_in || !buf_save)
     {
@@ -515,8 +408,8 @@ int main(int argc, char *argv[])
             return 0;
         }
         printf("sizeof_persist = %d sizeof_scratch = %d\n", sizeof_persist, sizeof_scratch);
-        enc     = (H264E_persist_t *)ALIGNED_ALLOC(64, sizeof_persist);
-        scratch = (H264E_scratch_t *)ALIGNED_ALLOC(64, sizeof_scratch);
+        enc     = (H264E_persist_t *)malloc(sizeof_persist);
+        scratch = (H264E_scratch_t *)malloc(sizeof_scratch);
         error = H264E_init(enc, &create_param);
 
         if (fin)
@@ -627,11 +520,5 @@ int main(int argc, char *argv[])
         fclose(fin);
     if (fout)
         fclose(fout);
-#if H264E_MAX_THREADS
-    if (thread_pool)
-    {
-        h264e_thread_pool_close(thread_pool, cmdline->threads);
-    }
-#endif
     return 0;
 }

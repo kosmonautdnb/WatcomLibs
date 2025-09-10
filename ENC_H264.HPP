@@ -9,6 +9,125 @@
     See <http://creativecommons.org/publicdomain/zero/1.0/>.
 */
 
+/* :mad: simple example
+#define MINIH264_IMPLEMENTATION
+#include "enc_h264.hpp"
+#include <stdlib.h>
+
+class H264Writer {
+public:
+  H264E_persist_t *enc;
+  H264E_scratch_t *scratch;
+  int error,width,height;
+
+  H264Writer(int w, int h) {
+    if ((w|h)&1) {error = -256;return;}
+    enc = NULL; scratch = NULL;
+    error = width = height = 0;
+    H264E_create_param_t create_param;
+    memset(&create_param,0,sizeof(H264E_create_param_t));
+    create_param.enableNEON = 0;
+    create_param.num_layers = 1;
+    create_param.inter_layer_pred_flag = 0;
+    create_param.gop = 20; // DEFAULT_GOP
+    create_param.height = h;
+    create_param.width  = w;
+    create_param.max_long_term_reference_frames = 0;
+    create_param.fine_rate_control_flag = 0;
+    create_param.const_input_flag = 1;
+    create_param.vbv_size_bytes = 0;//kbps*1000/8*2; // 2 seconds
+    create_param.temporal_denoise_flag = 0;
+    int sizeof_persist = 0, sizeof_scratch = 0;
+    error = H264E_sizeof(&create_param, &sizeof_persist, &sizeof_scratch);
+    if (error) {
+        printf("H264E_init error = %d\n", error);
+        return;
+    }
+    enc     = (H264E_persist_t *)malloc(sizeof_persist);
+    scratch = (H264E_scratch_t *)malloc(sizeof_scratch);
+    error = H264E_init(enc, &create_param);
+    width = w;
+    height = h;
+  }
+
+  ~H264Writer() {
+    if (enc) free(enc);
+    if (scratch) free(scratch);
+  }
+
+  bool yuvToFile(unsigned char *y, unsigned char *u, unsigned char *v, FILE *file, int uvstride = -1) {
+    H264E_io_yuv_t yuv;
+    yuv.yuv[0] = y; yuv.stride[0] = width;
+    yuv.yuv[1] = u; yuv.stride[1] = uvstride>=0 ? uvstride : width/2;
+    yuv.yuv[2] = v; yuv.stride[2] = uvstride>=0 ? uvstride : width/2;
+
+    H264E_run_param_t run_param;
+    memset(&run_param,0,sizeof(H264E_run_param_t));
+
+    run_param.frame_type = 0;
+    run_param.encode_speed = 0; // 0 means best quality, 10 fastest
+
+    //if (kbps) {run_param.desired_frame_bytes = kbps*1000/8/30; run_param.qp_min = 10; run_param.qp_max = 50; }
+    run_param.qp_min = run_param.qp_max = 10; // quality 10 = best, 50=worst for 320x200 10 is "ok"
+
+    uint8_t *coded_data;
+    int sizeof_coded_data;
+
+    error = H264E_encode(enc, scratch, &run_param, &yuv, &coded_data, &sizeof_coded_data);
+    if (error != 0)
+      return false;
+
+    if (!fwrite(coded_data, sizeof_coded_data, 1, file)) {
+      error = -255;
+      return false;
+    }
+
+    return error == 0;
+  }
+
+  bool rgbaToFile(unsigned int *rgba, FILE *file) {
+    unsigned char *y = (unsigned char*)malloc(width*height);
+    unsigned char *u = (unsigned char*)malloc(width*height);
+    unsigned char *v = (unsigned char*)malloc(width*height);
+    unsigned char *yk = y;
+    unsigned char *uk = u;
+    unsigned char *vk = v;
+    unsigned int *k = rgba;
+    for (int yp = 0; yp < height; yp++) {
+      for (int xp = 0; xp < width; xp++) {
+        int r = *k & 255;
+        int g = ((*k)>>8) & 255;
+        int b = ((*k)>>16) & 255;
+        k++;
+        *yk++ = ((66*r+129*g+25*b+128)>>8)+16;
+        *uk++ = ((-38*r-74*g+112*b+128)>>8)+128;
+        *vk++ = ((112*r-94*g-18*b+128)>>8)+128;
+      }
+    }
+
+    {
+      for (int yp = 0; yp < height/2; yp++) {
+        uk = &u[yp*width];
+        vk = &v[yp*width];
+        unsigned char *uo = &u[yp*width*2];
+        unsigned char *vo = &v[yp*width*2];
+        for (int xp = 0; xp < width/2; xp++) {
+          *uk++ = ((int)*uo + *(uo+1) + *(uo+width) + *(uo+width + 1))>>2;
+          *vk++ = ((int)*vo + *(vo+1) + *(vo+width) + *(vo+width + 1))>>2;
+          uo+=2;
+          vo+=2;
+        }
+      }
+    }
+    yuvToFile(y, u, v, file, width); // stride is width not width/2
+    free(y);
+    free(u);
+    free(v);
+    return error==0;
+  }
+};
+*/
+
 #ifdef __cplusplus
 extern "C" {
 #endif
