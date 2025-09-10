@@ -126,6 +126,8 @@ public:
     return error==0;
   }
 };
+
+// you can use "ffmpeg -i input.264 -vcodec copy output.mkv" or minimp4.hpp to make a movie out of the exported raw h264 data
 */
 
 #ifdef __cplusplus
