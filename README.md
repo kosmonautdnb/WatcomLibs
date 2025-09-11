@@ -62,7 +62,7 @@ https://github.com/ocornut/imgui
 - CGLTFA - simple and fast coded GLTF scene object and skinning displayer
 - COLL.HPP - simple collisions (includes capsules, velocity stretched spheres).  
 - DOS.HPP - easy access to DOS functionality, comes with long file name support
-- ENC_H264.HPP - an h264 encoder (with .cpp example). MINIH264. https://github.com/lieff/minih264 (ffmpeg -i your_file.h264 -vcodec copy output.mkv)
+- ENC_H264.HPP - an h264 encoder (with .cpp example). MINIH264. https://github.com/lieff/minih264 (ffmpeg -i your_file.h264 -vcodec copy output.mkv) or use minimp4.cpp
 - FILEDLG.HPP - a DOS file dialog window written for IMGUI  
 - GENANN.HPP - a simple neural net. https://github.com/codeplea/genann
 - GTFLOG.CPP - just a temporary / very simple logger for CGLTF file structure.
@@ -72,6 +72,7 @@ https://github.com/ocornut/imgui
 - KEYMTRX.HPP - direct access to the keyboard matrix  
 - MARCHING.HPP - Marching Cubes and Marching Tetraeders.
 - MINIMP3.HPP - A mp3 decoder  https://github.com/lieff/minimp3  
+- MINIMP4.HPP - A mp4 muxer/demuxer (e.g. for h264 movies) https://github.com/lieff/minimp4
 - MPEG1.HPP - mpeg1 wrapper for PLMPEG.hpp
 - OPENGLFX.HPP - Some post processing OpenGL effects like antialiasing(FXAA(https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/ )), toon shader, motion blur
 - PARSON.HPP - another json reader/writer https://github.com/kgabis/parson
