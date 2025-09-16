@@ -20,7 +20,11 @@ https://github.com/ocornut/imgui
 - IMGUI.CPP  
 - IMGUI.H  
 - IMGUIGL.CPP  
-- IMGUIGL.HPP  
+- IMGUIGL.HPP
+- STBRECT.HPP
+- STBTTF.HPP
+- STBTEXT.HPP
+- IMCONFIG.H  
 
 #### &emsp;ImGui howto:
 &emsp;#include "gl.h"  
@@ -43,9 +47,6 @@ https://github.com/ocornut/imgui
 &emsp;&emsp;}  
 &emsp;&emsp;glDone();  
 &emsp;}  
-
-you do also need these files for ImGui from this repository:  
-STBRECT.HPP, STBTTF.HPP, STBTEXT.HPP, IMCONFIG.H  
 
 ## Some basic types
 - ARRAY.HPP - a bit like std::vector  
