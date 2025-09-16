@@ -24,7 +24,6 @@ https://github.com/ocornut/imgui
 - STBRECT.HPP
 - STBTTF.HPP
 - STBTEXT.HPP
-- IMCONFIG.H  
 
 #### &emsp;ImGui howto:
 &emsp;#include "gl.h"  
