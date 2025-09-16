@@ -4,6 +4,7 @@
 #include "vector.hpp"
 #include "matrix.hpp"
 #include "quaternn.hpp"
+#include <math.h>
 
 //---
 // :Collision Types:
@@ -13,6 +14,7 @@
 // Cube+Cube
 // Cube+Sphere
 // Cube+Line
+// Line+Triangle
 //---
 
 // Capsule-Collision
@@ -382,6 +384,7 @@ public:
     hit = p1 + (p2-p1)*(-fDst1/(fDst2-fDst1));
     return true;
   }
+  // CUBE+LINE
   static bool inBox(const Vector &hit, const Vector &b1, const Vector &b2, const int axis) {
     switch(axis) {
     case 1: {if (hit.z>=b1.z&&hit.z<b2.z&&hit.y>=b1.y&&hit.y<b2.y) return true;} break;
@@ -390,6 +393,7 @@ public:
     }
     return false;
   }
+  // CUBE+LINE
   static bool collided(const Matrix &cube, const Vector &p0,const Vector &p1, Vector &collisionPoint, bool checkIfInside = true) {
     Matrix im1 = inverse(cube);
     const Vector l1 = im1 * p0;
@@ -413,10 +417,43 @@ public:
     if (linePoint(l1.z-b2.z,l2.z-b2.z,l1,l2,collisionPoint)&&inBox(collisionPoint,b1,b2,3)) {collisionPoint=cube*collisionPoint;return true;}
     return false;
   }
+  // CUBE+LINE
   bool collided(const Vector &p0,const Vector &p1, Vector &collisionPoint) const {
     Matrix m1; m1.translate(center.xyz());  m1 *= rotation.rotationMatrix();  m1.scale3(size);
     return collided(m1, p0, p1, collisionPoint);
   }
 };
+
+// LINE+TRIANGLE
+double signedVolume(const Vector &a, const Vector &b, const Vector &c, const Vector &d) {return (1.0/6.0)*dot(cross(b-a,c-a),d-a);}
+// LINE+TRIANGLE
+bool collided(const Vector &l0,const Vector &l1, const Vector &t0, const Vector &t1, const Vector &t2) {
+  const double s0 = signedVolume(l0,t0,t1,t2);
+  const double s1 = signedVolume(l1,t0,t1,t2);
+  if (s0*s1>=0) return false;
+  const double a0 = signedVolume(l0,l1,t0,t1);
+  const double a1 = signedVolume(l0,l1,t1,t2);
+  if (a0*a1<0) return false;
+  const double a2 = signedVolume(l0,l1,t2,t0);
+  if (a1*a2<0) return false;
+  return true;
+}
+// LINE+TRIANGLE (to be called after collided returned true (it's just a ray collision not a line))
+bool collisionPoint(const Vector &l0,const Vector &l1, const Vector &t0, const Vector &t1, const Vector &t2, Vector &collisionPoint) {
+  Vector e1 = t1-t0;
+  Vector e2 = t2-t0;
+  Vector rd = normalize(l1-l0); // ray dir
+  Vector n = cross(e1,e2);
+  double det = -dot(rd,n);
+  double invdet = det!=0?1.0/det:1.0;
+  Vector a0 = l0 - t0;
+  Vector da0 = cross(a0,rd);
+  double u = dot(e2,da0)*invdet;
+  double v = -dot(e1,da0)*invdet;
+  double t = dot(a0,n)*invdet;
+  bool hit = fabs(det)>=1e-6&&t>=0.0&&u>=0.0&&v>=0.0&&(u+v)<=1.0;
+  if (hit) collisionPoint = l0 + t * rd;
+  return hit;
+}
 
 #endif // __COLL_HPP__

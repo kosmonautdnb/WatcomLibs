@@ -181,7 +181,7 @@ public:
   unsigned int id;
 };
 
-typedef bool (*HITTESTFUNCTION)(const Matrix &cubeMatrix, Vector &hitPoint, double &hitDistance);
+typedef bool (*HITTESTFUNCTION)(const Matrix &cubeMatrix, Vector &hitPoint, double &hitDistance, const GLTFA_Node &node);
 class GLTFA_File {
 public:
 
@@ -220,7 +220,7 @@ public:
 
 /* Basic Hit Test
 Vector l0,l1,norm;
-bool hitTest(const Matrix &cubeMatrix, Vector &hitPoint, double &hitDistance) {
+bool hitTest(const Matrix &cubeMatrix, Vector &hitPoint, double &hitDistance, const GLTFA_Node &node) {
   bool hit = CLCube::collided(cubeMatrix,l0,l1,hitPoint,false);
   hitDistance = dot(hitPoint-l0,norm);
   return hit;

@@ -559,7 +559,7 @@ unsigned int GLTFA_File::hitTestNode(unsigned int nodeId, HITTESTFUNCTION t, Vec
             Vector boundingBoxScale = (boundingBoxCenter-boundingBoxMin);
             Matrix m1; m1*=n->finalMatrix;m1.translate(boundingBoxCenter);m1.scale3(boundingBoxScale);
             Vector hitPoint; double hitDistance;
-            if (t(m1,hitPoint,hitDistance)) {
+            if (t(m1,hitPoint,hitDistance,*n)) {
               if (hitDistance>=0&&hitDistance<lastHitDistance) {
                 lastHitDistance=hitDistance;
                 nodeHit = nodeId;
