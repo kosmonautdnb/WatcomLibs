@@ -45,7 +45,6 @@ public:
   Array<GLTFA_Primitive*> primitives;
   Vector boundingBoxMin;
   Vector boundingBoxMax;
-  Vector color;
   void buildBoundingBox();
 };
 
