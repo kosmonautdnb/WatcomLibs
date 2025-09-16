@@ -2,6 +2,24 @@
 #include "gl.h"
 #include "image.hpp"
 
+void GLTFA_Mesh::buildBoundingBox() {
+  bool first = true;
+  for (int i = 0; i < primitives.size(); i++) {
+    GLTFA_Primitive *p = primitives[i];
+    Array<Vector> &k = p->positions[0];
+    for (int j = 0; j < k.size(); j++) {
+      Vector &k2 = k[j];
+      if (first||k2.x<boundingBoxMin.x) boundingBoxMin.x=k2.x;
+      if (first||k2.y<boundingBoxMin.y) boundingBoxMin.y=k2.y;
+      if (first||k2.z<boundingBoxMin.z) boundingBoxMin.z=k2.z;
+      if (first||k2.x>boundingBoxMax.x) boundingBoxMax.x=k2.x;
+      if (first||k2.y>boundingBoxMax.y) boundingBoxMax.y=k2.y;
+      if (first||k2.z>boundingBoxMax.z) boundingBoxMax.z=k2.z;
+      first = false;
+    }
+  }
+}
+
 GLTFA_Node::GLTFA_Node() {
   id = 0;
   parent_id = 0;
@@ -12,6 +30,7 @@ GLTFA_Node::GLTFA_Node() {
   hasRotation = false;
   hasTranslation = false;
   hasMatrix = false;
+  color = Vector(1,1,1,1);
 }
 
 
@@ -87,6 +106,7 @@ void GLTFA_File::initMaterials(cgltf_material* materials, int count, double texS
   gltfMaterials.clear();
   for (int i = 0; i < count; i++) {
     GLTFA_Material *material = new GLTFA_Material();
+    material->name = materials[i].name==NULL?"":materials[i].name;
     material->materialId = (unsigned int)&materials[i];
     material->texWidth = 0;
     material->texHeight = 0;
@@ -115,6 +135,7 @@ void GLTFA_File::initMesh(GLTFA_Mesh *m, cgltf_mesh *v) {
   // load primitive data
   m->primitives.clear();
   m->primitives.resize(v->primitives_count);
+  m->name = v->name==NULL?"":v->name;
   for (int i = 0; i < m->primitives.size(); i++) {
     cgltf_primitive *p = &v->primitives[i]; 
     GLTFA_Primitive *r = new GLTFA_Primitive(); 
@@ -170,6 +191,7 @@ void GLTFA_File::initMeshes(cgltf_mesh* meshes, int count) {
   for (int i = 0; i < count; i++) {
     GLTFA_Mesh *mesh = new GLTFA_Mesh();
     initMesh(mesh,&meshes[i]);
+    mesh->buildBoundingBox(); // maybe exclude this
     gltfMeshes[mesh->meshId] = mesh;
   }
 }
@@ -392,8 +414,8 @@ void GLTFA_File::applyAnimation(float time, GLTFA_Animation *a) {
   recalculateNodes();
 }
 
-void GLTFA_File::drawPrimitive(GLTFA_Primitive *a, GLTFA_Skin *b) {
-  glColor4f(1,1,1,1);
+void GLTFA_File::drawPrimitive(GLTFA_Primitive *a, GLTFA_Skin *b, const Vector &color) {
+  glColor4dv(&color.x);
 
   Vector *colorsV = NULL;
   Vector *texCoordsV = NULL;
@@ -415,7 +437,7 @@ void GLTFA_File::drawPrimitive(GLTFA_Primitive *a, GLTFA_Skin *b) {
         glBegin(GL_TRIANGLES);
         for (int i = 0; i < a->indices.size(); i++) {
           int j = a->indices[i];
-          if (colorsV) glColor4dv(&colorsV[j].x);
+          if (colorsV) glColor4d(colorsV[j].x*color.x,colorsV[j].y*color.y,colorsV[j].z*color.z,colorsV[j].w*color.w);
           if (texCoordsV) glTexCoord2dv(&texCoordsV[j].x);
           if (normalsV) glNormal3dv(&normalsV[j].x);
           if (positionsV) glVertex3dv(&positionsV[j].x);
@@ -430,7 +452,7 @@ void GLTFA_File::drawPrimitive(GLTFA_Primitive *a, GLTFA_Skin *b) {
         glBegin(GL_TRIANGLES);
         for (int i = 0; i < a->indices.size(); i++) {
           int j = a->indices[i];
-          if (colorsV) glColor4dv(&colorsV[j].x);
+          if (colorsV) glColor4d(colorsV[j].x*color.x,colorsV[j].y*color.y,colorsV[j].z*color.z,colorsV[j].w*color.w);
           if (texCoordsV) glTexCoord2dv(&texCoordsV[j].x);
           normal = b->transformNormal(normalsV[j], jointsV[j], weightsV[j]);
           translation = b->transformPosition(positionsV[j], jointsV[j], weightsV[j]);
@@ -451,7 +473,7 @@ void GLTFA_File::drawMesh(GLTFA_Mesh *a, GLTFA_Skin *b) {
   for (int i = 0; i < a->primitives.size(); i++) drawPrimitive(a->primitives[i],b);
 }
 
-void GLTFA_File::drawMesh(unsigned int meshId, double *matrix, unsigned int skinId) {
+void GLTFA_File::drawMesh(unsigned int meshId, double *matrix, unsigned int skinId, const Vector &color) {
   if (!gltfMeshes.has(meshId)) return;
   if (skinId != 0 && (!gltfSkins.has(skinId))) return;
   GLTFA_Skin *s = NULL; if (skinId != 0) s = gltfSkins[skinId];
@@ -465,7 +487,7 @@ void GLTFA_File::drawMesh(unsigned int meshId, double *matrix, unsigned int skin
         glBindTexture(GL_TEXTURE_2D,a->texHandle);
         glPushMatrix();
         glMultMatrixd(matrix);
-        drawPrimitive(m->primitives[i],s);
+        drawPrimitive(m->primitives[i],s,color);
         glPopMatrix();
         glDisable(GL_TEXTURE_2D);
       } 
@@ -478,7 +500,7 @@ void GLTFA_File::drawMesh(unsigned int meshId, double *matrix, unsigned int skin
     } else {
       glPushMatrix();
       glMultMatrixd(matrix);
-      drawPrimitive(m->primitives[i],s);
+      drawPrimitive(m->primitives[i],s,color);
       glPopMatrix();
     }
   }
@@ -495,10 +517,10 @@ void GLTFA_File::drawNode(unsigned int nodeId) {
       GLTFA_Node *n = gltfNodes[nodeId];
       if (n->meshId != 0) {
         if (n->skinId == 0) {
-          drawMesh(n->meshId, n->finalMatrix.m,0);
+          drawMesh(n->meshId, n->finalMatrix.m,0,n->color);
         } else {
           Matrix identity; // not sure, but this is already in the skinning matrices
-          drawMesh(n->meshId, identity.m,n->skinId);
+          drawMesh(n->meshId, identity.m,n->skinId,n->color);
         }
       }
       for (int i = n->child_ids.size()-1; i >= 0; i--) {
@@ -516,3 +538,56 @@ void GLTFA_File::drawScene(unsigned int sceneId) {
     drawNode(s->nodes[i]->id);
   }
 }
+
+unsigned int GLTFA_File::hitTestNode(unsigned int nodeId, HITTESTFUNCTION t, Vector &nodeHitPoint, double &lastHitDistance) {
+  // somehow recursive functions don't work in watcom c here
+  Array<unsigned int> stack;
+  stack.push_back(nodeId);
+  unsigned int nodeHit = 0;
+  while(!stack.empty()) {
+    nodeId = stack.back();
+    stack.pop_back();
+    if (gltfNodes.has(nodeId)) {
+      GLTFA_Node *n = gltfNodes[nodeId];
+      if (n->meshId != 0) {
+        if (n->skinId == 0) {
+          if (gltfMeshes.has(n->meshId)) {
+            GLTFA_Mesh *m = gltfMeshes[n->meshId];
+            Vector &boundingBoxMin = m->boundingBoxMin;
+            Vector &boundingBoxMax = m->boundingBoxMax;
+            Vector boundingBoxCenter = (boundingBoxMin+boundingBoxMax)/2.0;
+            Vector boundingBoxScale = (boundingBoxCenter-boundingBoxMin);
+            Matrix m1; m1*=n->finalMatrix;m1.translate(boundingBoxCenter);m1.scale3(boundingBoxScale);
+            Vector hitPoint; double hitDistance;
+            if (t(m1,hitPoint,hitDistance)) {
+              if (hitDistance>=0&&hitDistance<lastHitDistance) {
+                lastHitDistance=hitDistance;
+                nodeHit = nodeId;
+                nodeHitPoint = hitPoint;
+              }
+            }
+          }
+        } else {
+        }
+      }
+      for (int i = n->child_ids.size()-1; i >= 0; i--) {
+        stack.push_back(n->child_ids[i]);
+      }
+    }
+  }
+  return nodeHit;
+}
+
+unsigned int GLTFA_File::hitTestForScene(unsigned int sceneId, HITTESTFUNCTION t, Vector &hitPoint) {
+  if (!gltfScenes.has(sceneId)) 
+    return 0;
+  GLTFA_Scene *s = gltfScenes[sceneId];
+  double lastHitDistance = 10000000000.0;
+  unsigned int nodeHit = 0;
+  for (int i = 0; i < s->nodes.size(); i++) {
+    unsigned int node = hitTestNode(s->nodes[i]->id, t, hitPoint, lastHitDistance);
+    if (node != 0) nodeHit = node;
+  }
+  return nodeHit;
+}
+

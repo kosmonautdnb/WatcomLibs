@@ -376,13 +376,13 @@ public:
   }
 
   // CUBE+LINE
-  bool linePoint(const double fDst1, const double fDst2,const Vector &p1, const Vector &p2, Vector &hit) const {
+  static bool linePoint(const double fDst1, const double fDst2,const Vector &p1, const Vector &p2, Vector &hit) {
     if ((fDst1*fDst2)>=0.0) return false;
     if (fDst1==fDst2) return false;
     hit = p1 + (p2-p1)*(-fDst1/(fDst2-fDst1));
     return true;
   }
-  bool inBox(const Vector &hit, const Vector &b1, const Vector &b2, const int axis) const {
+  static bool inBox(const Vector &hit, const Vector &b1, const Vector &b2, const int axis) {
     switch(axis) {
     case 1: {if (hit.z>=b1.z&&hit.z<b2.z&&hit.y>=b1.y&&hit.y<b2.y) return true;} break;
     case 2: {if (hit.z>=b1.z&&hit.z<b2.z&&hit.x>=b1.x&&hit.x<b2.x) return true;} break;
@@ -390,10 +390,8 @@ public:
     }
     return false;
   }
-  bool collided(const Vector &p0,const Vector &p1, Vector &collisionPoint) const {
-    Matrix m1,im1;
-    m1.translate(center.xyz());  m1 *= rotation.rotationMatrix();  m1.scale3(size);
-    im1 = inverse(m1);
+  static bool collided(const Matrix &cube, const Vector &p0,const Vector &p1, Vector &collisionPoint, bool checkIfInside = true) {
+    Matrix im1 = inverse(cube);
     const Vector l1 = im1 * p0;
     const Vector l2 = im1 * p1;
     const Vector b1(-1,-1,-1);
@@ -405,15 +403,19 @@ public:
     if (l1.y>=b2.y && l2.y>=b2.y) return false;
     if (l1.z>=b2.z && l2.z>=b2.z) return false;
     
-    if (l1.x>=b1.x && l1.y>=b1.y && l1.z>=b1.z && l1.x<b2.x && l1.y<b2.y && l1.z<b2.z) {collisionPoint=m1*l1;return true;}
+    if (checkIfInside && l1.x>=b1.x && l1.y>=b1.y && l1.z>=b1.z && l1.x<b2.x && l1.y<b2.y && l1.z<b2.z) {collisionPoint=cube*l1;return true;}
     
-    if (linePoint(l1.x-b1.x,l2.x-b1.x,l1,l2,collisionPoint)&&inBox(collisionPoint,b1,b2,1)) {collisionPoint=m1*collisionPoint;return true;}
-    if (linePoint(l1.y-b1.y,l2.y-b1.y,l1,l2,collisionPoint)&&inBox(collisionPoint,b1,b2,2)) {collisionPoint=m1*collisionPoint;return true;}
-    if (linePoint(l1.z-b1.z,l2.z-b1.z,l1,l2,collisionPoint)&&inBox(collisionPoint,b1,b2,3)) {collisionPoint=m1*collisionPoint;return true;}
-    if (linePoint(l1.x-b2.x,l2.x-b2.x,l1,l2,collisionPoint)&&inBox(collisionPoint,b1,b2,1)) {collisionPoint=m1*collisionPoint;return true;}
-    if (linePoint(l1.y-b2.y,l2.y-b2.y,l1,l2,collisionPoint)&&inBox(collisionPoint,b1,b2,2)) {collisionPoint=m1*collisionPoint;return true;}
-    if (linePoint(l1.z-b2.z,l2.z-b2.z,l1,l2,collisionPoint)&&inBox(collisionPoint,b1,b2,3)) {collisionPoint=m1*collisionPoint;return true;}
+    if (linePoint(l1.x-b1.x,l2.x-b1.x,l1,l2,collisionPoint)&&inBox(collisionPoint,b1,b2,1)) {collisionPoint=cube*collisionPoint;return true;}
+    if (linePoint(l1.y-b1.y,l2.y-b1.y,l1,l2,collisionPoint)&&inBox(collisionPoint,b1,b2,2)) {collisionPoint=cube*collisionPoint;return true;}
+    if (linePoint(l1.z-b1.z,l2.z-b1.z,l1,l2,collisionPoint)&&inBox(collisionPoint,b1,b2,3)) {collisionPoint=cube*collisionPoint;return true;}
+    if (linePoint(l1.x-b2.x,l2.x-b2.x,l1,l2,collisionPoint)&&inBox(collisionPoint,b1,b2,1)) {collisionPoint=cube*collisionPoint;return true;}
+    if (linePoint(l1.y-b2.y,l2.y-b2.y,l1,l2,collisionPoint)&&inBox(collisionPoint,b1,b2,2)) {collisionPoint=cube*collisionPoint;return true;}
+    if (linePoint(l1.z-b2.z,l2.z-b2.z,l1,l2,collisionPoint)&&inBox(collisionPoint,b1,b2,3)) {collisionPoint=cube*collisionPoint;return true;}
     return false;
+  }
+  bool collided(const Vector &p0,const Vector &p1, Vector &collisionPoint) const {
+    Matrix m1; m1.translate(center.xyz());  m1 *= rotation.rotationMatrix();  m1.scale3(size);
+    return collided(m1, p0, p1, collisionPoint);
   }
 };
 

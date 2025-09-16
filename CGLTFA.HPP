@@ -7,11 +7,13 @@
 #include "vector.hpp"
 #include "matrix.hpp"
 #include "quaternn.hpp"
+#include "string.hpp"
 
 // this is a tiny fast coded cgltf mesh loader and displayer, including skinning and animations
 
 class GLTFA_Material {
 public:
+  String name;
   unsigned int materialId;
   unsigned int texWidth;
   unsigned int texHeight;
@@ -39,7 +41,12 @@ public:
 class GLTFA_Mesh {
 public:
   unsigned int meshId;
+  String name;
   Array<GLTFA_Primitive*> primitives;
+  Vector boundingBoxMin;
+  Vector boundingBoxMax;
+  Vector color;
+  void buildBoundingBox();
 };
 
 class GLTFA_Node {
@@ -63,6 +70,7 @@ public:
   Matrix inverseBindMatrix;
   Matrix finalMatrix;
   Matrix finalNormalMatrix;
+  Vector color;
 };
 
 class GLTFA_Skin {
@@ -174,6 +182,7 @@ public:
   unsigned int id;
 };
 
+typedef bool (*HITTESTFUNCTION)(const Matrix &cubeMatrix, Vector &hitPoint, double &hitDistance);
 class GLTFA_File {
 public:
 
@@ -200,12 +209,45 @@ public:
   void fillNode(GLTFA_Node *j, cgltf_node *k) const;
   void recalculateNodes();
   void applyAnimation(float time, GLTFA_Animation *a);
-  void drawPrimitive(GLTFA_Primitive *a, GLTFA_Skin *b = NULL);
+  void drawPrimitive(GLTFA_Primitive *a, GLTFA_Skin *b = NULL, const Vector &color = Vector(1,1,1,1));
   void drawMesh(GLTFA_Mesh *a);
   void drawMesh(GLTFA_Mesh *a, GLTFA_Skin *b);
-  void drawMesh(unsigned int meshId, double *matrix, unsigned int skinId);
+  void drawMesh(unsigned int meshId, double *matrix, unsigned int skinId, const Vector &color = Vector(1,1,1,1));
   void drawNode(unsigned int nodeId);
   void drawScene(unsigned int sceneId);
+  unsigned int hitTestNode(unsigned int nodeId, HITTESTFUNCTION t, Vector &nodeHitPoint, double &lastHitDistance);
+  unsigned int hitTestForScene(unsigned int sceneId, HITTESTFUNCTION t, Vector &hitPoint);
 };
+
+/* Basic Hit Test
+Vector l0,l1,norm;
+bool hitTest(const Matrix &cubeMatrix, Vector &hitPoint, double &hitDistance) {
+  bool hit = CLCube::collided(cubeMatrix,l0,l1,hitPoint,false);
+  hitDistance = dot(hitPoint-l0,norm);
+  return hit;
+}
+void hitTestScene(GLTFA_File &f, int sceneId) {
+  Array<unsigned int> k = f.gltfNodes.keys();
+  for (int j = 0; j < k.size(); j++) {
+    f.gltfNodes[k[j]]->color = Vector(1,1,1,1);
+  }
+  int viewPort[4];
+  glGetIntegerv(GL_VIEWPORT, viewPort);
+  double modelView[16], projection[16];
+  glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
+  glGetDoublev(GL_PROJECTION_MATRIX, projection);
+  gluUnProject(mouseX,glFrameBufferHeight-mouseY,0,modelView,projection,viewPort,&l0.x,&l0.y,&l0.z);
+  gluUnProject(mouseX,glFrameBufferHeight-mouseY,1,modelView,projection,viewPort,&l1.x,&l1.y,&l1.z);
+  norm = normalize(l1-l0);
+  Vector hitPoint;
+  unsigned int nodeId = f.hitTestForScene(sceneId,hitTest,hitPoint);
+  if (nodeId != 0) {
+    if (f.gltfNodes.has(nodeId)) {
+      GLTFA_Node *j = f.gltfNodes[nodeId];
+      j->color = Vector(1,0,0,1);
+    }
+  }
+}
+*/
 
 #endif // __CGLTFA_HPP__
