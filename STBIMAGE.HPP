@@ -387,7 +387,7 @@ enum
 typedef unsigned char stbi_uc;
 typedef unsigned short stbi_us;
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 extern "C" {
 #endif
 
@@ -535,7 +535,7 @@ STBIDEF char *stbi_zlib_decode_noheader_malloc(const char *buffer, int len, int 
 STBIDEF int   stbi_zlib_decode_noheader_buffer(char *obuffer, int olen, const char *ibuffer, int ilen);
 
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 }
 #endif
 
@@ -603,7 +603,7 @@ STBIDEF int   stbi_zlib_decode_noheader_buffer(char *obuffer, int olen, const ch
 #define STBI_ASSERT(x) assert(x)
 #endif
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 #define STBI_EXTERN extern "C"
 #else
 #define STBI_EXTERN extern
@@ -611,7 +611,7 @@ STBIDEF int   stbi_zlib_decode_noheader_buffer(char *obuffer, int olen, const ch
 
 
 #ifndef _MSC_VER
-   #ifdef __cplusplus
+   #ifdef x__cplusplus
    #define stbi_inline inline
    #else
    #define stbi_inline
@@ -621,7 +621,7 @@ STBIDEF int   stbi_zlib_decode_noheader_buffer(char *obuffer, int olen, const ch
 #endif
 
 #ifndef STBI_NO_THREAD_LOCALS
-   #if defined(__cplusplus) &&  __cplusplus >= 201103L
+   #if defined(x__cplusplus) &&  x__cplusplus >= 201103L
       #define STBI_THREAD_LOCAL       thread_local
    #elif defined(__GNUC__) && __GNUC__ < 5
       #define STBI_THREAD_LOCAL       __thread

@@ -27,7 +27,7 @@
 #ifndef MAKE_JSON_H
 #define	MAKE_JSON_H
 
-#ifdef	__cplusplus
+#ifdef x__cplusplus
 extern "C" {
 #endif
 
@@ -151,7 +151,7 @@ char* json_double( char* dest, char const* name, double value, size_t* remLen );
 
 /** @ } */
 
-#ifdef	__cplusplus
+#ifdef x__cplusplus
 }
 #endif
 

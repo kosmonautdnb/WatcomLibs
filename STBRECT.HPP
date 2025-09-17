@@ -42,7 +42,7 @@
 #define STBRP_DEF extern
 #endif
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 extern "C" {
 #endif
 
@@ -157,7 +157,7 @@ struct stbrp_context
    stbrp_node extra[2]; // we allocate two extra nodes so optimal user-node-count is 'width' not 'width+2'
 };
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 }
 #endif
 

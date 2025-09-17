@@ -27,7 +27,7 @@
 #define TINYEXPR_H
 
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 extern "C" {
 #endif
 
@@ -80,7 +80,7 @@ void te_print(const te_expr *n);
 void te_free(te_expr *n);
 
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 }
 #endif
 

@@ -159,7 +159,7 @@ LICENSE
 #ifdef STB_IMAGE_WRITE_STATIC
 #define STBIWDEF  static
 #else
-#ifdef __cplusplus
+#ifdef x__cplusplus
 #define STBIWDEF  extern "C"
 #else
 #define STBIWDEF  extern
@@ -288,7 +288,7 @@ static void stbi__stdio_write(void *context, void *data, int size)
 }
 
 #if defined(_WIN32) && defined(STBIW_WINDOWS_UTF8)
-#ifdef __cplusplus
+#ifdef x__cplusplus
 #define STBIW_EXTERN extern "C"
 #else
 #define STBIW_EXTERN extern

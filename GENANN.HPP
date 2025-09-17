@@ -29,7 +29,7 @@
 
 #include <stdio.h>
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 extern "C" {
 #endif
 
@@ -101,7 +101,7 @@ double genann_act_threshold(const genann *ann, double a);
 double genann_act_linear(const genann *ann, double a);
 
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 }
 #endif
 

@@ -23,7 +23,7 @@ typedef struct
     unsigned char header[4], reserv_buf[511];
 } mp3dec_t;
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
@@ -36,7 +36,7 @@ void mp3dec_f32_to_s16(const float *in, int16_t *out, int num_samples);
 #endif /* MINIMP3_FLOAT_OUTPUT */
 int mp3dec_decode_frame(mp3dec_t *dec, const uint8_t *mp3, int mp3_bytes, mp3d_sample_t *pcm, mp3dec_frame_info_t *info);
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 }
 #endif /* __cplusplus */
 

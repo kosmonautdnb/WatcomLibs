@@ -55,7 +55,7 @@ In other files just include "xml.h".
 //#include <stdbool.h> :mad:
 #include <stddef.h>
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 extern "C" {
 #endif // __cplusplus
 
@@ -106,7 +106,7 @@ const char *xml_node_attr(XMLNode *node, const char *attr_key);
 // Cleanup node and all it's children.
 void xml_node_free(XMLNode *node);
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 }
 #endif // __cplusplus
 

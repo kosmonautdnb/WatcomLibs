@@ -190,7 +190,7 @@ void paintMeshGLTF(cgltf_mesh *mesh) {
 //#include <stdint.h> /* For uint8_t, uint32_t */
 #include "types.hpp" // :mad:    
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 extern "C" {
 #endif
 
@@ -996,7 +996,7 @@ cgltf_size cgltf_animation_index(const cgltf_data* data, const cgltf_animation* 
 cgltf_size cgltf_animation_sampler_index(const cgltf_animation* animation, const cgltf_animation_sampler* object);
 cgltf_size cgltf_animation_channel_index(const cgltf_animation* animation, const cgltf_animation_channel* object);
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 }
 #endif
 

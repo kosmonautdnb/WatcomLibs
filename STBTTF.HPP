@@ -463,7 +463,7 @@ int main(int arg, char **argv)
 #define STBTT_DEF extern
 #endif
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 extern "C" {
 #endif
 
@@ -908,7 +908,7 @@ enum { // languageID for STBTT_PLATFORM_ID_MAC
    STBTT_MAC_LANG_ITALIAN      =3 ,   STBTT_MAC_LANG_CHINESE_TRAD =19
 };
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 }
 #endif
 

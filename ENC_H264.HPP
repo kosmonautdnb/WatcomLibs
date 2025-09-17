@@ -130,8 +130,8 @@ public:
 // you can use "ffmpeg -i input.264 -vcodec copy output.mkv" or minimp4.hpp to make a movie out of the exported raw h264 data
 */
 
-#ifdef __cplusplus
-extern "C" {
+#ifdef x__cplusplus
+  extern "C" {
 #endif
 
 #ifndef H264E_SVC_API
@@ -434,7 +434,7 @@ void H264E_set_vbv_state(
     int vbv_fullness_bytes              ///< New VBV fulness, -1 = no change
 );
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 }
 #endif
 
@@ -556,7 +556,7 @@ static inline unsigned int __clz(unsigned int val1)
 }
 #endif
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 extern "C" {
 #endif  //__cplusplus
 
@@ -896,7 +896,7 @@ typedef struct H264E_persist_tag
 
 } h264e_enc_t;
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 }
 #endif //__cplusplus
 /************************************************************************/

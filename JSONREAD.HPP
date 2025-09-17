@@ -29,7 +29,7 @@
 #ifndef _TINY_JSON_H_
 #define	_TINY_JSON_H_
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 extern "C" {
 #endif
 
@@ -170,7 +170,7 @@ json_t const* json_createWithPool( char* str, jsonPool_t* pool );
 
 /** @ } */
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 }
 #endif
 

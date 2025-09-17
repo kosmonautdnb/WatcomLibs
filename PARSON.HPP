@@ -24,7 +24,7 @@
 #ifndef parson_parson_h
 #define parson_parson_h
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 extern "C"
 {
 #endif
@@ -227,7 +227,7 @@ const char  *   json_string (const JSON_Value *value);
 double          json_number (const JSON_Value *value);
 int             json_boolean(const JSON_Value *value);
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 }
 #endif
 

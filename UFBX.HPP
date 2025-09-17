@@ -31,8 +31,8 @@
 #endif
 
 #ifndef UFBX_CPP
-	#if defined(__cplusplus)
-		#define UFBX_CPP __cplusplus
+	#if defined(x__cplusplus)
+		#define UFBX_CPP x__cplusplus
 	#else
 		#define UFBX_CPP 0
 	#endif
@@ -73,7 +73,7 @@
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wpedantic"
 	#pragma clang diagnostic ignored "-Wpadded"
-	#if defined(__cplusplus)
+	#if defined(x__cplusplus)
 		#pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"
 		#pragma clang diagnostic ignored "-Wold-style-cast"
 	#endif
@@ -81,7 +81,7 @@
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wpedantic"
 	#pragma GCC diagnostic ignored "-Wpadded"
-	#if defined(__cplusplus)
+	#if defined(x__cplusplus)
 		#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 		#pragma GCC diagnostic ignored "-Wold-style-cast"
 	#else
@@ -209,7 +209,7 @@ struct ufbx_converter { };
 
 #endif
 
-#if defined(__cplusplus)
+#if defined(x__cplusplus)
 	#define UFBX_LIST_TYPE(p_name, p_type) struct p_name { p_type *data; size_t count; \
 		p_type &operator[](size_t index) const { ufbx_assert(index < count); return data[index]; } \
 		p_type *begin() const { return data; } \
@@ -5239,7 +5239,7 @@ typedef struct ufbx_panic {
 
 // -- API
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 extern "C" {
 #endif
 
@@ -5817,7 +5817,7 @@ ufbx_abi ufbx_double_list ufbx_dom_as_double_list(const ufbx_dom_node *node);
 ufbx_abi ufbx_real_list ufbx_dom_as_real_list(const ufbx_dom_node *node);
 ufbx_abi ufbx_blob_list ufbx_dom_as_blob_list(const ufbx_dom_node *node);
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 }
 #endif
 

@@ -85,7 +85,7 @@
 #endif
 #endif
 
-#ifdef  __cplusplus
+#ifdef  x__cplusplus
 extern "C" {
 #endif
 /*! @} */
@@ -3109,7 +3109,7 @@ ts_distance(const tsReal *x,
 
 
 
-#ifdef  __cplusplus
+#ifdef  x__cplusplus
 }
 #endif
 

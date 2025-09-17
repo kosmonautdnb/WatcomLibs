@@ -17,7 +17,7 @@
 #include <limits.h>
 #include <assert.h>
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 extern "C" {
 #endif
 
@@ -483,7 +483,7 @@ int MP4E_set_pps(MP4E_mux_t *mux, int track_id, const void *pps, int bytes);
 */
 int MP4E_set_text_comment(MP4E_mux_t *mux, const char *comment);
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 }
 #endif
 #endif //MINIMP4_H

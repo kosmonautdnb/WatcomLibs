@@ -171,7 +171,7 @@ See below for detailed the API documentation.
 #include <stdio.h>
 
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 extern "C" {
 #endif
 
@@ -782,7 +782,7 @@ plm_samples_t *plm_audio_decode(plm_audio_t *self);
 
 
 
-#ifdef __cplusplus
+#ifdef x__cplusplus
 }
 #endif
 

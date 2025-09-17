@@ -393,7 +393,7 @@ typedef uint64_t stbir_uint64;
 #ifdef STB_IMAGE_RESIZE_STATIC
 #define STBIRDEF static
 #else
-#ifdef __cplusplus
+#ifdef x__cplusplus
 #define STBIRDEF extern "C"
 #else
 #define STBIRDEF extern
