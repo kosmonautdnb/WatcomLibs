@@ -19,8 +19,12 @@ typedef signed short int16_t;
 typedef unsigned short uint16_t;
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
+#if __WATCOMC__ < 1200
 typedef int32_t intptr_t;
 typedef uint32_t uintptr_t;
+#else
+#include <stddef.h>
+#endif
 typedef unsigned int DWORD;
 typedef unsigned int UINT;
 #endif

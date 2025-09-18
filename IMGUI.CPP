@@ -478,7 +478,11 @@
 //#else
 //#include <stdint.h>     // intptr_t
 //#endif
+#if __WATCOMC__ < 1200
 typedef int *  intptr_t;
+#else
+#include <stddef.h>
+#endif
 
 #ifdef _MSC_VER
 #pragma warning (disable: 4505) // unreferenced local function has been removed (stb stuff)

@@ -11144,7 +11144,7 @@ static int enc_alloc_scratch(h264e_enc_t *enc, const H264E_create_param_t *par, 
     ALLOC(point_t *,enc->mv_pred, (nmbx*4 + 8)*sizeof(point_t));
     ALLOC(int*,enc->i4x4mode, nmbx*4 + 4);
     ALLOC(unsigned char*,enc->df.df_qp, nmbx);
-    ALLOC(unsigned char*,enc->df.mb_type, nmbx);
+    ALLOC(signed char*,enc->df.mb_type, nmbx);
     ALLOC(unsigned char*,enc->df.df_nzflag, nmbx);
     ALLOC(unsigned char*,enc->top_line, nmbx*32 + 32 + 16);
     return (int)(p - p0);

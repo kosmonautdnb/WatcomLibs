@@ -223,6 +223,30 @@ Vector l0,l1,norm;
 bool hitTest(const Matrix &cubeMatrix, Vector &hitPoint, double &hitDistance, const GLTFA_Node &node) {
   bool hit = CLCube::collided(cubeMatrix,l0,l1,hitPoint,false);
   hitDistance = dot(hitPoint-l0,norm);
+  */
+  /* maybe this also for polygon level collisions (it's just bounding box collisions without this)
+  if (hit && kf->gltfMeshes.has(node.meshId)) {
+    bool found = false;
+    GLTFA_Mesh *m = kf->gltfMeshes[node.meshId];
+    for (int i = 0; i < m->primitives.size(); i++) {
+      GLTFA_Primitive *p = m->primitives[i];
+      const Array<Vector> &d = p->positions[0];
+      for (int j = 0; j < p->indices.size(); j += 3) {
+        Vector t0 = node.finalMatrix*d[p->indices[j+0]];
+        Vector t1 = node.finalMatrix*d[p->indices[j+1]];
+        Vector t2 = node.finalMatrix*d[p->indices[j+2]];
+        if (collided(l0,l1,t0,t1,t2)) {
+          if (collisionPoint(l0,l1,t0,t1,t2,hitPoint)) {
+            hitDistance = dot(hitPoint-l0,norm);
+            found = true;
+          }
+        }
+      }
+    }
+    if (!found) hit = false;
+  }
+  */
+  /*
   return hit;
 }
 void hitTestScene(GLTFA_File &f, int sceneId) {
