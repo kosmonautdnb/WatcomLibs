@@ -35,6 +35,7 @@ int main(int argc, const char *argv[]) {
     ImGuiNewFrame();
 
     ImGui::ShowTestWindow();
+    ImGui::ShowMetricsWindow();
 
     ImGui::Begin("Window1");
     if (ImGui::Button("Exit##Exit1")) quit = true;
