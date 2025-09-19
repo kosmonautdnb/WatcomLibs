@@ -11,6 +11,7 @@
 //---
 // Capsule+Capsule
 // Sphere+Sphere
+// Sphere+Line
 // Cube+Cube
 // Cube+Sphere
 // Cube+Line
@@ -119,7 +120,25 @@ public:
     }
     return intersects;
   }
-
+  // SPHERE+LINE
+  // https://paulbourke.net/geometry/circlesphere/index.html#linesphere (not tested, yet)
+  bool collided(const Vector &p0, const Vector &p1, Vector &collisionPoint1, Vector &collisionPoint2) {
+    const double EPSILON = 0.00001;
+    const Vector dp = p1 - p0;
+    const double a = lengthSqr(dp);
+    const double b = 2.0 * (dp.x * (p0.x - center.x) + dp.y * (p0.y - center.y) + dp.z * (p0.z - center.z));
+    const double c = lengthSqr(center) + lengthSqr(p0) - 2.0 * dot(center,p0) - radius*radius;
+    const double bb4ac = b * b - 4 * a * c;
+    collisionPoint1.w = 0; collisionPoint2.w = 0;
+    if (fabs(a)<EPSILON||bb4ac<0) {
+      return false;
+    }
+    const double mu1 = (-b + sqrt(bb4ac)) / (2.0 * a);
+    const double mu2 = (-b - sqrt(bb4ac)) / (2.0 * a);
+    if (mu1 >= 0 && mu1 <= 1.0) {collisionPoint1 = p0 + mu1 * (p1 - p0); collisionPoint1.w = 1.0;}
+    if (mu2 >= 0 && mu2 <= 1.0) {collisionPoint2 = p0 + mu2 * (p1 - p0); collisionPoint2.w = 1.0;}
+    return true;
+  }
 };
 
 // Cube-Collision
