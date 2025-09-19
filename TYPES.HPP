@@ -11,6 +11,7 @@
 #ifdef NOT_DOS
 #include <stdint.h>
 #else
+#if __WATCOMC__ < 1200
 typedef __int64 int64_t;
 typedef unsigned __int64 uint64_t;
 typedef signed int int32_t;
@@ -19,11 +20,10 @@ typedef signed short int16_t;
 typedef unsigned short uint16_t;
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
-#if __WATCOMC__ < 1200
 typedef int32_t intptr_t;
 typedef uint32_t uintptr_t;
 #else
-#include <stddef.h>
+#include <stdint.h>
 #endif
 typedef unsigned int DWORD;
 typedef unsigned int UINT;

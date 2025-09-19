@@ -481,7 +481,7 @@
 #if __WATCOMC__ < 1200
 typedef int *  intptr_t;
 #else
-#include <stddef.h>
+#include <stdint.h>
 #endif
 
 #ifdef _MSC_VER
