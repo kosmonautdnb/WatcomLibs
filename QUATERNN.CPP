@@ -2,7 +2,9 @@
 #include "matrix.hpp"
 #include <math.h>
 
+#ifndef PI
 #define PI 3.14159265358979323846
+#endif
 
 template<class T> static __inline T clamp(const T v, const T mn, const T mx) {
   return v<mn?mn:(v>mx?mx:v);

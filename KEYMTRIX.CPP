@@ -1,7 +1,13 @@
 #include "keymtrix.hpp"
 #include <conio.h>
 #include <stdlib.h>
+#ifdef __WATCOMC__
 #include <i86.h>
+#endif // __WATCOMC__
+#ifdef __DJGPP__
+// todo: not implemented, yet
+#include <dos.h>
+#endif // __DJGPP__
 
 // this is not working in dos4gw, in !!!!!pmode/w!!!!! it's working
 
@@ -24,12 +30,11 @@ void installKeyboardHandler() {
   if (oldKeyboardHandler != NULL)
     uninstallKeyboardHandler();
   union REGS r;
-  unsigned   rmvector;
-  r.x.eax = 0x204;
+  r.w.ax = 0x204;
   r.h.bl = 0x09;
   int386 (0x31, &r, &r);
   oldKeyboardHandler = (KeyboardHandler)MK_FP(r.x.ecx,r.x.edx);
-  r.x.eax = 0x205;
+  r.w.ax = 0x205;
   r.h.bl = 0x09;
   r.x.ecx = FP_SEG(keyboardHandler);
   r.x.edx = FP_OFF(keyboardHandler);
@@ -40,8 +45,7 @@ void installKeyboardHandler() {
 void uninstallKeyboardHandler() {
   if (oldKeyboardHandler != NULL) {
     union REGS r;
-    unsigned   rmvector;
-    r.x.eax = 0x205;
+    r.w.ax = 0x205;
     r.h.bl = 0x09;
     r.x.ecx = FP_SEG(oldKeyboardHandler);
     r.x.edx = FP_OFF(oldKeyboardHandler);

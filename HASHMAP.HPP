@@ -36,7 +36,7 @@ public:
     for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = b.elements[i];
       while(t != NULL) {
-        insert(t->key, t->value);
+        insert((const KEY)t->key, t->value);
         t = t->next;
       }
     }
@@ -78,7 +78,7 @@ public:
     uint32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
     while(t != NULL)  {
-      if (equals(t->key,key)) {
+      if (equals((const KEY)t->key,key)) {
         return t->value;
       }
       t = t->next;
@@ -95,7 +95,7 @@ public:
     ElementLink<KEY,VALUE> *t = elements[hash];
     ElementLink<KEY,VALUE> *f = NULL;
     while(t != NULL)  {
-      if (equals(t->key,key)) {
+      if (equals((const KEY)t->key,key)) {
         f = t;
         return t->value;
       }
@@ -138,7 +138,7 @@ public:
     uint32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
     while(t != NULL)  {
-      if (equals(t->key,key)) {
+      if (equals((const KEY)t->key,key)) {
         return true;
       }
       t = t->next;
@@ -150,7 +150,7 @@ public:
     uint32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
     while(t != NULL)  {
-      if (equals(t->key, key)) {
+      if (equals((const KEY)t->key, key)) {
         if (t->last != NULL) t->last->next = t->next;
         if (t->next != NULL) t->next->last = t->last;
         delete t;
@@ -168,7 +168,7 @@ public:
     for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {
-        if ((!equals(t->key,lastKey)) || first) {
+        if ((!equals((const KEY)t->key,lastKey)) || first) {
           r.push_back(t->key);
           lastKey = t->key;
           first = false;

@@ -117,4 +117,4 @@ void uninstallKeyboardHandler();
 #define SCANCODE_F12 88
 #define SCANCODE_WINDOWS 91
 
-#endif __KEYMTRIX_HPP__
+#endif //__KEYMTRIX_HPP__

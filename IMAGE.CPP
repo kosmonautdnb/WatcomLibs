@@ -52,7 +52,7 @@ RGBAImage RGBAImage::getResized(int width, int height) {
 }
 
 void RGBAImage::flipY() {
-  unsigned int *flipped = new unsigned int[width*height];
+  uint32_t *flipped = new uint32_t[width*height];
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
       flipped[x+(height-1-y)*width] = data[x+y*width];

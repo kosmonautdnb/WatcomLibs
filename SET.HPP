@@ -75,7 +75,7 @@ public:
     int32_t hash = getHash(key) % Set_ELEMENTCOUNT;
     HElementLink<KEY> *t = elements[hash];
     while(t != NULL)  {
-      if (equals(t->key,key)) {
+      if (equals((const KEY)t->key,key)) {
         return true;
       }
       t = t->next;
@@ -92,7 +92,7 @@ public:
     HElementLink<KEY> *t = elements[hash];
     HElementLink<KEY> *f = NULL;
     while(t != NULL)  {
-      if (equals(t->key,key)) {
+      if (equals((const KEY)t->key,key)) {
         f = t;
         return;
       }
@@ -131,7 +131,7 @@ public:
     int32_t hash = getHash(key) % Set_ELEMENTCOUNT;
     HElementLink<KEY> *t = elements[hash];
     while(t != NULL)  {
-      if (equals(t->key, key)) {
+      if (equals((const KEY)t->key, key)) {
         if (t->last != NULL) t->last->next = t->next;
         if (t->next != NULL) t->next->last = t->last;
         delete t;
@@ -149,7 +149,7 @@ public:
     for (int32_t i = 0; i < Set_ELEMENTCOUNT; i++) {
       HElementLink<KEY> *t = elements[i];
       while(t != NULL) {
-        if ((!equals(t->key,lastKey)) || first) {
+        if ((!equals((const KEY)t->key,lastKey)) || first) {
           r.push_back(t->key);
           lastKey = t->key;
           first = false;

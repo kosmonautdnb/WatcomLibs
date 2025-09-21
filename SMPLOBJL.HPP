@@ -3,6 +3,7 @@
 #ifndef __SMPLOBJL_HPP__
 #define __SMPLOBJL_HPP__
 
+#include "types.hpp"
 #include "vector.hpp"
 #include "string.hpp"
 #include "hashmap.hpp"
@@ -14,32 +15,32 @@
 class SMPL_Face {
 public:
   SMPL_Face() {m=-1;c=0;vertexColors=false;memset(v,0,sizeof(v));memset(n,0,sizeof(n));memset(t,0,sizeof(t));}
-  int v[SMPL_MAXV]; // vertex index
-  int n[SMPL_MAXV]; // normal index
-  int t[SMPL_MAXV]; // texturecoord index
-  int m; // material id
-  int c; // vertex count
+  int32_t v[SMPL_MAXV]; // vertex index
+  int32_t n[SMPL_MAXV]; // normal index
+  int32_t t[SMPL_MAXV]; // texturecoord index
+  int32_t m; // material id
+  int32_t c; // vertex count
   bool vertexColors; //can be painted by just using vertex colors
 };
 
 class SMPL_Object {
 public:
   String name;
-  int faceStart;
-  int faceEnd;
+  int32_t faceStart;
+  int32_t faceEnd;
 };
 
 class SMPL_Texture {
 public:
   SMPL_Texture() : used(false), glHandle(0) {}
   bool used;
-  unsigned int glHandle;
+  uint32_t glHandle;
   String fileName;
 };
 
 class SMPL_Material {
 public:
-  int materialId;
+  int32_t materialId;
   Vector diffuse; // Kd
   Vector ambient; // Ka
   Vector specular; // Ks
@@ -60,10 +61,10 @@ public:
 };
 
 // ...->loadTextures(SMPL_loadTexture);
-typedef unsigned int(*TextureLoad_t)(const String &fileName, const String &type);
+typedef uint32_t(*TextureLoad_t)(const String &fileName, const String &type);
 #define SMPL_LOADTEXTURE \
 unsigned int SMPL_loadTexture(const String &fileName, const String &type) {\
-  unsigned int texture = 0;\
+  uint32_t texture = 0;\
   if (type != "map_Kd") return texture;\
   char *buffer = new char[MAX_LFN_PATH];\
   if (doslfnShortPath(buffer, fileName.c_str())) {\
@@ -83,11 +84,11 @@ unsigned int SMPL_loadTexture(const String &fileName, const String &type) {\
 
 class SMPL_File {
 public:
-  Array<unsigned int> colors; // per vertex color .obj property / empty
+  Array<uint32_t> colors; // per vertex color .obj property / empty
   Array<Vector> vertices;
   Array<Vector> normals;
   Array<Vector> texCoords;
-  HashMap<int,String> materialNames;
+  HashMap<int32_t,String> materialNames;
   Array<SMPL_Face> faces;
   Array<SMPL_Object> objs;
   HashMap<String,SMPL_Material> materials;
@@ -103,18 +104,18 @@ public:
   }
   Array<float> vertices;
   Array<String> vertexProperties;
-  Array<int> faceIndices;
-  Array<int> faceIndexCount;
-  Array<int> faceStartIndex;
-  int vertexStride;
-  int xProperty;
-  int yProperty;
-  int zProperty;
-  int vertexCount;
-  int faceCount;
-  Vector vertex(const int index) {const int z = index*vertexStride;return Vector(vertices[z+xProperty],vertices[z+yProperty],vertices[z+zProperty]);}
-  int *face(const int index) {return &faceIndices[faceStartIndex[index]];}
-  int faceVertexCount(const int index) {return faceIndexCount[index];}
+  Array<int32_t> faceIndices;
+  Array<int32_t> faceIndexCount;
+  Array<int32_t> faceStartIndex;
+  int32_t vertexStride;
+  int32_t xProperty;
+  int32_t yProperty;
+  int32_t zProperty;
+  int32_t vertexCount;
+  int32_t faceCount;
+  Vector vertex(const int index) {const int32_t z = index*vertexStride;return Vector(vertices[z+xProperty],vertices[z+yProperty],vertices[z+zProperty]);}
+  int32_t *face(const int32_t index) {return &faceIndices[faceStartIndex[index]];}
+  int32_t faceVertexCount(const int32_t index) {return faceIndexCount[index];}
 };
 
 SMPL_File *loadObj(const String &fileName, bool triangulate = false);

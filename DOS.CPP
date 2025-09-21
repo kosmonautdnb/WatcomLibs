@@ -5,9 +5,13 @@
 #include <io.h>
 #include <string.h>
 #include <conio.h>
-#ifndef NOT_DOS
+#ifdef __WATCOMC__
 #include <i86.h>
-#endif
+#endif // __WATCOMC__
+#ifdef __DJGPP__
+// todo: not implemented, yet
+#include <dos.h>
+#endif // __DJGPP__
 #ifdef ON_WINDOWS
 #include <vector>
 #include <string>

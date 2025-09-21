@@ -11,7 +11,7 @@
 #ifdef NOT_DOS
 #include <stdint.h>
 #else
-#if __WATCOMC__ < 1200
+#if defined(__WATCOMC__) && (__WATCOMC__ < 1200)
 typedef __int64 int64_t;
 typedef unsigned __int64 uint64_t;
 typedef signed int int32_t;

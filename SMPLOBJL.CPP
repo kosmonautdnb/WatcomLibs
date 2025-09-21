@@ -11,14 +11,14 @@ void addTexture(SMPL_Texture &t, const String &params, const String &materialLib
   t.used = true;
   String a = params;
   {
-    int i;
+    int32_t i;
     for (i = a.length()-1;i>=0; i--) if (a[i]!=' '&&a[i]!=0x00&&a[i]!=0x0d&&a[i]!=0x0a&&a[i]!='\t') break;
     a.resize(i+1);
-    int pre1 = a.findLast("/");
-    int pre2 = a.findLast("\\");
-    int pre3 = a.findLast(" ");
-    int pre4 = a.findLast("\t");
-    int k = pre1;
+    int32_t pre1 = a.findLast("/");
+    int32_t pre2 = a.findLast("\\");
+    int32_t pre3 = a.findLast(" ");
+    int32_t pre4 = a.findLast("\t");
+    int32_t k = pre1;
     if (pre2 > k) k = pre2;
     if (pre3 > k) k = pre3;
     if (pre4 > k) k = pre4;
@@ -26,9 +26,9 @@ void addTexture(SMPL_Texture &t, const String &params, const String &materialLib
   }
 
   {
-    int pre1 = materialLibFileName.findLast("/");
-    int pre2 = materialLibFileName.findLast("\\");
-    int k = pre1;
+    int32_t pre1 = materialLibFileName.findLast("/");
+    int32_t pre2 = materialLibFileName.findLast("\\");
+    int32_t k = pre1;
     if (pre2 > pre1) k = pre2;
     if (k >= 0) a = materialLibFileName.substr(0,k)+"/"+a;
   }
@@ -111,9 +111,9 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
   if (in == NULL) return ret;
   ret = new SMPL_File();
   float x,y,z;
-  HashMap<String,int> materialIds;
-  int materialId = 0;
-  int currentMaterial = -1;
+  HashMap<String,int32_t> materialIds;
+  int32_t materialId = 0;
+  int32_t currentMaterial = -1;
   SMPL_Object *currentGroup = NULL;
 
   int line = -1;
@@ -123,7 +123,7 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
     while(*s==' '||*s=='\t') s++;
     if (*s == '#') continue;
     if (*s == 0x0d || *s == 0x0a) continue;
-    int mode = 0;
+    int32_t mode = 0;
     if (*s == 'v') {
       if (*(s+1)=='t') mode = 1;
       if (*(s+1)=='n') mode = 2;
@@ -150,9 +150,9 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
       }
       if (sscanf(s,"mtllib %s",buffer2)==1) {
         String a = buffer2;
-        int pre1 = fileName.findLast("/");
-        int pre2 = fileName.findLast("\\");
-        int k = pre1;
+        int32_t pre1 = fileName.findLast("/");
+        int32_t pre2 = fileName.findLast("\\");
+        int32_t k = pre1;
         if (pre2 > pre1) k = pre2;
         if (k >= 0) a = fileName.substr(0,k)+"/"+a;
         loadMaterialLib(ret, a);
@@ -184,10 +184,10 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
         } break;
         case 7: {
           char *s2 = s+1;
-          int value = 0;
-          int vertexId = 0;
-          int componentId = 0;
-          int helper[SMPL_MAXV_LOAD][4];
+          int32_t value = 0;
+          int32_t vertexId = 0;
+          int32_t componentId = 0;
+          int32_t helper[SMPL_MAXV_LOAD][4];
           memset(helper,0,sizeof(helper));
           while(*s2==' '||*s2=='\t') s2++;
           while(*s2 != 0x00) {
@@ -205,13 +205,13 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
             f->c = vertexId;
             f->vertexColors = false;
             if (vertexId>SMPL_MAXV) SMPL_ERROR;
-            for (int i = 0; i < vertexId; i++) {
+            for (int32_t i = 0; i < vertexId; i++) {
               f->v[i] = helper[i][0]-1;
               f->t[i] = helper[i][1]-1;
               f->n[i] = helper[i][2]-1;
             }
           } else {
-            for (int j = 0; j < vertexId-2; j++) {
+            for (int32_t j = 0; j < vertexId-2; j++) {
               ret->faces.push_back(SMPL_Face());
               SMPL_Face *f = &ret->faces.back();
               f->m = currentMaterial;
@@ -220,7 +220,7 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
               f->v[0] = helper[0][0]-1;
               f->t[0] = helper[0][1]-1;
               f->n[0] = helper[0][2]-1;
-              for (int i = 1; i < 3; i++) {
+              for (int32_t i = 1; i < 3; i++) {
                 f->v[i] = helper[i+j][0]-1;
                 f->t[i] = helper[i+j][1]-1;
                 f->n[i] = helper[i+j][2]-1;
@@ -238,6 +238,7 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
   return ret;
 }
 
+/*
 void loadTexture(TextureLoad_t functor, SMPL_Texture &t, const String &type) {
   if (t.used && t.glHandle == 0) {
     t.glHandle = functor(t.fileName, type);
@@ -246,7 +247,7 @@ void loadTexture(TextureLoad_t functor, SMPL_Texture &t, const String &type) {
 
 void SMPL_File::loadTextures(TextureLoad_t functor) {
   Array<String> keys = materials.keys();
-  for (int i = 0; i < keys.size(); i++) {
+  for (int32_t i = 0; i < keys.size(); i++) {
     SMPL_Material &m = materials[keys[i]];
     loadTexture(functor,m.mapDiffuse,"map_Kd");
     loadTexture(functor,m.mapAmbient,"map_Ka");
@@ -262,33 +263,33 @@ void SMPL_File::loadTextures(TextureLoad_t functor) {
 }
 
 void SMPL_File::genVertexColors(const Array<String> &vertexColorMaterials) {
-  Set<int> materialIds;
+  Set<int32_t> materialIds;
   colors.resize(vertices.size());
-  {for (int i = 0; i < vertices.size(); i++) colors[i] = 0xffffffff;}
-  {for (int i = 0; i < vertexColorMaterials.size(); i++) materialIds.insert(materials[vertexColorMaterials[i]].materialId);}
-  for (int i = 0; i < faces.size(); i++) {
+  {for (int32_t i = 0; i < vertices.size(); i++) colors[i] = 0xffffffff;}
+  {for (int32_t i = 0; i < vertexColorMaterials.size(); i++) materialIds.insert(materials[vertexColorMaterials[i]].materialId);}
+  for (int32_t i = 0; i < faces.size(); i++) {
     SMPL_Face &f = faces[i];
-    const int materialId = f.m;
+    const int32_t materialId = f.m;
     if (materialIds.has(materialId)) {
       const String &materialName = materialNames[f.m];
       const SMPL_Material &m = materials[materialName];
       const Vector &diffuse = m.diffuse;
       const SMPL_Texture &mapDiffuse = m.mapDiffuse;
-      const unsigned int glHandle = mapDiffuse.glHandle;
+      const uint32_t glHandle = mapDiffuse.glHandle;
       if (glHandle != 0) {
-        const unsigned int *texturePointer = glGetTexturePointer(glHandle);
-        const unsigned int textureWidth = glGetTextureWidth(glHandle);
-        const unsigned int textureHeight = glGetTextureHeight(glHandle);
+        const uint32_t *texturePointer = glGetTexturePointer(glHandle);
+        const uint32_t textureWidth = glGetTextureWidth(glHandle);
+        const uint32_t textureHeight = glGetTextureHeight(glHandle);
         // only wrapmode supported is repeat
         for (int j = 0; j < f.c; j++) {
-          const unsigned int vi = f.v[j];
-          int tx = texCoords[f.t[j]].x*textureWidth;
-          int ty = texCoords[f.t[j]].y*textureHeight;
+          const uint32_t vi = f.v[j];
+          int32_t tx = texCoords[f.t[j]].x*textureWidth;
+          int32_t ty = texCoords[f.t[j]].y*textureHeight;
           if (tx < 0) tx += ((-tx / textureWidth)+1) * textureWidth;
           if (ty < 0) ty += ((-ty / textureHeight)+1) * textureHeight;
           tx %= textureWidth;
           ty %= textureHeight;
-          const unsigned int rgba = texturePointer[tx+ty*textureWidth];
+          const uint32_t rgba = texturePointer[tx+ty*textureWidth];
           colors[vi] = rgba;
         }
         f.vertexColors = true;
@@ -302,11 +303,11 @@ void SMPL_File::genVertexColors(const Array<String> &vertexColorMaterials) {
 bool SMPL_File::makeFrontFacing(bool ccw) {
   const bool somethingChanged = false;
   if (normals.empty()) return false;
-  {for (int i = 0; i < faces.size(); i++) {
+  {for (int32_t i = 0; i < faces.size(); i++) {
     SMPL_Face &f = faces[i];
     if (f.c != 3) return false; // only triangle meshes supported
   }}
-  {for (int i = 0; i < faces.size(); i++) {
+  {for (int32_t i = 0; i < faces.size(); i++) {
     SMPL_Face &f = faces[i];
     Vector d0 = normalize(vertices[f.v[1]]-vertices[f.v[0]]);
     Vector d1 = normalize(vertices[f.v[2]]-vertices[f.v[0]]);
@@ -314,7 +315,7 @@ bool SMPL_File::makeFrontFacing(bool ccw) {
     Vector vertexNormal0 = normalize(normals[f.n[0]]);
     bool frontFacing = dot(faceNormal,vertexNormal0)<0;
     if (frontFacing == ccw) {
-      int t;
+      int32_t t;
       t = f.v[0]; f.v[0] = f.v[2]; f.v[2] = t;
       t = f.n[0]; f.n[0] = f.n[2]; f.n[2] = t;
       t = f.t[0]; f.t[0] = f.t[2]; f.t[2] = t;
@@ -393,19 +394,19 @@ SMPL_Ply *loadPly(const String &fileName) {
       break;
     }
   }
-  {for (int i = 0; i < ret->vertexCount; i++) {
+  {for (int32_t i = 0; i < ret->vertexCount; i++) {
     if (!fgets(buffer,SMPL_BUFFSIZE,in)) break;
     char *s = buffer;
-    for (int j = 0; j < ret->vertexStride; j++) {
+    for (int32_t j = 0; j < ret->vertexStride; j++) {
       String name = getPlyWord(&s);
       ret->vertices.push_back(name.toFloat());
     }
   }}
-  {for (int i = 0; i < ret->faceCount; i++) {
+  {for (int32_t i = 0; i < ret->faceCount; i++) {
     if (!fgets(buffer,SMPL_BUFFSIZE,in)) break;
     char *s = buffer;
     String name = getPlyWord(&s);
-    int vertexCount=-1;
+    int32_t vertexCount=-1;
     ret->faceStartIndex.push_back(ret->faceIndices.size());
     while(!name.empty()) {
       if (vertexCount==-1) {
@@ -419,3 +420,4 @@ SMPL_Ply *loadPly(const String &fileName) {
   }}
   return ret;
 }
+*/         

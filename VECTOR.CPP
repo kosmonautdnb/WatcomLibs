@@ -2,7 +2,9 @@
 #include "matrix.hpp"
 #include <math.h>
 
+#ifndef PI
 #define PI 3.14159265358979323846
+#endif
 
 Vector &Vector::set(double _x, double _y, double _z) {
   x = _x; 

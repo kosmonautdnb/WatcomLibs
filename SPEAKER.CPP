@@ -1,9 +1,15 @@
 #include "speaker.hpp"
 #include <conio.h>
 #include <stdlib.h>
-#include <i86.h>
 #include <math.h>
 #include <string.h>
+#ifdef __WATCOMC__
+#include <i86.h>
+#endif // __WATCOMC__
+#ifdef __DJGPP__
+// todo: not implemented, yet
+#include <dos.h>
+#endif // __DJGPP__
 
 #define HARDWARE_TIMER_FREQUENCY 1193180 // 1193180 / 65536  = 18.2 (found in the internet that it's more like 1193181.66666666 instead of 1193180)
 #define TIMER_MULTIPLICATOR 1024 // 1193180 * 1024 / 65536
