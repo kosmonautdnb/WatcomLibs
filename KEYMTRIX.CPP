@@ -11,6 +11,7 @@
 
 // this is not working in dos4gw, in !!!!!pmode/w!!!!! it's working
 
+#ifdef __WATCOMC__
 typedef void (__interrupt __far* KeyboardHandler)();
 static KeyboardHandler oldKeyboardHandler = NULL;
 
@@ -53,3 +54,21 @@ void uninstallKeyboardHandler() {
     oldKeyboardHandler = NULL;
   }
 }
+#endif
+
+#ifdef __DJGPP__
+
+bool keyPressed[0x80] = {0};
+
+bool isKeyPressed(int scanCode) {
+  return keyPressed[scanCode & 0x7f];
+}
+
+
+void installKeyboardHandler() {
+}
+
+void uninstallKeyboardHandler() {
+}
+
+#endif
