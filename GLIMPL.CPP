@@ -25,6 +25,12 @@
 #define FABSF fabs
 #define __MATRIX_STACK_SIZE__ 16
 #define __ATTRIB_STACK_SIZE__ 4
+#ifdef __WATCOMC__
+#define INLINE __inline
+#endif
+#ifdef __DJGPP__
+#define INLINE inline
+#endif
 
 double glPixelCenterX = -0.5;
 double glPixelCenterY = -0.5;
@@ -52,23 +58,46 @@ glVertex glVertices[4];
 int glCurrentVertexElement = 0;
 double additionalPointSpriteXStretch = 1.0;
 TriangleDrawer glDrawTriangle = glDrawTrianglePrecise;
+
 glTexture glTextures[GLMAXTEXTURES]={{0,0,0,NULL,0,0,GL_LINEAR,1000,1000,GL_NEAREST,0,GL_REPEAT,GL_REPEAT,GL_REPEAT,1.f,0.f,1.f,1.f,GL_MODULATE}};
 
 
-__inline float glClampf(float a, float n, float x) {
+INLINE float glClampf(float a, float n, float x) {
   return a < n ? n : (a > x ? x : a);
 }
 
-__inline int glClampi(int a, int n, int x) {
+INLINE int glClampi(int a, int n, int x) {
   return a < n ? n : (a > x ? x : a);
 }
 
-__inline int glMini(int a, int n) {
+INLINE int glMini(int a, int n) {
   return a < n ? a : n;
 }
 
-__inline int glMaxi(int a, int x) {
+INLINE int glMaxi(int a, int x) {
   return a > x ? a : x;
+}
+
+void initTexture(glTexture &t) {
+  t.name=0;
+  t.width=0;
+  t.height=0;
+  t.data=NULL;
+  t.baseLevel=0;
+  t.lodBias=0;
+  t.magFilter=GL_LINEAR;
+  t.maxLevel=1000;
+  t.maxLod=1000;
+  t.minFilter=GL_NEAREST;
+  t.minLod=0;
+  t.wrapS=GL_REPEAT;
+  t.wrapT=GL_REPEAT;
+  t.wrapR=GL_REPEAT;
+  t.borderColorRed=1.f;
+  t.borderColorGreen=0.f;
+  t.borderColorBlue=1.f;
+  t.borderColorAlpha=1.f;
+  t.texEnvMode=GL_MODULATE;
 }
 
 _GLContext::_GLContext() {
@@ -232,6 +261,11 @@ _GLContext::_GLContext() {
   fogColor[3] = 0;
   fogDensity = 1.0;
   fogMode = GL_EXP;
+
+  for (i = 0; i < GLMAXTEXTURES; i++) {
+    glTexture &t=glTextures[i];
+    initTexture(t);
+  }
 }
 
 void _GLContext::enable(GLenum prop, bool enable) {enabledCaps[prop&255]=enable;}
@@ -247,6 +281,7 @@ void glDrawQuad(_GLContext *context, glVertex *v0,glVertex *v1,glVertex *v2,glVe
 GLuint glNewTexture() {
   for (int i = 1; i < GLMAXTEXTURES; i++) {
     if (glTextures[i].name == 0x00) {
+      initTexture(glTextures[i]);
       glTextures[i].name = i;
       glTextures[i].width = 0;
       glTextures[i].height = 0;
@@ -330,7 +365,7 @@ void glUpdateMatrix() {
   glContext.needNewInverseModelView = true;
 }
 
-__inline int glTransformVertex(_GLContext *context, glVertex *v, bool clip) {
+INLINE int glTransformVertex(_GLContext *context, glVertex *v, bool clip) {
   const double *cm = context->matrix;
   const double vx = v->vertexX;
   const double vy = v->vertexY;
@@ -637,7 +672,7 @@ void glLightVertex(_GLContext *context, glVertex *v) {
   }
 }
 
-__inline int glClipVertex(_GLContext *context, glVertex *v) {
+INLINE int glClipVertex(_GLContext *context, glVertex *v) {
   int clipFlags = (v->sx < context->viewportX0) ? 1 : 0;
   clipFlags |= (v->sy < context->viewportY0) ? 2 : 0;
   clipFlags |= (v->sx > context->viewportX1) ? 4 : 0;
@@ -3084,7 +3119,7 @@ static bool dontPaint = false;
 float glSign(float v) {
   return v < 0 ? -1 : (v > 0 ? 1 : 0);
 }
-__inline double getBary(double x, double y, const glVertex *v0, const glVertex *v1, const glVertex *v2) {
+INLINE double getBary(double x, double y, const glVertex *v0, const glVertex *v1, const glVertex *v2) {
   double nx = v2->sy - v1->sy;
   double ny = -(v2->sx - v1->sx);
   double l = (v0->sx-v1->sx)*nx + (v0->sy-v1->sy)*ny;
@@ -3187,7 +3222,7 @@ bool glCCW(const glVertex *v0, const glVertex *v1, const glVertex *v2) {
   return (dx0*dy1 - dy0*dx1)>=0;
 }
 
-__inline bool glCheckDepthFunction(float depthBufferValue, float newValue, int depthFunction) {
+INLINE bool glCheckDepthFunction(float depthBufferValue, float newValue, int depthFunction) {
   switch(depthFunction) {
   case GL_NEVER: {return false;} break;
   case GL_LESS: {return newValue < depthBufferValue;} break;
@@ -3202,9 +3237,8 @@ __inline bool glCheckDepthFunction(float depthBufferValue, float newValue, int d
 }
 
 
-__inline int textureWrap(float tx, int siz, GLenum filterMode) {
-  int t = (int)FLOOR(tx); // pseudo floor is a trunc directly below 0 makes a seam but is much faster
-  if (t<siz&&t>=0) return t;
+INLINE int textureWrap(int t, int siz, GLenum filterMode) {
+  if ((unsigned int)t<siz) return t;
   switch(filterMode) {
   case GL_MIRRORED_REPEAT: {
       t = t<0?(siz*2-1-((-t)%(siz*2))):(t%(siz*2));
@@ -3221,7 +3255,10 @@ __inline int textureWrap(float tx, int siz, GLenum filterMode) {
   return t<0?(siz-1-((-t)%siz)):(t%siz); // GL_REPEAT
 }
 
-__inline unsigned int doBlend(unsigned int dest, unsigned int source, int sourceFunc, int destFunc, unsigned int constantColor, int blendEquation) {
+#define DIVE255 /= 255 // >>= 8
+#define DIVQ255 / 255 // >> 8
+
+INLINE unsigned int doBlend(unsigned int dest, unsigned int source, int sourceFunc, int destFunc, unsigned int constantColor, int blendEquation) {
 
   if ((blendEquation == GL_FUNC_ADD) && (sourceFunc == GL_ONE) && (destFunc == GL_ONE)) {
     // purelay additive speedup for dest = 0xxx00000 and source = 0xffxxxxxx; seems to have no or almost no effect, but whatever
@@ -3439,16 +3476,16 @@ __inline unsigned int doBlend(unsigned int dest, unsigned int source, int source
   }
 
   if (!fullS) {
-    Sr = (Sr*sr)/255;
-    Sg = (Sg*sg)/255;
-    Sb = (Sb*sb)/255;
-    Sa = (Sa*sa)/255;
+    Sr = (Sr*sr) DIVQ255;
+    Sg = (Sg*sg) DIVQ255;
+    Sb = (Sb*sb) DIVQ255;
+    Sa = (Sa*sa) DIVQ255;
   }
   if (!fullD) {
-    Dr = (Dr*dr)/255;
-    Dg = (Dg*dg)/255;
-    Db = (Db*db)/255;
-    Da = (Da*da)/255;
+    Dr = (Dr*dr) DIVQ255;
+    Dg = (Dg*dg) DIVQ255;
+    Db = (Db*db) DIVQ255;
+    Da = (Da*da) DIVQ255;
   }
 
   switch(blendEquation) {
@@ -3490,7 +3527,7 @@ __inline unsigned int doBlend(unsigned int dest, unsigned int source, int source
   return Sr|(Sg<<8)|(Sb<<16)|(Sa<<24);
 }
 
-__inline double __clamp__(double v, double a, double b) {
+INLINE double __clamp__(double v, double a, double b) {
   return v<a?a:(v>b?b:v);
 }
 
@@ -3623,6 +3660,7 @@ void glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVerte
   bool writeDepth = context->depthMask;  
   int depthFunction = context->depthFunc;
   bool depthTest = context->isEnabled(GL_DEPTH_TEST);
+  if (depthTest&&(depthFunction==GL_ALWAYS)) depthTest=false;
   int alphaFunction = context->alphaFunc;
   int alphaRef = (int)FLOOR(context->alphaFuncRef*255.f);
   bool alphaTest = context->isEnabled(GL_ALPHA_TEST);
@@ -3687,6 +3725,7 @@ void glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVerte
 
   int r,g,b,a,rf,gf,bf,af;
   bool interpolateColor = true;
+  bool modulate = true;
   if ( (int)FLOOR(r0)==(int)FLOOR(r1)&&(int)FLOOR(r1)==(int)FLOOR(r2)
     &&(int)FLOOR(g0)==(int)FLOOR(g1)&&(int)FLOOR(g1)==(int)FLOOR(g2)
     &&(int)FLOOR(b0)==(int)FLOOR(b1)&&(int)FLOOR(b1)==(int)FLOOR(b2)
@@ -3696,6 +3735,8 @@ void glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVerte
     gf = g0;
     bf = b0;
     af = a0;
+    if ((rf == 255)&&(gf == 255)&&(bf == 255)&&(af == 255)) 
+      modulate = false;
   }   
    
   r0 *= v0w;
@@ -3891,28 +3932,28 @@ void glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVerte
             a = af;
           }
           if (textured) {
-            float tx = (__BARY0__(tx0)+__BARY1__(tx1)+__BARY2__(tx2))*iw;
-            float ty = (__BARY0__(ty0)+__BARY1__(ty1)+__BARY2__(ty2))*iw;
-            int tix0 = textureWrap(tx, twidth0, wrapS);
-            int tiy0 = textureWrap(ty, theight0, wrapT);
-            unsigned int rgba = 0xffffffff;
+            unsigned int rgba;
             if (filtering) {
-              int tix1 = textureWrap(tx+1, twidth0, wrapS);
-              int tiy1 = textureWrap(ty+1, theight0, wrapT);
+              const float tx = (__BARY0__(tx0)+__BARY1__(tx1)+__BARY2__(tx2))*iw;
+              const float ty = (__BARY0__(ty0)+__BARY1__(ty1)+__BARY2__(ty2))*iw;
+              const int tix0 = textureWrap((int)FLOOR(tx), twidth0, wrapS);
+              int tiy0 = textureWrap((int)FLOOR(ty), theight0, wrapT);
+              const int tix1 = textureWrap(tix0+1, twidth0, wrapS);
+              int tiy1 = textureWrap(tiy0+1, theight0, wrapT);
               int txf = (int)FLOOR(fmod(tx*256.f,256.f));
               int tyf = (int)FLOOR(fmod(ty*256.f,256.f));
               if (txf<0) txf = 256+txf;
               if (tyf<0) tyf = 256+tyf;
-              int p1v = ((256-txf)*(256-tyf))>>8; 
-              int p2v = ((txf)*(256-tyf))>>8; 
-              int p3v = ((txf)*(tyf))>>8; 
-              int p4v = ((256-txf)*(tyf))>>8;
+              const int p1v = ((256-txf)*(256-tyf))>>8; 
+              const int p2v = ((txf)*(256-tyf))>>8; 
+              const int p3v = ((txf)*(tyf))>>8; 
+              const int p4v = ((256-txf)*(tyf))>>8;
               tiy0 *= twidth0;
               tiy1 *= twidth0;
-              unsigned int rgba00 = tix0>=0&&tiy0>=0?tdata0[tix0+tiy0]:borderColor;
-              unsigned int rgba10 = tix1>=0&&tiy0>=0?tdata0[tix1+tiy0]:borderColor;
-              unsigned int rgba11 = tix1>=0&&tiy1>=0?tdata0[tix1+tiy1]:borderColor;
-              unsigned int rgba01 = tix0>=0&&tiy1>=0?tdata0[tix0+tiy1]:borderColor;
+              const unsigned int rgba00 = (tix0|tiy0)>=0?tdata0[tix0+tiy0]:borderColor;
+              const unsigned int rgba10 = (tix1|tiy0)>=0?tdata0[tix1+tiy0]:borderColor;
+              const unsigned int rgba11 = (tix1|tiy1)>=0?tdata0[tix1+tiy1]:borderColor;
+              const unsigned int rgba01 = (tix0|tiy1)>=0?tdata0[tix0+tiy1]:borderColor;
               rgba = (((rgba00>>8) & 0x00ff00ff)*p1v)&0xff00ff00;
               rgba += (((rgba10>>8) & 0x00ff00ff)*p2v)&0xff00ff00;
               rgba += (((rgba11>>8) & 0x00ff00ff)*p3v)&0xff00ff00;
@@ -3922,21 +3963,30 @@ void glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVerte
               rgba += (((rgba11 & 0x00ff00ff)*p3v)>>8)&0x00ff00ff;
               rgba += (((rgba01 & 0x00ff00ff)*p4v)>>8)&0x00ff00ff;
             } else {
-              if (tix0>=0&&tiy0>=0) {
-                rgba  = tdata0[tix0+tiy0*twidth0];
+              int tix0 = textureWrap((int)FLOOR((__BARY0__(tx0)+__BARY1__(tx1)+__BARY2__(tx2))*iw), twidth0, wrapS);
+              int tiy0 = textureWrap((int)FLOOR((__BARY0__(ty0)+__BARY1__(ty1)+__BARY2__(ty2))*iw), theight0, wrapT);
+              if ((int)(tix0|tiy0)>=0) {
+                rgba = tdata0[tix0+tiy0*twidth0];
               } else {
                 rgba = borderColor;
               }
             }
             if (texEnvMode==GL_MODULATE) {
-              r *= rgba & 255;
-              g *= (rgba >> 8) & 255;
-              b *= (rgba >> 16) & 255;
-              a *= (rgba >> 24) & 255;
-              r /= 255;
-              g /= 255;
-              b /= 255;
-              a /= 255;
+              if (modulate) {
+                r *= rgba & 255;
+                g *= (rgba >> 8) & 255;
+                b *= (rgba >> 16) & 255;
+                a *= (rgba >> 24) & 255;
+                r DIVE255;
+                g DIVE255;
+                b DIVE255;
+                a DIVE255;
+              } else {
+                r = rgba & 255;
+                g = (rgba >> 8) & 255;
+                b = (rgba >> 16) & 255;
+                a = (rgba >> 24) & 255;
+              }
             } else {
               switch(texEnvMode) {
                 case GL_REPLACE: {
@@ -3949,9 +3999,9 @@ void glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVerte
                   r = r*(255-as)+(rgba & 255)*as;
                   g = g*(255-as)+((rgba>>8) & 255)*as;
                   b = b*(255-as)+((rgba>>16) & 255)*as;
-                  r /= 255;
-                  g /= 255;
-                  b /= 255;
+                  r DIVE255;
+                  g DIVE255;
+                  b DIVE255;
                 } break;
                 case GL_ADD: {
                   const int as = ((rgba >> 24)&255);
@@ -3968,10 +4018,10 @@ void glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVerte
                   g *= (rgba >> 8) & 255;
                   b *= (rgba >> 16) & 255;
                   a *= (rgba >> 24) & 255;
-                  r /= 255;
-                  g /= 255;
-                  b /= 255;
-                  a /= 255;
+                  r DIVE255;
+                  g DIVE255;
+                  b DIVE255;
+                  a DIVE255;
                 } break;
               }
             }
