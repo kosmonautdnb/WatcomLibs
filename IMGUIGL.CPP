@@ -1,4 +1,4 @@
-#include "c:/_OPENGL_/gl.h"
+#include "gl.h"
 #include "imguigl.hpp"
 
 extern int glFrameBufferWidth;
