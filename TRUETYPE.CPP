@@ -87,10 +87,10 @@ void stb_print(int fontIndex, float x, float y, const char *text, uint32_t color
     if (*text >= 32 && *text < 128) {
       stbtt_aligned_quad q;
       stbtt_GetBakedQuad(cdata[fontIndex], 512,512, *text-32, &x,&y,&q,1);//1=opengl & d3d10+,0=d3d9
-      glTexCoord2f(q.s0,1-q.t1); glVertex4f(q.x0,q.y1,0,1);
-      glTexCoord2f(q.s1,1-q.t1); glVertex4f(q.x1,q.y1,0,1);
-      glTexCoord2f(q.s1,1-q.t0); glVertex4f(q.x1,q.y0,0,1);
-      glTexCoord2f(q.s0,1-q.t0); glVertex4f(q.x0,q.y0,0,1);
+      glTexCoord2f(q.s0,q.t1); glVertex4f(q.x0,q.y1,0,1);
+      glTexCoord2f(q.s1,q.t1); glVertex4f(q.x1,q.y1,0,1);
+      glTexCoord2f(q.s1,q.t0); glVertex4f(q.x1,q.y0,0,1);
+      glTexCoord2f(q.s0,q.t0); glVertex4f(q.x0,q.y0,0,1);
       if (q.y0<minY) minY = q.y0;
     }
     if (*text == '\n') {

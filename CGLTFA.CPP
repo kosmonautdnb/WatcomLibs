@@ -153,11 +153,12 @@ void GLTFA_File::initMesh(GLTFA_Mesh *m, cgltf_mesh *v) {
     for (int j = 0; j < p->attributes_count; j++) {
       const cgltf_attribute *attr = &p->attributes[j];
       HashMap<int,Array<Vector> > *dest = NULL;
+      bool yflip = false; // todo: strange that this is needed here
       switch(attr->type) {
         case cgltf_attribute_type_position: { dest = &r->positions; } break;
         case cgltf_attribute_type_normal: { dest = &r->normals; } break;
         case cgltf_attribute_type_color: { dest = &r->colors; } break;
-        case cgltf_attribute_type_texcoord: { dest = &r->texCoords;  } break;
+        case cgltf_attribute_type_texcoord: { dest = &r->texCoords; yflip=true;  } break;
         case cgltf_attribute_type_joints: { dest = &r->joints;  } break;
         case cgltf_attribute_type_weights: { dest = &r->weights;  } break;
       }
@@ -175,7 +176,7 @@ void GLTFA_File::initMesh(GLTFA_Mesh *m, cgltf_mesh *v) {
           int ki = k % floatCount;
           switch(ki) {         
             case 0: {l->x = ac[k];} break;
-            case 1: {l->y = ac[k];} break;
+            case 1: {l->y = yflip ? 1-ac[k]:ac[k];} break;
             case 2: {l->z = ac[k];} break;
             case 3: {l->w = ac[k];} break;
           }

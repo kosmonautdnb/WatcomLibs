@@ -162,7 +162,7 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
       switch(mode) {
         case 1: {
           if (sscanf(s,"vt %f %f",&x,&y)!=2) SMPL_ERROR
-          ret->texCoords.push_back(Vector(x,y));
+          ret->texCoords.push_back(Vector(x,1-y)); // seems 1-y is right for u
         } break;
         case 2: {
           if (sscanf(s,"vn %f %f %f",&x,&y,&z)!=3) SMPL_ERROR
@@ -238,7 +238,6 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
   return ret;
 }
 
-/*
 void loadTexture(TextureLoad_t functor, SMPL_Texture &t, const String &type) {
   if (t.used && t.glHandle == 0) {
     t.glHandle = functor(t.fileName, type);
@@ -420,4 +419,3 @@ SMPL_Ply *loadPly(const String &fileName) {
   }}
   return ret;
 }
-*/         
