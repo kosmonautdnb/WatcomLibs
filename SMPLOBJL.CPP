@@ -276,7 +276,7 @@ void SMPL_File::genVertexColors(const Array<String> &vertexColorMaterials) {
       const SMPL_Texture &mapDiffuse = m.mapDiffuse;
       const uint32_t glHandle = mapDiffuse.glHandle;
       if (glHandle != 0) {
-        const uint32_t *texturePointer = glGetTexturePointer(glHandle);
+        const uint32_t *texturePointer = (uint32_t *)glGetTexturePointer(glHandle);
         const uint32_t textureWidth = glGetTextureWidth(glHandle);
         const uint32_t textureHeight = glGetTextureHeight(glHandle);
         // only wrapmode supported is repeat
