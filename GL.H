@@ -7,18 +7,27 @@
 // by Stefan Mader in 2025
 // --
 // Issues:
-// - In ultra rare cases polygons may have seams. (DJGPP no -Ofast,-ffast-math)
+// - In ultra rare cases polygons may have seams. (DJGPP no -Ofast,-ffast-math), maybe add 0.001 to the coordinates
 // - Better take public domain PModeW for 256MB of memory.
 // --
 #ifndef __GL_H__
 #define __GL_H__
 
-// ------------------------
-// ------------------------
+#ifdef __cplusplus
+extern "C" {
+#else
+#  if !(defined(__WATCOMC__) && (__WATCOMC__ < 1200))
+#    include <stdbool.h> // WATCOMC 11 doesn't have stdbool.h
+#  endif
+#endif
 
+// ------------------------
+// ------------------------
+// in C++ the context is already constructed at program start
+// in C glVesa,glVGA,glDirect firstly construct the context
 bool glVesa(int xRes,int yRes, int bPP); // e.g. glVesa(320,200,32) enables Vesa Mode 320x200x32BitColors (only 32 bit, yet)
 bool glVGA(); // 320x200 with 6 bit green + 3 bit blue + 4 bit red 320x400 so to say (green on one line, blue+red on the other, 200*2=400 lines) // may return true even if it's not supported (it's a fallback for no vesa320x200x32)
-bool glDirect(unsigned int *frameBuffer, float *depthBuffer, unsigned int width, unsigned int height); // to Setup direct rendering to a buffer+depth buffer // look also at glSetRenderTarget() // buffers will be deleted at glDone()
+bool glDirect(unsigned int *frameBuffer, float *depthBuffer, unsigned int width, unsigned int height); // to Setup direct rendering to a buffer+depth buffer // look also at glSetRenderTarget() // you need to delete the buffers yourself
 
 void glRefresh(); // to be called in a loop, copies the frameBuffer to the screen and updates per frame stuff
 
@@ -39,7 +48,7 @@ extern double glTexelCenterY; // -0.5
 extern double glMonitorAspectRatio; // use glSetMonitorAspectRatio()
 extern bool useNearPointers; // option for DJGPP
 extern bool glUseHalveVector; // seems to be OSMesa is using this, the docs require different
-extern bool glFastTexturing; // use perspective approximations default false (not on DJGPP)
+extern bool glFastTexturing; // use perspective approximations default false
 extern int glFastTextureSpanWidth; // default 16
 
 // ------------------------
@@ -225,7 +234,7 @@ void glVertex2d(GLdouble x, GLdouble y); // :mad: // supported
 void glVertex2dv(const GLdouble *v); // supported
 void glVertex3d(GLdouble x, GLdouble y, GLdouble z); // :mad: // supported
 void glVertex3dv (const GLdouble *v); // supported
-void glVertex4d(GLdouble x, GLdouble y, GLdouble z); // :mad: // supported
+void glVertex4d(GLdouble x, GLdouble y, GLdouble z, GLdouble w); // :mad: // supported
 void glVertex4dv (const GLdouble *v); // supported
 void glTexCoord1d(GLdouble x); // :mad: // supported
 void glTexCoord1f(GLfloat x); // :mad: // supported
@@ -744,11 +753,12 @@ float glGetZoomY(); // also non standard, hopefully you don't need it
 // ------------------------
 // ------------------------
 
-class _GLContext {
-public:
-  _GLContext();
-  void enable(GLenum prop, bool enable);
-  GLboolean isEnabled(GLenum prop);
+#ifdef WATCOMGLAPI
+
+// ------------------------
+// ------------------------
+
+typedef struct _GLContext {
   GLboolean enabledCaps[256];
   GLenum error;
   GLint viewportX0;
@@ -852,7 +862,7 @@ public:
   GLenum fogMode;
   bool twoSidedLighting;
   bool wireframe[2];
-};
+} _GLContext;
 
 typedef struct glVertex {
   GLfloat colorRed;
@@ -910,5 +920,13 @@ void glSetTriangleDrawer(TriangleDrawer drawer); // you can implement your own t
 
 // ------------------------
 // ------------------------
+
+#endif // WATCOMGLAPI
+
+// ------------------------
+// ------------------------
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __GL_H__
