@@ -14,6 +14,10 @@
 #include "enc_h264.hpp"
 #include <stdlib.h>
 
+#define FRAMERATE 25.0
+#include <math.h>
+#include "gl.h"
+
 class H264Writer {
 public:
   H264E_persist_t *enc;
@@ -56,6 +60,12 @@ public:
   }
 
   bool yuvToFile(unsigned char *y, unsigned char *u, unsigned char *v, FILE *file, int uvstride = -1) {
+
+    static volatile double lastTime = 0;
+    volatile double currentTime = glSeconds();
+    while (fabs(currentTime-lastTime)<(1.0/FRAMERATE)) {currentTime = glSeconds();}
+    lastTime = currentTime;
+
     H264E_io_yuv_t yuv;
     yuv.yuv[0] = y; yuv.stride[0] = width;
     yuv.yuv[1] = u; yuv.stride[1] = uvstride>=0 ? uvstride : width/2;
