@@ -49,6 +49,8 @@ https://github.com/ocornut/imgui
 &emsp;&emsp;glDone();  
 &emsp;}  
 
+**try IMGUIDMO.BAT for WatcomC** and **IMDJGPP.BAT for DJGPP**
+
 ## Some basic types
 - ARRAY.HPP - a bit like std::vector  
 - HASHMAP.HPP - a bit like std:map   
