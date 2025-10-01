@@ -26,7 +26,6 @@ https://github.com/ocornut/imgui
 - STBTEXT.HPP
 
 #### &emsp;ImGui howto:
-&emsp;try IMGUIDMO.BAT for a ImGui demo (exe).  
   
 &emsp;#include "gl.h"  
 &emsp;#include "imguigl.hpp"  
