@@ -181,6 +181,9 @@ public:
   unsigned int id;
 };
 
+extern int gltfaPaintedTriangles;
+extern bool gltfaForceNoSkinning;
+
 typedef bool (*HITTESTFUNCTION)(const Matrix &cubeMatrix, Vector &hitPoint, double &hitDistance, const GLTFA_Node &node);
 class GLTFA_File {
 public:

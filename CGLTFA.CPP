@@ -120,6 +120,36 @@ void GLTFA_File::initMaterials(cgltf_material* materials, int count, double texS
         if (m!=NULL) {
           material->texHandle = loadTexture(m, texSizeMul);
           if (material->texHandle!=0) {
+            cgltf_sampler* s = t->sampler;
+            if (s!=NULL) {
+              glBindTexture(GL_TEXTURE_2D,material->texHandle);
+              switch(s->wrap_s) {
+                case cgltf_wrap_mode_clamp_to_edge:  {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);} break;
+                case cgltf_wrap_mode_mirrored_repeat:  {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);} break;
+                case cgltf_wrap_mode_repeat: {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);} break;
+              }
+              switch(s->wrap_t) {
+                case cgltf_wrap_mode_clamp_to_edge:  {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);} break;
+                case cgltf_wrap_mode_mirrored_repeat:  {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);} break;
+                case cgltf_wrap_mode_repeat: {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);} break;
+              }
+              switch(s->mag_filter) {
+                case cgltf_filter_type_nearest: {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);} break;
+                case cgltf_filter_type_linear: {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);} break;
+                case cgltf_filter_type_nearest_mipmap_nearest: {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);} break;
+                case cgltf_filter_type_linear_mipmap_nearest: {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);} break;
+                case cgltf_filter_type_nearest_mipmap_linear: {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);} break;
+                case cgltf_filter_type_linear_mipmap_linear: {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);} break;
+              }
+              switch(s->min_filter) {
+                case cgltf_filter_type_nearest: {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);} break;
+                case cgltf_filter_type_linear: {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);} break;
+                case cgltf_filter_type_nearest_mipmap_nearest: {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);} break;
+                case cgltf_filter_type_linear_mipmap_nearest: {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);} break;
+                case cgltf_filter_type_nearest_mipmap_linear: {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);} break;
+                case cgltf_filter_type_linear_mipmap_linear: {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);} break;
+              }
+            }
             material->texWidth = glGetTextureWidth(material->texHandle);
             material->texHeight = glGetTextureHeight(material->texHandle);
           }
@@ -415,6 +445,9 @@ void GLTFA_File::applyAnimation(float time, GLTFA_Animation *a) {
   recalculateNodes();
 }
 
+int gltfaPaintedTriangles = 0;
+bool gltfaForceNoSkinning = false;
+
 void GLTFA_File::drawPrimitive(GLTFA_Primitive *a, GLTFA_Skin *b, const Vector &color) {
   glColor4dv(&color.x);
 
@@ -464,6 +497,8 @@ void GLTFA_File::drawPrimitive(GLTFA_Primitive *a, GLTFA_Skin *b, const Vector &
       } break;
     }
   }
+
+  gltfaPaintedTriangles += a->indices.size()/3;
 }
   
 void GLTFA_File::drawMesh(GLTFA_Mesh *a) {
@@ -517,7 +552,7 @@ void GLTFA_File::drawNode(unsigned int nodeId) {
     if (gltfNodes.has(nodeId)) {
       GLTFA_Node *n = gltfNodes[nodeId];
       if (n->meshId != 0) {
-        if (n->skinId == 0) {
+        if (n->skinId == 0 || gltfaForceNoSkinning) {
           drawMesh(n->meshId, n->finalMatrix.m,0,n->color);
         } else {
           Matrix identity; // not sure, but this is already in the skinning matrices
