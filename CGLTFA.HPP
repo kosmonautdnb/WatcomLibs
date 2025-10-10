@@ -51,6 +51,7 @@ public:
 class GLTFA_Node {
 public:
   GLTFA_Node();
+  String name;
   unsigned int id;
   unsigned int parent_id;
   int matrixUpdateId;
@@ -81,28 +82,28 @@ public:
     Vector r,k; double w;const GLTFA_Node *l;
     w = weights4.x; if (w!=0.0) {
       l = joints[(int)joints4.x];
-      k = l->finalMatrix * p;
+      k = transform3(p,l->finalMatrix);
       r.x += k.x*w;
       r.y += k.y*w;
       r.z += k.z*w;
     }
     w = weights4.y; if (w!=0.0) {
       l = joints[(int)joints4.y];
-      k = l->finalMatrix * p;
+      k = transform3(p,l->finalMatrix);
       r.x += k.x*w;
       r.y += k.y*w;
       r.z += k.z*w;
     }
     w = weights4.z; if (w!=0.0) {  
       l = joints[(int)joints4.z];
-      k = l->finalMatrix * p;
+      k = transform3(p,l->finalMatrix);
       r.x += k.x*w;
       r.y += k.y*w;
       r.z += k.z*w;
     }
     w = weights4.w; if (w!=0.0) {
       l = joints[(int)joints4.w];
-      k = l->finalMatrix * p;
+      k = transform3(p,l->finalMatrix);
       r.x += k.x*w;
       r.y += k.y*w;
       r.z += k.z*w;
@@ -115,28 +116,28 @@ public:
     Vector r,k; double w;const GLTFA_Node *l;
     w = weights4.x; if (w!=0.0) {
       l = joints[(int)joints4.x];
-      k = l->finalNormalMatrix * n;
+      k = transform3(n,l->finalNormalMatrix);
       r.x += k.x*w;
       r.y += k.y*w;
       r.z += k.z*w;
     }
     w = weights4.y; if (w!=0.0) {
       l = joints[(int)joints4.y];
-      k = l->finalNormalMatrix * n;
+      k = transform3(n,l->finalNormalMatrix);
       r.x += k.x*w;
       r.y += k.y*w;
       r.z += k.z*w;
     }
     w = weights4.z; if (w!=0.0) {  
       l = joints[(int)joints4.z];
-      k = l->finalNormalMatrix * n;
+      k = transform3(n,l->finalNormalMatrix);
       r.x += k.x*w;
       r.y += k.y*w;
       r.z += k.z*w;
     }
     w = weights4.w; if (w!=0.0) {
       l = joints[(int)joints4.w];
-      k = l->finalNormalMatrix * n;
+      k = transform3(n,l->finalNormalMatrix);
       r.x += k.x*w;
       r.y += k.y*w;
       r.z += k.z*w;
@@ -149,6 +150,7 @@ enum GLTFA_Animation_type {
    GLTFA_Animation_type_scaling = 0,
    GLTFA_Animation_type_rotation = 1,
    GLTFA_Animation_type_translation = 2,
+   GLTFA_Animation_type_weights = 3,
 };
 
 enum GLTFA_Interpolation_type {
@@ -188,12 +190,16 @@ typedef bool (*HITTESTFUNCTION)(const Matrix &cubeMatrix, Vector &hitPoint, doub
 class GLTFA_File {
 public:
 
+  GLTFA_File() {displayWithoutTexture = false;}
+
   HashMap<unsigned int, GLTFA_Material *> gltfMaterials;
   HashMap<unsigned int, GLTFA_Mesh *> gltfMeshes;
   HashMap<unsigned int, GLTFA_Node *> gltfNodes;
   HashMap<unsigned int, GLTFA_Skin *> gltfSkins;
   HashMap<unsigned int, GLTFA_Scene *> gltfScenes;
   Array<GLTFA_Animation*> gltfAnimations;
+  Array<String> skipNodeNames;
+  bool displayWithoutTexture;
   unsigned int defaultScene;
 
   bool load(const char *fileName, const float textureScale); // load .glt or .glb file (glb also features embedded textures etc..)

@@ -328,6 +328,7 @@ void GLTFA_File::initAnimations(cgltf_animation *animations, int count) {
           case cgltf_animation_path_type_translation:{l->type = GLTFA_Animation_type_translation;} break;
           case cgltf_animation_path_type_rotation:{l->type = GLTFA_Animation_type_rotation;} break;
           case cgltf_animation_path_type_scale:{l->type = GLTFA_Animation_type_scaling;} break;
+          case cgltf_animation_path_type_weights:{l->type = GLTFA_Animation_type_weights;} break; // not implemented
           default: printf("error7"); exit(0);
         }
       }
@@ -380,6 +381,7 @@ Matrix GLTFA_File::getMatrix(unsigned int nodeId, unsigned int updateCycle) {
 }
   
 void GLTFA_File::fillNode(GLTFA_Node *j, cgltf_node *k) const {
+  j->name = k->name;
   j->id = (unsigned int)k;
   j->parent_id = (unsigned int)k->parent;
   j->child_ids.resize(k->children_count);
@@ -528,10 +530,12 @@ void GLTFA_File::drawMesh(unsigned int meshId, double *matrix, unsigned int skin
         glDisable(GL_TEXTURE_2D);
       } 
       else {
-        /*glPushMatrix(); must also be painted, just doesn't have valid base texture
-        glMultMatrixd(matrix);
-        drawPrimitive(m->primitives[i],s);
-        glPopMatrix();*/
+        if (displayWithoutTexture) {
+          glPushMatrix(); // must also be painted, just doesn't have valid base texture
+          glMultMatrixd(matrix);
+          drawPrimitive(m->primitives[i],s);
+          glPopMatrix();
+        }
       }
     } else {
       glPushMatrix();
@@ -551,16 +555,25 @@ void GLTFA_File::drawNode(unsigned int nodeId) {
     stack.pop_back();
     if (gltfNodes.has(nodeId)) {
       GLTFA_Node *n = gltfNodes[nodeId];
-      if (n->meshId != 0) {
-        if (n->skinId == 0 || gltfaForceNoSkinning) {
-          drawMesh(n->meshId, n->finalMatrix.m,0,n->color);
-        } else {
-          Matrix identity; // not sure, but this is already in the skinning matrices
-          drawMesh(n->meshId, identity.m,n->skinId,n->color);
+      bool found = false;
+      for (int j = 0; j < skipNodeNames.size(); j++) {
+        if (n->name == skipNodeNames[j]) {
+          found = true;
+          break;
         }
       }
-      for (int i = n->child_ids.size()-1; i >= 0; i--) {
-        stack.push_back(n->child_ids[i]);
+      if (!found) {
+        if (n->meshId != 0) {
+          if (n->skinId == 0 || gltfaForceNoSkinning) {
+            drawMesh(n->meshId, n->finalMatrix.m,0,n->color);
+          } else {
+            Matrix identity; // not sure, but this is already in the skinning matrices
+            drawMesh(n->meshId, identity.m,n->skinId,n->color);
+          }
+        }
+        for (int i = n->child_ids.size()-1; i >= 0; i--) {
+          stack.push_back(n->child_ids[i]);
+        }
       }
     }
   }
@@ -585,25 +598,34 @@ unsigned int GLTFA_File::hitTestNode(unsigned int nodeId, HITTESTFUNCTION t, Vec
     stack.pop_back();
     if (gltfNodes.has(nodeId)) {
       GLTFA_Node *n = gltfNodes[nodeId];
-      if (n->meshId != 0) {
-        if (n->skinId == 0) {
-          if (gltfMeshes.has(n->meshId)) {
-            GLTFA_Mesh *m = gltfMeshes[n->meshId];
-            Vector &boundingBoxMin = m->boundingBoxMin;
-            Vector &boundingBoxMax = m->boundingBoxMax;
-            Vector boundingBoxCenter = (boundingBoxMin+boundingBoxMax)/2.0;
-            Vector boundingBoxScale = (boundingBoxCenter-boundingBoxMin);
-            Matrix m1; m1*=n->finalMatrix;m1.translate(boundingBoxCenter);m1.scale3(boundingBoxScale);
-            Vector hitPoint; double hitDistance;
-            if (t(m1,hitPoint,hitDistance,*n)) {
-              if (hitDistance>=0&&hitDistance<lastHitDistance) {
-                lastHitDistance=hitDistance;
-                nodeHit = nodeId;
-                nodeHitPoint = hitPoint;
+      bool found = false;
+      for (int j = 0; j < skipNodeNames.size(); j++) {
+        if (n->name == skipNodeNames[j]) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        if (n->meshId != 0) {
+          if (n->skinId == 0) {
+            if (gltfMeshes.has(n->meshId)) {
+              GLTFA_Mesh *m = gltfMeshes[n->meshId];
+              Vector &boundingBoxMin = m->boundingBoxMin;
+              Vector &boundingBoxMax = m->boundingBoxMax;
+              Vector boundingBoxCenter = (boundingBoxMin+boundingBoxMax)/2.0;
+              Vector boundingBoxScale = (boundingBoxCenter-boundingBoxMin);
+              Matrix m1; m1*=n->finalMatrix;m1.translate(boundingBoxCenter);m1.scale3(boundingBoxScale);
+              Vector hitPoint; double hitDistance;
+              if (t(m1,hitPoint,hitDistance,*n)) {
+                if (hitDistance>=0&&hitDistance<lastHitDistance) {
+                  lastHitDistance=hitDistance;
+                  nodeHit = nodeId;
+                  nodeHitPoint = hitPoint;
+                }
               }
             }
+          } else {
           }
-        } else {
         }
       }
       for (int i = n->child_ids.size()-1; i >= 0; i--) {

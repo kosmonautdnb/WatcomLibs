@@ -405,6 +405,15 @@ Vector transform(const Vector &a, const Matrix &b) {
   return r;
 }
 
+Vector transform3(const Vector &a, const Matrix &b) {
+  Vector r;
+  r.x = b.GET(0,0)*a.x+b.GET(0,1)*a.y+b.GET(0,2)*a.z+b.GET(0,3);
+  r.y = b.GET(1,0)*a.x+b.GET(1,1)*a.y+b.GET(1,2)*a.z+b.GET(1,3);
+  r.z = b.GET(2,0)*a.x+b.GET(2,1)*a.y+b.GET(2,2)*a.z+b.GET(2,3);
+  r.w = 1;
+  return r;
+}
+
 Vector transformTransposed(const Vector &a, const Matrix &b) {
   Vector r;
   r.x = b.GET(0,0)*a.x+b.GET(1,0)*a.y+b.GET(2,0)*a.z+b.GET(3,0)*a.w;

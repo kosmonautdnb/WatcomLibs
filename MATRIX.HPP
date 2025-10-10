@@ -82,6 +82,7 @@ Matrix inverse(const Matrix &a);
 Matrix transpose(const Matrix &a);
 
 Vector transform(const Vector &a, const Matrix &b);
+Vector transform3(const Vector &a, const Matrix &b);
 Vector transformTransposed(const Vector &a, const Matrix &b);
 Vector transform3x3(const Vector &a, const Matrix &b);
 Vector transformTransposed3x3(const Vector &a, const Matrix &b);
