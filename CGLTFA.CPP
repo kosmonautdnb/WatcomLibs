@@ -397,6 +397,7 @@ void GLTFA_File::fillNode(GLTFA_Node *j, cgltf_node *k) const {
 }
 
 void GLTFA_File::recalculateNodes() {
+  currentAnimCycle++;
   Array<unsigned int> k = gltfNodes.keys();
   for (int j = 0; j < k.size(); j++) {
     gltfNodes[k[j]]->matrixUpdateId = 0;
@@ -462,7 +463,7 @@ void GLTFA_File::drawPrimitive(GLTFA_Primitive *a, GLTFA_Skin *b, const Vector &
 
   if (a->colors.has(0)) colorsV = &a->colors[0][0];
   if (a->texCoords.has(0)) texCoordsV = &a->texCoords[0][0];
-  if (a->normals.has(0)) normalsV = &a->normals[0][0];
+  if (a->normals.has(0)) {normalsV = &a->normals[0][0];}
   if (a->positions.has(0)) positionsV = &a->positions[0][0];
   if (a->weights.has(0)) weightsV = &a->weights[0][0];
   if (a->joints.has(0)) jointsV = &a->joints[0][0];
@@ -482,7 +483,9 @@ void GLTFA_File::drawPrimitive(GLTFA_Primitive *a, GLTFA_Skin *b, const Vector &
       } break;
     }
   } else {
-    Vector translation,normal;
+    Array<Vector> *normals0 = &a->normals0;
+    Array<Vector> *positions0 = &a->positions0;
+    Vector k; k.x = currentAnimCycle;
     switch(a->primitive_type) {
       case GLTFA_Primitive_type_triangle: {
         glBegin(GL_TRIANGLES);
@@ -490,10 +493,24 @@ void GLTFA_File::drawPrimitive(GLTFA_Primitive *a, GLTFA_Skin *b, const Vector &
           int j = a->indices[i];
           if (colorsV) glColor4d(colorsV[j].x*color.x,colorsV[j].y*color.y,colorsV[j].z*color.z,colorsV[j].w*color.w);
           if (texCoordsV) glTexCoord2dv(&texCoordsV[j].x);
-          normal = b->transformNormal(normalsV[j], jointsV[j], weightsV[j]);
-          translation = b->transformPosition(positionsV[j], jointsV[j], weightsV[j]);
-          glNormal3dv(&normal.x);
-          glVertex3dv(&translation.x);
+          if (normalsV) {
+            if (j >= normals0->size()) normals0->resize(j+1);
+            Vector *z = &(*normals0)[j];
+            if (z->w != k.x) {
+              *z = b->transformNormal(normalsV[j], jointsV[j], weightsV[j]); 
+              z->w = k.x;
+            }
+            glNormal3dv(&z->x);
+          }
+          if (positionsV) {
+            if (j >= positions0->size()) positions0->resize(j+1);
+            Vector *z = &(*positions0)[j];
+            if (z->w != k.x) {
+              *z = b->transformPosition(positionsV[j], jointsV[j], weightsV[j]);
+              z->w = k.x;
+            }
+            glVertex3dv(&z->x);
+          }
         }
         glEnd();
       } break;

@@ -30,6 +30,8 @@ public:
   GLTFA_Primitive_type primitive_type;
   unsigned int materialId;
   Array<int> indices;
+  Array<Vector> positions0;
+  Array<Vector> normals0;
   HashMap<int,Array<Vector> > positions;
   HashMap<int,Array<Vector> > colors;
   HashMap<int,Array<Vector> > normals;
@@ -190,7 +192,7 @@ typedef bool (*HITTESTFUNCTION)(const Matrix &cubeMatrix, Vector &hitPoint, doub
 class GLTFA_File {
 public:
 
-  GLTFA_File() {displayWithoutTexture = false;}
+  GLTFA_File() {displayWithoutTexture = false;currentAnimCycle = 2;}
 
   HashMap<unsigned int, GLTFA_Material *> gltfMaterials;
   HashMap<unsigned int, GLTFA_Mesh *> gltfMeshes;
@@ -201,6 +203,7 @@ public:
   Array<String> skipNodeNames;
   bool displayWithoutTexture;
   unsigned int defaultScene;
+  unsigned int currentAnimCycle;
 
   bool load(const char *fileName, const float textureScale); // load .glt or .glb file (glb also features embedded textures etc..)
   void free();
