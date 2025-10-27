@@ -44,6 +44,7 @@ int main(int argc, const char *argv[]) {
     ImGui::Checkbox("Exit##Exit3",&quit);
     ImGui::Text("MouseX %d,MouseY %d",(int)mouseX,(int)mouseY);
     ImGui::Text("MouseDeltaX %d,MouseDeltaY %d",(int)mouseDeltaX,(int)mouseDeltaY);
+    ImGui::Text("MouseButtons %d",mouseButtons);
     ImGui::Text("CurrentKey %d",(int)currentKey);
     ImGui::Text("Time %f",glSeconds());
     ImGui::End();

@@ -3,6 +3,7 @@
 
 extern int glFrameBufferWidth;
 extern int glFrameBufferHeight;
+extern int glMouseW;
 
 double mouseX = 60, mouseY = 60;
 double mouseDeltaX = 0, mouseDeltaY = 0;
@@ -278,6 +279,7 @@ void ImGuiNewFrame() {
   double deltaTime = time - lastTime;
   io.DeltaTime = deltaTime > 0 ? deltaTime : 1.f/30.f;
   lastTime = time;
+  mouseButtons = glMouseButtons();
   glNextMouseDelta(&mouseDeltaX, &mouseDeltaY);
   mouseX += mouseDeltaX * mouseSpeed; mouseY += mouseDeltaY * mouseSpeed;
   if (mouseX < 0) mouseX = 0;
@@ -285,10 +287,9 @@ void ImGuiNewFrame() {
   if (mouseX > glFrameBufferWidth-1) mouseX = glFrameBufferWidth-1;
   if (mouseY > glFrameBufferHeight-1) mouseY = glFrameBufferHeight-1;
   io.MousePos = ImVec2(mouseX,mouseY);
-  mouseButtons = glMouseButtons();
   io.MouseDown[0] = mouseButtons & 1;
   io.MouseDown[1] = mouseButtons & 2;
-  io.MouseWheel = 0;
+  io.MouseWheel = (signed char)((mouseButtons>>8)&0xff);
   ImGuiKeyBoardInput();
   ImGui::NewFrame();
 }
