@@ -1,4 +1,4 @@
-#include "C:\_OPENGL_\GL.H"
+#include "GL.H"
 #include "types.hpp"
 #include "charset.hpp"
 #include <stdlib.h>
@@ -16,7 +16,7 @@ Letter* getLetter(char s) {
     return l;
 }
 
-static bool newXYZ = false;
+static GLboolean newXYZ = GL_FALSE;
 static bool isVisible = false;
 static bool shouldClip = false;
 
