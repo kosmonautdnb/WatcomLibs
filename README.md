@@ -25,6 +25,11 @@ https://github.com/ocornut/imgui
 - STBTTF.HPP
 - STBTEXT.HPP
 
+ImGui Dos Demo:
+- IMGUIDMO.CPP
+- IMGUIDMO.BAT (WatcomC++)
+- IMDJGPP.BAT (DJGPP)
+
 #### &emsp;ImGui howto:
   
 &emsp;#include "gl.h"  
