@@ -15,7 +15,7 @@ https://github.com/kosmonautdnb/WatcomGL
 
 ## ImGui v1.43 included and working
 (needs WatcomGL)  
-https://github.com/ocornut/imgui  
+https://github.com/ocornut/imgui (not needed)
 - IMCONFIG.H  
 - IMGUI.CPP  
 - IMGUI.H  
