@@ -17,7 +17,7 @@
 typedef void (__interrupt __far* KeyboardHandler)();
 static KeyboardHandler oldKeyboardHandler = NULL;
 
-#define DPMIERROR {printf("DPMI Error. No appropiate DPMI interface. Maybe use PModeW instead of Dos4GW at linking.\n");exit(0);}
+#define DPMIERROR {printf("DPMI Error. No appropiate DPMI interface. Maybe use PModeW at linking.\n");exit(0);}
 
 bool keyPressed[0x80] = {0};
 

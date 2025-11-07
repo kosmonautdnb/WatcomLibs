@@ -17,7 +17,7 @@
 #define TIMER_MULTIPLICATOR 1024 // 1193180 * 1024 / 65536
 double speakerFrequency = (double)HARDWARE_TIMER_FREQUENCY/65536.0*TIMER_MULTIPLICATOR;
 
-#define DPMIERROR {printf("DPMI Error. No appropiate DPMI interface. Maybe use PModeW instead of Dos4GW at linking.\n");exit(0);}
+#define DPMIERROR {printf("DPMI Error. No appropiate DPMI interface. Maybe use PModeW linking.\n");exit(0);}
 
 typedef void (__interrupt __far* TimerIrqHandler)();
 static TimerIrqHandler oldTimerIrqHandler;
