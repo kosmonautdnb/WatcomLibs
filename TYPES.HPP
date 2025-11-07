@@ -48,8 +48,8 @@ typedef unsigned int UINT;
 #define SIZE_MAX UINT32_MAX
 
 #ifndef NOT_DOS
-#define snprintf_x4(__a__,__b__,__c__,__d__) sprintf(__a__,__c__,__d__)
-#define snprintf_x5(__a__,__b__,__c__,__d__,__e__) sprintf(__a__,__c__,__d__,__e__)
+#define snprintf_x4(__a__,__b__,__c__,__d__) (sprintf(__a__,__c__,__d__) + (((char*)__a__)[(__b__)-1]=0))
+#define snprintf_x5(__a__,__b__,__c__,__d__,__e__) (sprintf(__a__,__c__,__d__,__e__) + (((char*)__a__)[(__b__)-1]=0))
 #else
 #define snprintf_x4(__a__,__b__,__c__,__d__) snprintf(__a__,__b__,__c__,__d__)
 #define snprintf_x5(__a__,__b__,__c__,__d__,__e__) snprintf(__a__,__b__,__c__,__d__,__e__)

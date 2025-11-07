@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <stdio.h>
 #ifdef __WATCOMC__
 #include <i86.h>
 #endif // __WATCOMC__
@@ -12,10 +13,11 @@
 #endif // __DJGPP__
 
 #ifdef __WATCOMC__
-
 #define HARDWARE_TIMER_FREQUENCY 1193180 // 1193180 / 65536  = 18.2 (found in the internet that it's more like 1193181.66666666 instead of 1193180)
 #define TIMER_MULTIPLICATOR 1024 // 1193180 * 1024 / 65536
 double speakerFrequency = (double)HARDWARE_TIMER_FREQUENCY/65536.0*TIMER_MULTIPLICATOR;
+
+#define DPMIERROR {printf("DPMI Error. No appropiate DPMI interface. Maybe use PModeW instead of Dos4GW at linking.\n");exit(0);}
 
 typedef void (__interrupt __far* TimerIrqHandler)();
 static TimerIrqHandler oldTimerIrqHandler;
@@ -157,8 +159,7 @@ void enableSamplePlayback() {
   timerIrqPos = 0;
 
   union REGS r;
-  unsigned   rmvector;
-   
+  memset(&r,0,sizeof(r));
   r.x.eax = 0x204;
   r.h.bl = 0x08;
   int386 (0x31, &r, &r);
@@ -166,11 +167,13 @@ void enableSamplePlayback() {
 
   int here = 65536/TIMER_MULTIPLICATOR;
 
+  memset(&r,0,sizeof(r));
   r.x.eax = 0x205;
   r.h.bl = 0x08;
   r.x.ecx = FP_SEG(timerIrqHandler);
   r.x.edx = FP_OFF(timerIrqHandler);
   int386 (0x31, &r, &r);
+  if (r.w.cflag) DPMIERROR;
 
   outp(0x43,0x36);
   outp(0x40,here & 255);
@@ -182,16 +185,18 @@ void disableSamplePlayback() {
   initSample();
 
   union REGS r;
+  memset(&r,0,sizeof(r));
 
   outp(0x43,0x36);
-  outp(0x40,0); // both 0 = 65536 = 1193180.0/65536.0 = ~18.2 hz
-  outp(0x40,0);
+  outp(0x40,0x00);
+  outp(0x40,0x00);
 
   r.x.eax = 0x205;
   r.h.bl = 0x08;
   r.x.ecx = FP_SEG(oldTimerIrqHandler);
   r.x.edx = FP_OFF(oldTimerIrqHandler);
   int386 (0x31, &r, &r);
+  if (r.w.cflag) DPMIERROR;
 }
 
 void enable32BitSignedSamplePlayback(signed int *audioBuffer, int len) {

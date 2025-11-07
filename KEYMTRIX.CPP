@@ -1,6 +1,8 @@
 #include "keymtrix.hpp"
 #include <conio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #ifdef __WATCOMC__
 #include <i86.h>
 #endif // __WATCOMC__
@@ -14,6 +16,8 @@
 #ifdef __WATCOMC__
 typedef void (__interrupt __far* KeyboardHandler)();
 static KeyboardHandler oldKeyboardHandler = NULL;
+
+#define DPMIERROR {printf("DPMI Error. No appropiate DPMI interface. Maybe use PModeW instead of Dos4GW at linking.\n");exit(0);}
 
 bool keyPressed[0x80] = {0};
 
@@ -31,26 +35,31 @@ void installKeyboardHandler() {
   if (oldKeyboardHandler != NULL)
     uninstallKeyboardHandler();
   union REGS r;
+  memset(&r,0,sizeof(r));
   r.w.ax = 0x204;
   r.h.bl = 0x09;
   int386 (0x31, &r, &r);
   oldKeyboardHandler = (KeyboardHandler)MK_FP(r.x.ecx,r.x.edx);
+  memset(&r,0,sizeof(r));
   r.w.ax = 0x205;
   r.h.bl = 0x09;
   r.x.ecx = FP_SEG(keyboardHandler);
   r.x.edx = FP_OFF(keyboardHandler);
   int386 (0x31, &r, &r);
+  if (r.w.cflag) DPMIERROR;
   atexit(uninstallKeyboardHandler);
 }
 
 void uninstallKeyboardHandler() {
   if (oldKeyboardHandler != NULL) {
     union REGS r;
+    memset(&r,0,sizeof(r));
     r.w.ax = 0x205;
     r.h.bl = 0x09;
     r.x.ecx = FP_SEG(oldKeyboardHandler);
     r.x.edx = FP_OFF(oldKeyboardHandler);
     int386 (0x31, &r, &r);
+    if (r.w.cflag) DPMIERROR;
     oldKeyboardHandler = NULL;
   }
 }

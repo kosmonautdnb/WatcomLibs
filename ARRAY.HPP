@@ -16,6 +16,12 @@ public:
     allocatedSize = 5;
     data = new T[(unsigned int)allocatedSize]; // no 64 bit new
   }
+  
+  Array(int size) {
+    usedSize = size;
+    allocatedSize = (size+5)*1.5;
+    data = new T[(unsigned int)allocatedSize]; // no 64 bit new
+  }
 
   const Array &operator=(const Array &b) {
     T *copy = new T[(unsigned int)b.allocatedSize]; // no 64 bit new

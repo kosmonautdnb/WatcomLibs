@@ -114,6 +114,7 @@ void GLTFA_File::initMaterials(cgltf_material* materials, int count, double texS
     if (materials[i].has_pbr_metallic_roughness) {
       cgltf_pbr_metallic_roughness *r = &materials[i].pbr_metallic_roughness;
       cgltf_texture_view *b = &r->base_color_texture;
+      if (b == NULL || b->texture == NULL) b = &materials[i].emissive_texture;
       cgltf_texture* t = b->texture;
       if (t!=NULL) {
         cgltf_image* m = t->image;
