@@ -139,6 +139,10 @@ INLINE GLint glMaxi(GLint a, GLint x) {
   return a > x ? a : x;
 }
 
+GLvoid glSetError(GLenum error) {
+  glError = error;
+}
+
 GLvoid initTexture(glTexture *t) {
   t->name=0;
   t->width=0;
@@ -161,9 +165,58 @@ GLvoid initTexture(glTexture *t) {
   t->texEnvMode=GL_MODULATE;
 }
 
+typedef struct GLBuffer {
+  GLuint name;
+  GLvoid *data;
+  GLsizei dataSize;
+} GLBuffer;
+
+GLBuffer glBuffers[GLMAXBUFFERS];
+GLBuffer *glBoundBuffer=NULL;
+GLBuffer *glBoundElementBuffer=NULL;
+GLBuffer glStandardBuffer;
+GLBuffer glStandardElementBuffer;
+
+GLBuffer *glGetCurrentBuffer() {
+  if (glBoundBuffer==NULL) {
+    return &glStandardBuffer;
+  }
+  return glBoundBuffer;
+}
+
+GLBuffer *glGetCurrentElementBuffer() {
+  if (glBoundElementBuffer==NULL) {
+    return &glStandardElementBuffer;
+  }
+  return glBoundElementBuffer;
+}
+
+GLuint glNewBuffer() {
+  for (GLint i = 1; i < GLMAXBUFFERS; i++) {
+    if (glBuffers[i].name == 0x00) {
+      memset(&glBuffers[i],0,sizeof(GLBuffer));
+      glBuffers[i].name = i;
+      return i;
+    }
+  }
+  glSetError(GL_OUT_OF_MEMORY);
+  return 0;
+}
+
+GLvoid glDeleteBuffer(GLuint i) {
+  if (i > 0 && glBuffers[i].name != 0) {
+    glBuffers[i].name = 0;
+  }
+}
+
 GLvoid _GLContext_init() {
   GLint i;
   memset(glContext.enabledCaps,0,sizeof(glContext.enabledCaps));
+  memset(&glStandardBuffer,0,sizeof(glStandardBuffer));
+  memset(&glStandardElementBuffer,0,sizeof(glStandardElementBuffer));
+  memset(glBuffers,0,sizeof(glBuffers));
+  glBoundBuffer=NULL;
+  glBoundElementBuffer=NULL;
   glContext.viewportX0 = 0;
   glContext.viewportY0 = 0;
   glContext.viewportX1 = 0;
@@ -323,14 +376,33 @@ GLvoid _GLContext_init() {
   glContext.fogDensity = 1.0;
   glContext.fogMode = GL_EXP;
 
+  glContext.vertexEnabledBuffer = GL_FALSE;
+  glContext.vertexSizeBuffer = 0;
+  glContext.vertexTypeBuffer = 0;
+  glContext.vertexStrideBuffer = 0;
+  glContext.vertexPointerBuffer = NULL;
+  glContext.normalEnabledBuffer = GL_FALSE;
+  glContext.normalSizeBuffer = 0;
+  glContext.normalTypeBuffer = 0;
+  glContext.normalStrideBuffer = 0;
+  glContext.normalPointerBuffer = NULL;
+  glContext.texEnabledBuffer = GL_FALSE;
+  glContext.texSizeBuffer = 0;
+  glContext.texTypeBuffer = 0;
+  glContext.texStrideBuffer = 0;
+  glContext.texPointerBuffer = NULL;
+  glContext.colorEnabledBuffer = GL_FALSE;
+  glContext.colorSizeBuffer = 0;
+  glContext.colorTypeBuffer = 0;
+  glContext.colorStrideBuffer = 0;
+  glContext.colorPointerBuffer = NULL;
+  glContext.indexEnabledBuffer = GL_TRUE; // seems to be default on?
+  glContext.beginPrimitiveIndex = 0;
+
   for (i = 0; i < GLMAXTEXTURES; i++) {
     glTexture *t=&glTextures[i];
     initTexture(t);
   }
-}
-
-GLvoid glSetError(GLenum error) {
-  glError = error;
 }
 
 GLvoid _GLContext_enable(GLenum prop, GLboolean enable) {
@@ -958,6 +1030,26 @@ INLINE GLboolean isBackFaceCulled(_GLContext *context, const glVertex *v0, const
   return GL_FALSE;
 }
 
+GLvoid glTriangleFanVertices() {
+  glCurrentVertexElement = 2;
+  glVertices[1] = glVertices[2];
+  // p0,2,..
+}
+
+GLvoid glTriangleStripVertices() {
+  glCurrentVertexElement = 2;
+  glVertices[0] = glVertices[1];
+  glVertices[1] = glVertices[2];
+  // 2,1,..
+}
+
+GLvoid glQuadStripVertices() {
+  glCurrentVertexElement = 2;
+  glVertices[0] = glVertices[2];
+  glVertices[1] = glVertices[3];
+  //2,3,.. to be tested
+}
+
 GLvoid glEmitVertex() {
   glVertex *v = &glVertices[glCurrentVertexElement];
   _GLContext *w = &glContext;
@@ -1021,6 +1113,7 @@ GLvoid glEmitVertex() {
           }
         }
         glCurrentVertexElement = 0;
+        glContext.beginPrimitiveIndex++;
       }
     } break;
     case GL_LINE_STRIP: {
@@ -1064,25 +1157,42 @@ GLvoid glEmitVertex() {
         }
         glVertices[0]=glVertices[1];
         glCurrentVertexElement = 1;
+        glContext.beginPrimitiveIndex++;
       }
     } break;
+    case GL_TRIANGLE_FAN:
+    case GL_TRIANGLE_STRIP:
     case GL_TRIANGLES: {
       if (glCurrentVertexElement == 3) {
+        GLint c0 = 0;
+        GLint c1 = 1;
+        GLint c2 = 2;
+        if (glContext.beginMode==GL_TRIANGLE_STRIP) {
+          if (glContext.beginPrimitiveIndex & 1) {
+            c0 = 1;
+            c1 = 0;
+            c2 = 2;
+          }
+        }
         if (backFaceCalc(&glVertices[0],&glVertices[1],&glVertices[2])) {glCurrentVertexElement = 0;currentBackFacing = GL_FALSE;break;}
         if (glContext.wireframe[currentBackFacing ? 1 : 0]) {
           glVertex vs[3];
           vs[0] = glVertices[0];
           vs[1] = glVertices[1];
           vs[2] = glVertices[2];
+          GLint modeBefore = glContext.beginMode;
+          GLint indexBefore = glContext.beginPrimitiveIndex;
           glContext.beginMode = GL_LINES; glCurrentVertexElement = 0;
-          glSetVertex(&vs[0]);glEmitVertex();
-          glSetVertex(&vs[1]);glEmitVertex();
-          glSetVertex(&vs[1]);glEmitVertex();
-          glSetVertex(&vs[2]);glEmitVertex();
-          glSetVertex(&vs[2]);glEmitVertex();
-          glSetVertex(&vs[0]);glEmitVertex();
-          glSetVertex(&vs[2]);
-          glContext.beginMode = GL_TRIANGLES; glCurrentVertexElement = 0; currentBackFacing = GL_FALSE;
+          glSetVertex(&vs[c0]);glEmitVertex();
+          glSetVertex(&vs[c1]);glEmitVertex();
+          glSetVertex(&vs[c1]);glEmitVertex();
+          glSetVertex(&vs[c2]);glEmitVertex();
+          glSetVertex(&vs[c2]);glEmitVertex();
+          glSetVertex(&vs[c0]);glEmitVertex();
+          glSetVertex(&vs[c2]);
+          glContext.beginMode = modeBefore; glCurrentVertexElement = 0; currentBackFacing = GL_FALSE;
+          glContext.beginPrimitiveIndex = indexBefore;
+          if (glContext.beginMode==GL_TRIANGLE_STRIP) glTriangleStripVertices();
           break;
         }
         GLint a = glTransformVertex(&glContext,&glVertices[0],GL_TRUE);
@@ -1091,7 +1201,7 @@ GLvoid glEmitVertex() {
         a *= 2;
         a |= glTransformVertex(&glContext,&glVertices[2],GL_TRUE);
         if (a == 0) {
-          if (!isBackFaceCulled(&glContext,&glVertices[0],&glVertices[1],&glVertices[2])) {
+          if (!isBackFaceCulled(&glContext,&glVertices[c0],&glVertices[c1],&glVertices[c2])) {
             GLint clipFlags = glClipVertex(&glContext,&glVertices[0]);
             clipFlags &= glClipVertex(&glContext,&glVertices[1]);
             clipFlags &= glClipVertex(&glContext,&glVertices[2]);
@@ -1099,19 +1209,33 @@ GLvoid glEmitVertex() {
               glLightVertex(&glContext,&glVertices[0]);
               glLightVertex(&glContext,&glVertices[1]);
               glLightVertex(&glContext,&glVertices[2]);
-              glDrawTriangle(&glContext,&glVertices[0],&glVertices[1],&glVertices[2]);
+              glDrawTriangle(&glContext,&glVertices[c0],&glVertices[c1],&glVertices[c2]);
             }
           }
         } else {
           if (a != 7) {
-            drawClippedTriangle(&glContext,&glVertices[0],&glVertices[1],&glVertices[2]);
+            drawClippedTriangle(&glContext,&glVertices[c0],&glVertices[c1],&glVertices[c2]);
           }
         }
-        glCurrentVertexElement = 0; currentBackFacing = GL_FALSE; 
+        glCurrentVertexElement = 0; currentBackFacing = GL_FALSE;
+        if (glContext.beginMode==GL_TRIANGLE_STRIP) glTriangleStripVertices();
+        if (glContext.beginMode==GL_TRIANGLE_FAN) glTriangleFanVertices();
+        glContext.beginPrimitiveIndex++;
       }
     } break;
+    case GL_QUAD_STRIP:
     case GL_QUADS: {
       if (glCurrentVertexElement == 4) {
+        GLint c0 = 0;
+        GLint c1 = 1;
+        GLint c2 = 2;
+        GLint c3 = 3;
+        if (glContext.beginMode==GL_QUAD_STRIP) {
+          c0 = 0;
+          c1 = 2;
+          c2 = 3;
+          c3 = 1;
+        }
         if (backFaceCalc(&glVertices[0],&glVertices[1],&glVertices[2])) {glCurrentVertexElement = 0;currentBackFacing = GL_FALSE;break;}
         if (glContext.wireframe[currentBackFacing ? 1 : 0]) {
           glVertex vs[4];
@@ -1119,17 +1243,21 @@ GLvoid glEmitVertex() {
           vs[1] = glVertices[1];
           vs[2] = glVertices[2];
           vs[3] = glVertices[3];
+          GLint modeBefore = glContext.beginMode;
+          GLint indexBefore = glContext.beginPrimitiveIndex;
           glContext.beginMode = GL_LINES; glCurrentVertexElement = 0;
-          glSetVertex(&vs[0]);glEmitVertex();
-          glSetVertex(&vs[1]);glEmitVertex();
-          glSetVertex(&vs[1]);glEmitVertex();
-          glSetVertex(&vs[2]);glEmitVertex();
-          glSetVertex(&vs[2]);glEmitVertex();
-          glSetVertex(&vs[3]);glEmitVertex();
-          glSetVertex(&vs[3]);glEmitVertex();
-          glSetVertex(&vs[0]);glEmitVertex();
-          glSetVertex(&vs[3]);
-          glContext.beginMode = GL_QUADS; glCurrentVertexElement = 0; currentBackFacing = GL_FALSE;
+          glSetVertex(&vs[c0]);glEmitVertex();
+          glSetVertex(&vs[c1]);glEmitVertex();
+          glSetVertex(&vs[c1]);glEmitVertex();
+          glSetVertex(&vs[c2]);glEmitVertex();
+          glSetVertex(&vs[c2]);glEmitVertex();
+          glSetVertex(&vs[c3]);glEmitVertex();
+          glSetVertex(&vs[c3]);glEmitVertex();
+          glSetVertex(&vs[c0]);glEmitVertex();
+          glSetVertex(&vs[c3]);
+          glContext.beginMode = modeBefore; glCurrentVertexElement = 0; currentBackFacing = GL_FALSE;
+          glContext.beginPrimitiveIndex = indexBefore;
+          if (glContext.beginMode==GL_QUAD_STRIP) glQuadStripVertices();
           break;
         }
         GLint a = glTransformVertex(&glContext,&glVertices[0],GL_TRUE);
@@ -1140,7 +1268,7 @@ GLvoid glEmitVertex() {
         a *= 2;
         a |= glTransformVertex(&glContext,&glVertices[3],GL_TRUE);
         if (a == 0) {
-          if (!isBackFaceCulled(&glContext,&glVertices[0],&glVertices[1],&glVertices[2])) {
+          if (!isBackFaceCulled(&glContext,&glVertices[c0],&glVertices[c1],&glVertices[c2])) {
             GLint clipFlags = glClipVertex(&glContext,&glVertices[0]);
             clipFlags &= glClipVertex(&glContext,&glVertices[1]);
             clipFlags &= glClipVertex(&glContext,&glVertices[2]);
@@ -1150,15 +1278,17 @@ GLvoid glEmitVertex() {
               glLightVertex(&glContext,&glVertices[1]);
               glLightVertex(&glContext,&glVertices[2]);
               glLightVertex(&glContext,&glVertices[3]);
-              glDrawQuad(&glContext,&glVertices[0],&glVertices[1],&glVertices[2],&glVertices[3]);
+              glDrawQuad(&glContext,&glVertices[c0],&glVertices[c1],&glVertices[c2],&glVertices[c3]);
             }
           }
         } else {
           if (a != 15) {
-            drawClippedQuad(&glContext,&glVertices[0],&glVertices[1],&glVertices[2],&glVertices[3]);
+            drawClippedQuad(&glContext,&glVertices[c0],&glVertices[c1],&glVertices[c2],&glVertices[c3]);
           }
         }
         glCurrentVertexElement = 0; currentBackFacing = GL_FALSE;
+        if (glContext.beginMode==GL_QUAD_STRIP) glQuadStripVertices();
+        glContext.beginPrimitiveIndex++;
       }
     } break;
     case GL_POINTS: {
@@ -1201,6 +1331,7 @@ GLvoid glEmitVertex() {
           }
         }
         glCurrentVertexElement = 0;
+        glContext.beginPrimitiveIndex++;
       }
     } break;
     default: {
@@ -1222,6 +1353,18 @@ GLvoid glBegin(GLenum mode) {
   //if (glContext.beginMode != 0) {glDone();exit(0);}
   glContext.beginMode = mode;
   glCurrentVertexElement = 0;
+  glContext.beginPrimitiveIndex = 0;
+}
+
+GLvoid glBindBuffer(GLenum target, GLuint buffer) {
+  if (buffer >= GLMAXBUFFERS) {
+    glSetError(GL_INVALID_VALUE);
+    return;
+  }
+  switch(target) {
+  case GL_ARRAY_BUFFER:{glBoundBuffer=buffer==0?NULL:&glBuffers[buffer];} break;
+  case GL_ELEMENT_ARRAY_BUFFER:{glBoundElementBuffer=buffer==0?NULL:&glBuffers[buffer];} break;
+  }
 }
 
 GLvoid glBindTexture(GLenum target, GLuint texture) {
@@ -1236,6 +1379,40 @@ GLvoid glBindTexture(GLenum target, GLuint texture) {
 GLvoid glBlendFunc(GLenum sfactor, GLenum dfactor) {
   glContext.blendFuncSFactor = sfactor;
   glContext.blendFuncDFactor = dfactor;
+}
+
+GLvoid glBufferData(GLenum target, GLsizeiptr size, const GLvoid *data, GLenum usage) {
+  __UNUSED(usage);
+  GLBuffer *c = NULL;
+  switch(target) {
+  case GL_ARRAY_BUFFER: {c = glGetCurrentBuffer();} break;
+  case GL_ELEMENT_ARRAY_BUFFER: {c = glGetCurrentElementBuffer();} break;
+  }
+  if (c == NULL) {
+    glSetError(GL_INVALID_VALUE);
+    return;
+  }
+  if (c->data != NULL) {__FREE(c->data); c->data = NULL;}
+  c->data = __MALLOC(size);
+  memset(c->data,0,size);
+  c->dataSize = size;
+  glBufferSubData(target,0,size,data);
+}
+
+GLvoid glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid *data) {
+  GLBuffer *c = NULL;
+  switch(target) {
+  case GL_ARRAY_BUFFER: {c = glGetCurrentBuffer();} break;
+  case GL_ELEMENT_ARRAY_BUFFER: {c = glGetCurrentElementBuffer();} break;
+  }
+  if ((c == NULL) || (c->data==NULL) || (offset+size>c->dataSize) || (offset<0)) {
+    glSetError(GL_INVALID_VALUE);
+    return;
+  }
+  if (data != NULL) 
+    memcpy((GLvoid*)((GLuint)c->data+offset),data,size);
+  else
+    memset((GLvoid*)((GLuint)c->data+offset),0,size);
 }
 
 GLvoid glClear(GLbitfield mask) {
@@ -1300,6 +1477,24 @@ GLvoid glClearStencil(GLint s) {
   glContext.clearStencil = s;
 }
 
+GLvoid glColor1d(GLdouble red) {
+  glContext.colorRed = (GLfloat)red;
+}
+
+GLvoid glColor1dv(const GLdouble *v) {
+  glContext.colorRed = (GLfloat)v[0];
+}
+
+GLvoid glColor2d(GLdouble red, GLdouble green) {
+  glContext.colorRed = (GLfloat)red;
+  glContext.colorGreen = (GLfloat)green;
+}
+
+GLvoid glColor2dv(const GLdouble *v) {
+  glContext.colorRed = (GLfloat)v[0];
+  glContext.colorGreen = (GLfloat)v[1];
+}
+
 GLvoid glColor3d(GLdouble red, GLdouble green, GLdouble blue) {
   glContext.colorRed = (GLfloat)red;
   glContext.colorGreen = (GLfloat)green;
@@ -1310,24 +1505,6 @@ GLvoid glColor3dv(const GLdouble *v) {
   glContext.colorRed = (GLfloat)v[0];
   glContext.colorGreen = (GLfloat)v[1];
   glContext.colorBlue = (GLfloat)v[2];
-}
-
-GLvoid glColor3f(GLfloat red, GLfloat green, GLfloat blue) {
-  glContext.colorRed = red;
-  glContext.colorGreen = green;
-  glContext.colorBlue = blue;
-}
-
-GLvoid glColor3fv(const GLfloat *v) {
-  glContext.colorRed = v[0];
-  glContext.colorGreen = v[1];
-  glContext.colorBlue = v[2];
-}
-
-GLvoid glColor3ub(GLubyte red, GLubyte green, GLubyte blue) {
-  glContext.colorRed = (GLfloat)red / 255.f;
-  glContext.colorGreen = (GLfloat)green / 255.f;
-  glContext.colorBlue = (GLfloat)blue / 255.f;
 }
 
 GLvoid glColor4d (GLdouble red, GLdouble green, GLdouble blue, GLdouble alpha) {
@@ -1344,6 +1521,36 @@ GLvoid glColor4dv (const GLdouble *v) {
   glContext.colorAlpha = (GLfloat)v[3];
 }
 
+GLvoid glColor1f(GLfloat red) {
+  glContext.colorRed = red;
+}
+
+GLvoid glColor1fv(const GLfloat *v) {
+  glContext.colorRed = v[0];
+}
+
+GLvoid glColor2f(GLfloat red, GLfloat green) {
+  glContext.colorRed = red;
+  glContext.colorGreen = green;
+}
+
+GLvoid glColor2fv(const GLfloat *v) {
+  glContext.colorRed = v[0];
+  glContext.colorGreen = v[1];
+}
+
+GLvoid glColor3f(GLfloat red, GLfloat green, GLfloat blue) {
+  glContext.colorRed = red;
+  glContext.colorGreen = green;
+  glContext.colorBlue = blue;
+}
+
+GLvoid glColor3fv(const GLfloat *v) {
+  glContext.colorRed = v[0];
+  glContext.colorGreen = v[1];
+  glContext.colorBlue = v[2];
+}
+
 GLvoid glColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha) {
   glContext.colorRed = red;
   glContext.colorGreen = green;
@@ -1358,11 +1565,41 @@ GLvoid glColor4fv(const GLfloat *v) {
   glContext.colorAlpha = v[3];
 }
 
+GLvoid glColor1ub(GLubyte red) {
+  glContext.colorRed = (GLfloat)red / 255.f;
+}
+
+GLvoid glColor2ub(GLubyte red, GLubyte green) {
+  glContext.colorRed = (GLfloat)red / 255.f;
+  glContext.colorGreen = (GLfloat)green / 255.f;
+}
+
+GLvoid glColor3ub(GLubyte red, GLubyte green, GLubyte blue) {
+  glContext.colorRed = (GLfloat)red / 255.f;
+  glContext.colorGreen = (GLfloat)green / 255.f;
+  glContext.colorBlue = (GLfloat)blue / 255.f;
+}
+
 GLvoid glColor4ub(GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha) {
   glContext.colorRed = (GLfloat)red / 255.f;
   glContext.colorGreen = (GLfloat)green / 255.f;
   glContext.colorBlue = (GLfloat)blue / 255.f;
   glContext.colorAlpha = (GLfloat)alpha / 255.f;
+}
+
+GLvoid glColor1ubv(const GLubyte *v) {
+  glContext.colorRed = (GLfloat)v[0] / 255.f;
+}
+
+GLvoid glColor2ubv(const GLubyte *v) {
+  glContext.colorRed = (GLfloat)v[0] / 255.f;
+  glContext.colorGreen = (GLfloat)v[1] / 255.f;
+}
+
+GLvoid glColor3ubv(const GLubyte *v) {
+  glContext.colorRed = (GLfloat)v[0] / 255.f;
+  glContext.colorGreen = (GLfloat)v[1] / 255.f;
+  glContext.colorBlue = (GLfloat)v[2] / 255.f;
 }
 
 GLvoid glColor4ubv(const GLubyte *v) {
@@ -1372,17 +1609,18 @@ GLvoid glColor4ubv(const GLubyte *v) {
   glContext.colorAlpha = (GLfloat)v[3] / 255.f;
 }
 
-GLvoid glColor3ubv(const GLubyte *v) {
-  glContext.colorRed = (GLfloat)v[0] / 255.f;
-  glContext.colorGreen = (GLfloat)v[1] / 255.f;
-  glContext.colorBlue = (GLfloat)v[2] / 255.f;
-}
-
 GLvoid glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) {
   glContext.maskRed = red;
   glContext.maskGreen = green;
   glContext.maskBlue = blue;
   glContext.maskAlpha = alpha;
+}
+
+GLvoid glColorPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer) {
+  glContext.colorSizeBuffer = size;
+  glContext.colorTypeBuffer = type;
+  glContext.colorStrideBuffer = stride;
+  glContext.colorPointerBuffer = pointer;
 }
 
 GLvoid glColorMaterial(GLenum face, GLenum pname) {
@@ -1397,6 +1635,11 @@ GLvoid glColorMaterial(GLenum face, GLenum pname) {
 
 GLvoid glCullFace(GLenum mode) {
   glContext.cullFaceMode = mode;
+}
+
+GLvoid glDeleteBuffers (GLsizei n, GLuint *buffers) {
+  for (GLint i = 0; i < n; i++)
+    glDeleteBuffer(buffers[i]);
 }
 
 GLvoid glDeleteTextures (GLsizei n, GLuint *textures) {
@@ -1422,7 +1665,127 @@ GLvoid glDisable(GLenum cap) {
 }
 
 GLvoid glDisableClientState(GLenum array) {
-  __UNUSED(array);
+  switch(array) {
+  case GL_VERTEX_ARRAY: {glContext.vertexEnabledBuffer = GL_FALSE;} break;
+  case GL_NORMAL_ARRAY: {glContext.normalEnabledBuffer = GL_FALSE;} break;
+  case GL_COLOR_ARRAY: {glContext.colorEnabledBuffer = GL_FALSE;} break;
+  case GL_TEXTURE_COORD_ARRAY: {glContext.texEnabledBuffer = GL_FALSE;} break;
+  case GL_INDEX_ARRAY: {glContext.indexEnabledBuffer = GL_FALSE;} break;
+  }
+}
+
+GLvoid glGetDoubles(GLdouble *dest,GLsizei size, GLenum type,GLsizei stride,const GLvoid *pointer,GLint index, GLboolean normalized) {
+  GLint siz=0;
+  switch(type) {
+  case GL_UNSIGNED_BYTE: siz = 1; break;
+  case GL_BYTE: siz = 1; break;
+  case GL_SHORT: siz = 2; break;
+  case GL_UNSIGNED_SHORT: siz = 2; break;
+  case GL_INT: siz = 4; break;
+  case GL_UNSIGNED_INT: siz = 4; break;
+  case GL_FLOAT: siz = 4; break;
+  case GL_2_BYTES: siz = 2; break;
+  case GL_3_BYTES: siz = 3; break;
+  case GL_4_BYTES: siz = 4; break;
+  case GL_DOUBLE: siz = 8; break;
+  }
+  if (stride == 0) {
+    stride = siz*size;
+  }
+  GLBuffer *c = glGetCurrentBuffer();
+  pointer = (const GLvoid*)((GLuint)pointer + (GLuint)c->data + index*stride); // c->data may be NULL
+  for (GLint i = 0; i < size; i++) {
+    GLdouble a = 0;
+    switch(type) {
+      case GL_UNSIGNED_BYTE: a = (GLdouble)(*((GLubyte*)pointer)); if (normalized) a /= 255.0; break;
+      case GL_BYTE: a = (GLdouble)(*((GLbyte*)pointer));  if (normalized) a /= 127.0; break;
+      case GL_SHORT: a = (GLdouble)(*((GLshort*)pointer));  if (normalized) a /= 65535.0/2.0; break;
+      case GL_UNSIGNED_SHORT: a = (GLdouble)(*((GLushort*)pointer)); if (normalized) a /= 65535.0; break;
+      case GL_INT:  a = (GLdouble)(*((GLint*)pointer));  if (normalized) a /= (GLdouble)(1<<31-1); break;
+      case GL_UNSIGNED_INT: a = (GLdouble)(*((GLuint*)pointer)); a /= (GLdouble)(1<<32-1); break;
+      case GL_FLOAT: a = (GLdouble)(*((GLfloat*)pointer)); break;
+      case GL_2_BYTES: break;
+      case GL_3_BYTES: break;
+      case GL_4_BYTES: break;
+      case GL_DOUBLE: a = (GLdouble)(*((GLdouble*)pointer)); break;
+    }
+    pointer = (const GLvoid*)((GLuint)pointer + siz);
+    dest[i] = a;
+  }
+}
+
+GLvoid glBufferedVertex(GLint i) {
+  GLdouble a[4];
+
+  if (glContext.colorEnabledBuffer) {
+    glGetDoubles(a,glContext.colorSizeBuffer,glContext.colorTypeBuffer,glContext.colorStrideBuffer,glContext.colorPointerBuffer,i, GL_TRUE);
+    switch(glContext.colorSizeBuffer) {
+    case 1: {glColor1d(a[0]);} break;
+    case 2: {glColor2dv(a);} break;
+    case 3: {glColor3dv(a);} break;
+    case 4: {glColor4dv(a);} break;
+    }
+  }
+
+  if (glContext.texEnabledBuffer) {
+    glGetDoubles(a,glContext.texSizeBuffer,glContext.texTypeBuffer,glContext.texStrideBuffer,glContext.texPointerBuffer,i, GL_FALSE);
+    switch(glContext.texSizeBuffer) {
+    case 1: {glTexCoord1d(a[0]);} break;
+    case 2: {glTexCoord2dv(a);} break;
+    case 3: {glTexCoord3dv(a);} break;
+    case 4: {glTexCoord4dv(a);} break;
+    }
+  }
+
+  if (glContext.normalEnabledBuffer) {
+    glGetDoubles(a,glContext.normalSizeBuffer,glContext.normalTypeBuffer,glContext.normalStrideBuffer,glContext.normalPointerBuffer,i, GL_FALSE);
+    glNormal3dv(a);
+  }
+
+  if (glContext.vertexEnabledBuffer) {
+    glGetDoubles(a,glContext.vertexSizeBuffer,glContext.vertexTypeBuffer,glContext.vertexStrideBuffer,glContext.vertexPointerBuffer,i, GL_FALSE);
+    switch(glContext.vertexSizeBuffer) {
+    case 1: {glVertex1d(a[0]);} break;
+    case 2: {glVertex2dv(a);} break;
+    case 3: {glVertex3dv(a);} break;
+    case 4: {glVertex4dv(a);} break;
+    }
+  }
+}
+
+GLvoid glDrawArrays(GLenum mode, GLint first, GLsizei count) {
+  glBegin(mode);
+  for (GLint i = 0; i < count; i++) {
+    glBufferedVertex(first+i);
+  }
+  glEnd();
+}
+
+GLvoid glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices) {
+  GLint siz=0;
+  switch(type) {
+  case GL_SHORT: siz = 2; break;
+  case GL_UNSIGNED_SHORT: siz = 2; break;
+  case GL_INT: siz = 4; break;
+  case GL_UNSIGNED_INT: siz = 4; break;
+  }
+  GLBuffer *c = glGetCurrentElementBuffer();
+  GLuint cdata = (GLuint)c->data; // c->data may be NULL
+  if (!glContext.indexEnabledBuffer) cdata = 0;
+  indices = (const GLvoid*)((GLuint)indices + cdata);
+  glBegin(mode);
+  for (GLint i = 0; i < count; i++) {
+    GLint a = 0;
+    switch(type) {
+      case GL_SHORT: a = (GLint)(*((GLshort*)indices)); break;
+      case GL_UNSIGNED_SHORT: a = (GLint)(*((GLushort*)indices)); break;
+      case GL_INT:  a = (GLint)(*((GLint*)indices)); break;
+      case GL_UNSIGNED_INT: a = (GLint)(*((GLuint*)indices)); break;
+    }
+    glBufferedVertex(a);
+    indices = (const GLvoid*)((GLuint)indices + siz);
+  }
+  glEnd();
 }
 
 GLvoid glEnable(GLenum cap) {
@@ -1430,7 +1793,13 @@ GLvoid glEnable(GLenum cap) {
 }
 
 GLvoid glEnableClientState(GLenum array) {
-  __UNUSED(array);
+  switch(array) {
+  case GL_VERTEX_ARRAY: {glContext.vertexEnabledBuffer = GL_TRUE;} break;
+  case GL_NORMAL_ARRAY: {glContext.normalEnabledBuffer = GL_TRUE;} break;
+  case GL_COLOR_ARRAY: {glContext.colorEnabledBuffer = GL_TRUE;} break;
+  case GL_TEXTURE_COORD_ARRAY: {glContext.texEnabledBuffer = GL_TRUE;} break;
+  case GL_INDEX_ARRAY: {glContext.indexEnabledBuffer = GL_TRUE;} break;
+  }
 }
 
 GLvoid glEnd() {
@@ -1473,6 +1842,12 @@ GLvoid glFogi(GLenum pname, GLint param) {
 
 GLvoid glFrontFace(GLenum mode) {
   glContext.frontFace = mode;
+}
+
+GLvoid glGenBuffers(GLsizei n, GLuint *buffers) {
+  for(GLint i = 0; i < n; i++) {
+    buffers[i] = glNewBuffer();
+  }
 }
 
 GLvoid glGenTextures (GLsizei n, GLuint *textures) {
@@ -1744,6 +2119,13 @@ const GLubyte *glGetString(GLenum name) {
   return (const GLubyte *)"";
 }
 
+GLboolean glIsBuffer(GLuint buffer) {
+  if (buffer < GLMAXBUFFERS) {
+    return glBuffers[buffer].name != 0x00 ? GL_TRUE : GL_FALSE;
+  }
+  return GL_FALSE;
+}
+
 GLboolean glIsEnabled(GLenum cap) {
   return _GLContext_isEnabled(cap);
 }  
@@ -1815,6 +2197,10 @@ GLvoid glLightfv(GLenum light, GLenum pname, const GLfloat *params) {
   glContext.lightAlpha[pname & 7][light - GL_LIGHT0] = params[3];
 }
 
+GLvoid glLightModelfv(GLenum pname, const GLfloat *params) {
+  glLightModelf(pname, params[0]); // temporary
+}
+
 GLvoid glLightModeli(GLenum pname, const GLenum param) {
   switch(pname) {
   case GL_LIGHT_MODEL_COLOR_CONTROL: {
@@ -1867,6 +2253,13 @@ GLvoid glNormal3fv(const GLfloat *n) {
   glContext.normalX = n[0];
   glContext.normalY = n[1];
   glContext.normalZ = n[2];
+}
+
+GLvoid glNormalPointer(GLenum type, GLsizei stride, const GLvoid *pointer) {
+  glContext.normalSizeBuffer = 3;
+  glContext.normalTypeBuffer = type;
+  glContext.normalStrideBuffer = stride;
+  glContext.normalPointerBuffer = pointer;
 }
 
 GLvoid glMateriali(GLenum face, GLenum pname, GLint param) {
@@ -1943,6 +2336,11 @@ GLvoid glPolygonMode(GLenum face, GLenum mode) {
   for (GLint f = f0; f < f1; f++) {
     glContext.wireframe[f] = mode == GL_LINE ? GL_TRUE : GL_FALSE;
   }
+}
+
+GLvoid glPixelStorei(GLenum pname, GLint param) {
+  __UNUSED(pname);
+  __UNUSED(param);
 }
 
 GLvoid glPolygonOffset(GLfloat factor, GLfloat units) {
@@ -2311,6 +2709,16 @@ GLvoid glTranslatedv(const GLdouble *v) {
   glTranslated(v[0],v[1],v[2]);
 }
 
+GLvoid glVertex1f(GLfloat x) {
+  glContext.vertexX = x;
+  glEmitVertex();
+}
+
+GLvoid glVertex1fv(const GLfloat *v) {
+  glContext.vertexX = v[0];
+  glEmitVertex();
+}
+
 GLvoid glVertex2f(GLfloat x, GLfloat y) {
   glContext.vertexX = x;
   glContext.vertexY = y;
@@ -2353,6 +2761,13 @@ GLvoid glVertex4fv(const GLfloat *v) {
   glEmitVertex();
 }
 
+GLvoid glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer) {
+  glContext.vertexSizeBuffer = size;
+  glContext.vertexTypeBuffer = type;
+  glContext.vertexStrideBuffer = stride;
+  glContext.vertexPointerBuffer = pointer;
+}
+
 GLvoid glViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
   glContext.viewportX0 = x;
   glContext.viewportY0 = glFrameBufferHeight-y-height;
@@ -2370,6 +2785,16 @@ GLvoid glNormal3dv(const GLdouble *p) {
   glContext.normalX = p[0];
   glContext.normalY = p[1];
   glContext.normalZ = p[2];
+}
+
+GLvoid glVertex1d(GLdouble x) {
+  glContext.vertexX = x;
+  glEmitVertex();
+}
+
+GLvoid glVertex1dv(const GLdouble *p) {
+  glContext.vertexX = p[0];
+  glEmitVertex();
 }
 
 GLvoid glVertex2d(GLdouble x, GLdouble y) {
@@ -2488,6 +2913,13 @@ GLvoid glTexCoord4dv(const GLdouble *v) {
 
 GLvoid glTexCoord4fv(const GLfloat *v) {
   glTexCoord4f(v[0],v[1],v[2],v[3]);
+}
+
+GLvoid glTexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer) {
+  glContext.texSizeBuffer = size;
+  glContext.texTypeBuffer = type;
+  glContext.texStrideBuffer = stride;
+  glContext.texPointerBuffer = pointer;
 }
 
 GLvoid glPushAttrib(GLbitfield mask) { // mask not supported and behaves different than glPushAttrib + only small Stack Depth, yet
@@ -4726,6 +5158,7 @@ GLvoid *glVesaPointer(const GLvoid *d) {
 
 GLboolean glDPMI_allocRealSeg(GLint size, GLint *sel, GLint *r_seg) {
   union REGS r;
+  memset(&r,0,sizeof(r));
   r.w.ax = 0x100;
   r.w.bx = (uint16_t)((size+0x0f)>>4);
   int386(0x31,&r,&r);
@@ -4738,6 +5171,7 @@ GLboolean glDPMI_allocRealSeg(GLint size, GLint *sel, GLint *r_seg) {
 
 GLvoid glDPMI_freeRealSeg(uint16_t sel) {
   union REGS r;
+  memset(&r,0,sizeof(r));
   r.w.ax = 0x101;
   r.w.dx = (uint16_t)sel;
   int386(0x31,&r,&r);
@@ -4751,8 +5185,10 @@ uint16_t glDPMI_int386(uint32_t intno, glRMREGS *in, glRMREGS *out) {
   _glRMREGS rmregs;
   union REGS r;
   struct SREGS sr;
-
   memset(&rmregs,0,sizeof(rmregs));
+  memset(&r,0,sizeof(r));
+  memset(&sr,0,sizeof(sr));
+
   IN(ax); IN(bx); IN(cx); IN(dx); IN(si); IN(di);
 
   segread(&sr);
@@ -4773,8 +5209,9 @@ uint16_t glDPMI_int386x(uint32_t intno, glRMREGS *in, glRMREGS *out, glRMSREGS *
   _glRMREGS rmregs;
   union REGS r;
   struct SREGS sr;
-
   memset(&rmregs,0,sizeof(rmregs));
+  memset(&r,0,sizeof(r));
+  memset(&sr,0,sizeof(sr));
   IN(ax); IN(bx); IN(cx); IN(dx); IN(si); IN(di);
   rmregs.es = sregs->es;
   rmregs.ds = sregs->ds;
@@ -4799,6 +5236,7 @@ uint16_t glDPMI_int386x(uint32_t intno, glRMREGS *in, glRMREGS *out, glRMSREGS *
 
 GLvoid glVBE_callESDI(glRMREGS *regs, GLvoid *buffer, GLint size) {
   glRMSREGS sregs;
+  memset(&sregs,0,sizeof(sregs));
   if (!glVESABUF_sel) {
     if (!glDPMI_allocRealSeg(glVESABUF_len,&glVESABUF_sel,&glVESABUF_rseg)) {
       glSetError(GL_OUT_OF_MEMORY);
@@ -4816,6 +5254,7 @@ GLvoid glVBE_callESDI(glRMREGS *regs, GLvoid *buffer, GLint size) {
 
 uint32_t glMapPhysicalToLinear(GLuint physicalAddress, GLuint size) {
   union REGS r;
+  memset(&r,0,sizeof(r));
   r.w.ax = 0x800;
   r.w.bx = (uint16_t)(physicalAddress>>16);
   r.w.cx = (uint16_t)(physicalAddress & 0xffff);
@@ -4829,6 +5268,7 @@ uint32_t glMapPhysicalToLinear(GLuint physicalAddress, GLuint size) {
 
 GLboolean glUnmapPhysical(GLuint linearAddress) {
   union REGS r;
+  memset(&r,0,sizeof(r));
   r.w.ax = 0x801;
   r.w.bx = (uint16_t)(linearAddress>>16);
   r.w.cx = (uint16_t)(linearAddress & 0xffff);
@@ -4841,7 +5281,10 @@ GLboolean glUnmapPhysical(GLuint linearAddress) {
 GLboolean glVesa(GLint xRes,GLint yRes, GLint bPP) {
   glVbeInfoBlock vbeInfo;
   glVbeModeInfo modeInfo;
+  memset(&vbeInfo,0,sizeof(vbeInfo));
+  memset(&modeInfo,0,sizeof(modeInfo));
   glRMREGS regs;
+  memset(&regs,0,sizeof(regs));
   regs.ax = 0x4f00;
   glVBE_callESDI(&regs,&vbeInfo,sizeof(glVbeInfoBlock));
   if (regs.ax != 0x004f) return GL_FALSE;
@@ -4855,6 +5298,7 @@ GLboolean glVesa(GLint xRes,GLint yRes, GLint bPP) {
   v = w;
   while(*v != 0xffff) {
     GLint mode = *v;
+    memset(&regs,0,sizeof(regs));
     regs.ax = 0x4f01;
     regs.cx = (uint16_t)mode;
     glVBE_callESDI(&regs,&modeInfo,sizeof(glVbeModeInfo));
@@ -4875,6 +5319,7 @@ GLboolean glVesa(GLint xRes,GLint yRes, GLint bPP) {
       glGraphicsModeToRestore = glGetBiosGraphicsMode();
       glVesaBGRA = (modeInfo.bluePosition == 0) ? GL_TRUE : GL_FALSE;
 
+      memset(&regs,0,sizeof(regs));
       regs.ax = 0x4f02;
       regs.bx = (uint16_t)(mode|0x4000);
       glDPMI_int386(0x10,&regs,&regs); // needed here for later mouse setup
@@ -5025,12 +5470,14 @@ GLboolean glVesa(GLint xRes,GLint yRes, GLint bPP) {
 
 GLvoid glSetBiosGraphicsMode(uint16_t mode) {
     union REGS regs;
+    memset(&regs,0,sizeof(regs));
     regs.w.ax = mode;
     int386(0x10, &regs, &regs);
 }
 
 uint16_t glGetBiosGraphicsMode() {
     union REGS regs;
+    memset(&regs,0,sizeof(regs));
     regs.w.ax = 0x0f00;
     int386 (0x10, &regs, &regs);
     return regs.h.al;
@@ -5279,11 +5726,13 @@ GLvoid glDone() {
 
 GLushort glNextKey() {
   union REGS regs;
+  memset(&regs,0,sizeof(regs));
   regs.w.ax = 0x0600;
   regs.w.dx = 0xff;
   int386(0x21, &regs, &regs);
   glKey = regs.w.ax & 0xff;
   if (glKey == 0) {
+    memset(&regs,0,sizeof(regs));
     regs.w.ax = 0x0600;
     regs.w.dx = 0xff;
     int386(0x21, &regs, &regs);
@@ -5294,6 +5743,7 @@ GLushort glNextKey() {
 
 GLvoid glSetMousePos(GLint x, GLint y) {
   union REGS regs;
+  memset(&regs,0,sizeof(regs));
   regs.w.ax = 0x04;
   regs.w.cx = (uint16_t)(x & 0xffff);
   regs.w.dx = (uint16_t)(y & 0xffff);
@@ -5302,6 +5752,7 @@ GLvoid glSetMousePos(GLint x, GLint y) {
 
 GLvoid glNextMouseDelta(GLdouble *mouseX, GLdouble *mouseY) {
   union REGS regs;
+  memset(&regs,0,sizeof(regs));
   regs.w.ax = 0x03;
   int386(0x33, &regs, &regs);
   glLastMouseX = glMouseX;
@@ -5320,6 +5771,7 @@ GLvoid glNextMouseDelta(GLdouble *mouseX, GLdouble *mouseY) {
 
 GLushort glMouseButtons() {
   union REGS regs;
+  memset(&regs,0,sizeof(regs));
   regs.w.ax = 0x03;
   int386(0x33, &regs, &regs);
   glLastMouseB = glMouseB;
@@ -5329,10 +5781,12 @@ GLushort glMouseButtons() {
 
 GLvoid glSetupMouse() {
     union REGS regs;
+    memset(&regs,0,sizeof(regs));
     regs.w.ax = 0x07;
     regs.w.cx = 0;
     regs.w.dx = (uint16_t)(glFrameBufferWidth0-1);
     int386(0x33, &regs, &regs);
+    memset(&regs,0,sizeof(regs));
     regs.w.ax = 0x08;
     regs.w.cx = 0;
     regs.w.dx = (uint16_t)(glFrameBufferHeight0-1);
