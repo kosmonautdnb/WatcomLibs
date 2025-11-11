@@ -121,7 +121,8 @@ GLdouble additionalPointSpriteXStretch = 1.0;
 TriangleDrawer glDrawTriangle = glDrawTrianglePrecise;
 GLenum glError = GL_NO_ERROR;
 
-GLvoid glDrawQuad(_GLContext *context, glVertex *v0,glVertex *v1,glVertex *v2,glVertex *v3);
+GLubyte *glStencilBuffer = NULL; // strange, by placing these pointers not above it gets a lot faster (maybe be pack alignment?)
+GLubyte *glStencilBuffer0 = NULL;
 
 INLINE GLfloat glClampf(GLfloat a, GLfloat n, GLfloat x) {
   return a < n ? n : (a > x ? x : a);
@@ -177,6 +178,9 @@ typedef struct GLBuffer {
   GLfloat *depthPointer;
   GLuint depthWidth;
   GLuint depthHeight;
+  GLubyte *stencilPointer;
+  GLuint stencilWidth;
+  GLuint stencilHeight;
 } GLBuffer;
 #pragma pack(pop)
 
@@ -270,13 +274,13 @@ GLvoid _GLContext_init() {
   glContext.scissorX1 = 0;
   glContext.scissorY1 = 0;
   glContext.shadeMode = 0;
-  glContext.stencilFunc = 0;
+  glContext.stencilFunc = GL_ALWAYS;
   glContext.stencilFuncRef = 0;
-  glContext.stencilFuncMask = 0;
-  glContext.stencilMask = 0;
-  glContext.stencilOpFail = 0;
-  glContext.stencilOpZFail = 0;
-  glContext.stencilOpZPass = 0;
+  glContext.stencilFuncMask = 0xff;
+  glContext.stencilMask = 0xff;
+  glContext.stencilOpFail = GL_KEEP;
+  glContext.stencilOpZFail = GL_KEEP;
+  glContext.stencilOpZPass = GL_KEEP;
   glContext.colorRed = 1.f;
   glContext.colorGreen = 1.f;
   glContext.colorBlue = 1.f;
@@ -428,6 +432,7 @@ GLvoid _GLContext_init() {
   glContext.pointAttenuation[0] = 1.f;
   glContext.pointAttenuation[1] = 0.f;
   glContext.pointAttenuation[2] = 0.f;
+  memset(glContext.clipPlanes,0,sizeof(glContext.clipPlanes));
 
   for (i = 0; i < GLMAXTEXTURES; i++) {
     glTexture *t=&glTextures[i];
@@ -877,6 +882,163 @@ GLvoid interpolateVertex(glVertex *dest, glVertex *v0, glVertex *v1, GLdouble f)
   dest->textureW = v0->textureW + f * (v1->textureW-v0->textureW);
 }
 
+#define GLMAXVERTEXCLIPSTACK (1<<GLMAXCLIPPLANES)
+glVertex glClipStack[GLMAXVERTEXCLIPSTACK*3];
+GLint glClipStackPos = 0;
+
+GLvoid glTransposeMatrix(GLdouble *m) {
+  GLdouble t[4*4];
+  memcpy(t,m,sizeof(t));
+  for (int x = 0; x < 4; x++)
+    for (int y = 0; y < 4; y++)
+      m[x+y*4]=t[x*4+y];
+}
+
+GLdouble glWorldClipPlanes[GLMAXCLIPPLANES][4];
+GLvoid glWorldSpaceClipPlanes() {
+  const GLdouble *inverse = glContext.matrixForMode[GL_MODELVIEW & 1]; // we need the transpose here glGetInverseModelView(&glContext);
+  GLdouble inverseTranspose[4*4];
+  memcpy(inverseTranspose,inverse,sizeof(inverseTranspose));
+  glTransposeMatrix(inverseTranspose);
+  const GLdouble *matrix = inverseTranspose;
+  for (GLint i = 0; i < GLMAXCLIPPLANES; i++) {
+    if (glIsEnabled(GL_CLIP_PLANE0+i)) {
+      const GLdouble vx = glContext.clipPlanes[i][0];
+      const GLdouble vy = glContext.clipPlanes[i][1];
+      const GLdouble vz = glContext.clipPlanes[i][2];
+      const GLdouble vw = glContext.clipPlanes[i][3];
+      GLdouble x2 = vx * matrix[0*4+0] + vy * matrix[1*4+0] + vz * matrix[2*4+0] + vw * matrix[3*4+0];
+      GLdouble y2 = vx * matrix[0*4+1] + vy * matrix[1*4+1] + vz * matrix[2*4+1] + vw * matrix[3*4+1];
+      GLdouble z2 = vx * matrix[0*4+2] + vy * matrix[1*4+2] + vz * matrix[2*4+2] + vw * matrix[3*4+2];
+      GLdouble w2 = vx * matrix[0*4+3] + vy * matrix[1*4+3] + vz * matrix[2*4+3] + vw * matrix[3*4+3];
+      glWorldClipPlanes[i][0] = x2;
+      glWorldClipPlanes[i][1] = y2;
+      glWorldClipPlanes[i][2] = z2;
+      glWorldClipPlanes[i][3] = w2;
+    }
+  }
+}
+
+GLvoid glPutOnClipStack(glVertex *v0,glVertex *v1,glVertex *v2) {
+  if (glClipStackPos == -1) glClipStackPos=0;
+  if (glClipStackPos >= GLMAXVERTEXCLIPSTACK*3) return;
+  glClipStack[glClipStackPos+0] = *v0;
+  glClipStack[glClipStackPos+1] = *v1;
+  glClipStack[glClipStackPos+2] = *v2;
+  glClipStackPos += 3;
+}
+
+GLint glProceedClip(_GLContext *context,glVertex *v0,glVertex *v1,glVertex *v2,GLdouble *plane) {
+//  const GLdouble *matrix = context->matrixForMode[GL_MODELVIEW & 1];
+  glVertex *v[3];
+  v[0] = v0; v[1] = v1; v[2] = v2;
+  GLdouble x[3],y[3],z[3],w[3],clip[3];
+  GLint clipFlags = 0;
+  for (GLint j = 0; j < 3; j++) {
+//    x[j] = v[j]->vertexX * matrix[0*4+0] + v[j]->vertexY * matrix[1*4+0] + v[j]->vertexZ * matrix[2*4+0] + v[j]->vertexW * matrix[3*4+0];
+//    y[j] = v[j]->vertexX * matrix[0*4+1] + v[j]->vertexY * matrix[1*4+1] + v[j]->vertexZ * matrix[2*4+1] + v[j]->vertexW * matrix[3*4+1];
+//    z[j] = v[j]->vertexX * matrix[0*4+2] + v[j]->vertexY * matrix[1*4+2] + v[j]->vertexZ * matrix[2*4+2] + v[j]->vertexW * matrix[3*4+2];
+//    w[j] = v[j]->vertexX * matrix[0*4+3] + v[j]->vertexY * matrix[1*4+3] + v[j]->vertexZ * matrix[2*4+3] + v[j]->vertexW * matrix[3*4+3];
+    x[j] =  v[j]->vertexX;
+    y[j] =  v[j]->vertexY;
+    z[j] =  v[j]->vertexZ;
+    w[j] =  v[j]->vertexW;
+    if (w[j]!=0) {
+      x[j]/=w[j];
+      y[j]/=w[j];
+      z[j]/=w[j];
+      w[j]/=w[j];
+    }
+    clip[j] = x[j]*plane[0]+y[j]*plane[1]+z[j]*plane[2]+plane[3];
+    clipFlags |= (clip[j]>=0.0)?(1<<j):0;
+  }
+  if (clipFlags == 0) return 0; // not visible
+  if (clipFlags == (1|2|4)) return 1; // all visible
+
+  glVertex poly[8];
+  GLint count = 0;
+  const GLint vertexCount = 3;
+  for(GLint i = 0; i < vertexCount; i++) {
+    glVertex *v0 = v[i];
+    glVertex *v1 = v[(i+1) % vertexCount];
+    GLdouble ci0 = clip[i];
+    GLdouble ci1 = clip[(i+1) % vertexCount];
+    GLboolean currentInside = (ci0>=0.0) ? GL_TRUE : GL_FALSE;
+    GLboolean nextInside = (ci1>=0.0) ? GL_TRUE : GL_FALSE;
+    if (currentInside && nextInside) {
+      poly[count]=*v0;
+      glTransformVertex(context,&poly[count],GL_FALSE);
+      glLightVertex(context,&poly[count]);
+      count++;
+    } else
+    if(currentInside && (!nextInside)) {
+      poly[count]=*v0;
+      glTransformVertex(context,&poly[count],GL_FALSE);
+      glLightVertex(context,&poly[count]);
+      count++;
+      GLdouble f = (ci0) / (ci0-ci1);
+      interpolateVertex(&poly[count],v0,v1,f);
+      glTransformVertex(context,&poly[count],GL_FALSE);
+      glLightVertex(context,&poly[count]);
+      clipFlags &= glClipVertex(&glContext,&poly[count]);
+      count++;
+    } else 
+    if((!currentInside) && nextInside) {
+      GLdouble f = (ci0) / (ci0-ci1);
+      interpolateVertex(&poly[count],v0,v1,f);
+      glTransformVertex(context,&poly[count],GL_FALSE);
+      glLightVertex(context,&poly[count]);
+      count++;
+    }
+  }
+  for(GLint k = 1; k < count-1; k++) glPutOnClipStack(&poly[0],&poly[k],&poly[k+1]);
+
+  return 2; // partially visible
+}
+
+GLvoid glClipOnPlane(_GLContext *context,glVertex *v0,glVertex *v1,glVertex *v2,GLdouble *plane) {
+  if(glClipStackPos == -1) glPutOnClipStack(v0,v1,v2);
+  for (GLint i = glClipStackPos-3; i >= 0 ; i -= 3) {
+    GLint clipped = glProceedClip(context,&glClipStack[i+0],&glClipStack[i+1],&glClipStack[i+2],plane);
+    switch(clipped) {
+    case 2: // partially visible the current one needs also to be deleted
+    case 0: {for (GLint j=i+3;j<glClipStackPos;j+=3) glClipStack[j-3]=glClipStack[j];glClipStackPos -= 3;} break; // not visible
+    case 1: break; // fully visible
+    }
+  } 
+}
+
+GLvoid glClipPlaneTriangle(_GLContext *context,glVertex *v0,glVertex *v1,glVertex *v2) {
+  glClipStackPos=-1;
+  for (GLint i = 0; i < GLMAXCLIPPLANES; i++) {
+    if (glIsEnabled2(context, GL_CLIP_PLANE0+i)) glClipOnPlane(context,v0,v1,v2,glWorldClipPlanes[i]);//context->clipPlanes[i]);
+  }
+  if (glClipStackPos==-1)
+    glDrawTriangle(context,v0,v1,v2);
+  else {
+    glVertex *v = glClipStack;
+    for (int i = 0; i < glClipStackPos/3; i++) {
+      glDrawTriangle(context,&v[0],&v[1],&v[2]);
+      v+=3;
+    }
+  }
+}
+
+GLvoid glDrawQuad(_GLContext *context,glVertex *v0,glVertex *v1,glVertex *v2,glVertex *v3) {
+  //glVertices[3].sx -= pointSizeX;
+  //glVertices[3].sy -= pointSizeY;
+  //glVertices[2].sx += pointSizeX;
+  //glVertices[2].sy -= pointSizeY;
+  //glVertices[1].sx += pointSizeX;
+  //glVertices[1].sy += pointSizeY;
+  //glVertices[0].sx -= pointSizeX;
+  //glVertices[0].sy += pointSizeY;
+  //01
+  //32
+  glClipPlaneTriangle(context,v0,v1,v2);
+  glClipPlaneTriangle(context,v2,v3,v0);
+}
+
 GLvoid drawClippedNgon(_GLContext *context, glVertex *vertices[], GLint vertexCount) {
   GLdouble *matrix = context->matrix;
   glVertex poly[8];
@@ -920,7 +1082,7 @@ GLvoid drawClippedNgon(_GLContext *context, glVertex *vertices[], GLint vertexCo
       count++;
     }
   }
-  if (clipFlags == 0) for(GLint j = 1; j < count-1; j++) glDrawTriangle(context, &poly[0],&poly[j],&poly[j+1]);
+  if (clipFlags == 0) for(GLint j = 1; j < count-1; j++) glClipPlaneTriangle(context, &poly[0],&poly[j],&poly[j+1]);
 }
 
 GLvoid drawClippedQuad(_GLContext *context, glVertex *v0, glVertex *v1, glVertex *v2, glVertex *v3) {
@@ -1242,7 +1404,7 @@ GLvoid glEmitVertex() {
               glLightVertex(&glContext,&glVertices[0]);
               glLightVertex(&glContext,&glVertices[1]);
               glLightVertex(&glContext,&glVertices[2]);
-              glDrawTriangle(&glContext,&glVertices[c0],&glVertices[c1],&glVertices[c2]);
+              glClipPlaneTriangle(&glContext,&glVertices[c0],&glVertices[c1],&glVertices[c2]);
             }
           }
         } else {
@@ -1407,6 +1569,7 @@ GLboolean glTextureMatrixIsSet[GLMAXTEXTUREUNITS];
 GLvoid glBegin(GLenum mode) {
   //if (glContext.beginMode != 0) {glDone();exit(0);}
   for (int i = 0; i < GLMAXTEXTUREUNITS; i++) glTextureMatrixIsSet[i] = memcmp(glContext.textureMatrix[i],identityMatrix,4*4*sizeof(GLdouble))==0?GL_FALSE:GL_TRUE;
+  glWorldSpaceClipPlanes();
   glContext.beginMode = mode;
   glCurrentVertexElement = 0;
   glContext.beginPrimitiveIndex = 0;
@@ -1435,12 +1598,14 @@ GLvoid glBindFramebuffer(GLenum target, GLuint buffer) {
     glFrameBufferHeight = glFrameBufferHeight0;
     glFrameBuffer = glFrameBuffer0;
     glDepthBuffer = glDepthBuffer0;
+    glStencilBuffer = glStencilBuffer0;
     return;
   }
   glFrameBuffer = glBoundFrameBuffer->colorPointer;
   glFrameBufferWidth = glBoundFrameBuffer->colorWidth;
   glFrameBufferHeight = glBoundFrameBuffer->colorHeight;
   glDepthBuffer = glBoundFrameBuffer->depthPointer; // must be same width/height like color (or NULL)
+  glStencilBuffer = glBoundFrameBuffer->stencilPointer; // must be same width/height like color (or NULL)
 }
 
 GLvoid glBindTexture(GLenum target, GLuint texture) {
@@ -1501,6 +1666,8 @@ GLenum glCheckFramebufferStatus(GLuint buffer) {
   if (c->colorPointer == NULL) return GL_ERROR;
   if (c->depthPointer == NULL) return GL_NO_ERROR;
   if ((c->colorWidth != c->depthWidth)||(c->colorHeight != c->depthHeight)) return GL_ERROR;
+  if (c->stencilPointer == NULL) return GL_NO_ERROR;
+  if ((c->colorWidth != c->stencilWidth)||(c->colorHeight != c->stencilHeight)) return GL_ERROR;
   return GL_NO_ERROR;
 }
 
@@ -1545,6 +1712,16 @@ GLvoid glClear(GLbitfield mask) {
       }
     }
   }
+  if ((mask & GL_STENCIL_BUFFER_BIT) && (glStencilBuffer != NULL)) {
+    GLubyte cl = (GLubyte)(glContext.clearStencil & 255);
+    for (GLint s = 0; s < glFrameBufferMultiSample; s++) {
+      for (GLint y = minY; y < maxY; y++) {
+        const int k = y*glFrameBufferWidth+s*glFrameBufferWidth*glFrameBufferHeight;
+        for (GLint x = minX; x < maxX; x++)
+          glStencilBuffer[x+k] = cl;
+      }
+    }
+  }
 }
 
 GLvoid glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
@@ -1564,6 +1741,38 @@ GLvoid glClearDepth(GLclampf depth) {
 
 GLvoid glClearStencil(GLint s) {
   glContext.clearStencil = s;
+}
+
+GLvoid glClipPlane(GLenum plane, const GLdouble *equation) {
+    const GLint p = plane - GL_CLIP_PLANE0;
+
+    const GLdouble *inverse = glGetInverseModelView(&glContext);
+    GLdouble inverseTranspose[4*4];
+    memcpy(inverseTranspose,inverse,sizeof(inverseTranspose));
+    glTransposeMatrix(inverseTranspose);
+
+    const GLdouble *matrix = inverseTranspose;
+    const GLdouble vx = equation[0];
+    const GLdouble vy = equation[1];
+    const GLdouble vz = equation[2];
+    const GLdouble vw = equation[3];
+    GLdouble x2 = vx * matrix[0*4+0] + vy * matrix[1*4+0] + vz * matrix[2*4+0] + vw * matrix[3*4+0];
+    GLdouble y2 = vx * matrix[0*4+1] + vy * matrix[1*4+1] + vz * matrix[2*4+1] + vw * matrix[3*4+1];
+    GLdouble z2 = vx * matrix[0*4+2] + vy * matrix[1*4+2] + vz * matrix[2*4+2] + vw * matrix[3*4+2];
+    GLdouble w2 = vx * matrix[0*4+3] + vy * matrix[1*4+3] + vz * matrix[2*4+3] + vw * matrix[3*4+3];
+    glContext.clipPlanes[p][0] = x2;
+    glContext.clipPlanes[p][1] = y2;
+    glContext.clipPlanes[p][2] = z2;
+    glContext.clipPlanes[p][3] = w2;
+}
+
+GLvoid glClipPlanef(GLenum plane, const GLfloat *equation) {
+  GLdouble t[4];
+  t[0] = (GLdouble)equation[0];
+  t[1] = (GLdouble)equation[1];
+  t[2] = (GLdouble)equation[2];
+  t[3] = (GLdouble)equation[3];
+  glClipPlane(plane,t);
 }
 
 GLvoid glClientActiveTexture(GLenum texture) {
@@ -1791,7 +2000,9 @@ GLvoid glGetDoubles(GLdouble *dest,GLsizei size, GLenum type,GLsizei stride,cons
     stride = siz*size;
   }
   GLBuffer *c = glGetCurrentBuffer();
-  pointer = (const GLvoid*)((GLuint)pointer + (GLuint)c->data + index*stride); // c->data may be NULL
+  GLuint ptr = (GLuint)pointer + (GLuint)c->data;
+  if (ptr < 256) {*dest = 0; return;} // pointer sanity check (this can not happen in sane environments)
+  pointer = (const GLvoid*)(ptr + index*stride); // c->data may be NULL
   for (GLint i = 0; i < size; i++) {
     GLdouble a = 0;
     switch(type) {
@@ -1949,6 +2160,7 @@ GLvoid glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget
   switch(attachment) {
   case GL_COLOR_ATTACHMENT0: {c->colorWidth=t->width;c->colorHeight=t->height;c->colorPointer=(GLuint*)t->data;} break;
   case GL_DEPTH_ATTACHMENT: {c->depthWidth=t->width;c->depthHeight=t->height;c->depthPointer=(GLfloat*)t->data;} break;
+  case GL_STENCIL_ATTACHMENT: {c->stencilWidth=t->width;c->stencilHeight=t->height;c->stencilPointer=(GLubyte*)t->data;} break;
   }
 }
 
@@ -2411,6 +2623,7 @@ GLvoid glMaterialfv(GLenum face, GLenum pname, const GLfloat *params) {
         glContext.materialRed[f][1] = params[0];
         glContext.materialGreen[f][1] = params[1];
         glContext.materialBlue[f][1] = params[2];
+        glContext.materialAlpha[f][1] = params[3];
       } break;
       case GL_SPECULAR: {
         glContext.materialRed[f][2] = params[0];
@@ -2708,6 +2921,7 @@ GLvoid glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei wi
   t->height = height;
   GLint rIn=-1,gIn=-1,bIn=-1,aIn=-1;
   GLint formatStride = 4;
+  GLint formatStride2 = 4;
   switch(format) {
   case GL_ALPHA:{aIn=0;formatStride = 1;} break;
   case GL_LUMINANCE:{rIn=0;gIn=0;bIn=0;formatStride = 1;} break;
@@ -2724,6 +2938,7 @@ GLvoid glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei wi
   case GL_BGR_INTEGER:{rIn=2;gIn=1;bIn=0;} break;
   case GL_RGBA_INTEGER:{rIn=0;gIn=1;bIn=2;aIn=3;} break;
   case GL_BGRA_INTEGER:{rIn=2;gIn=1;bIn=0;aIn=3;} break;
+  case GL_STENCIL_INDEX8:{rIn=0;gIn=0;bIn=0;aIn=0;formatStride = 1;formatStride2 = 1;} break;
   }
   GLint input[4];
   input[0]=0xff;
@@ -2748,7 +2963,8 @@ GLvoid glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei wi
       if (gIn != -1) rgba |= input[gIn]<<8;
       if (bIn != -1) rgba |= input[bIn]<<16;
       if (aIn != -1) rgba |= input[aIn]<<24; else rgba |=0xff000000;
-      t->data[i] = rgba;
+      if (formatStride2==1) ((GLubyte*)t->data)[i] = (GLubyte)(rgba & 255);
+      if (formatStride2==4) t->data[i] = rgba;
       i++;
       i2++;
     }
@@ -2784,6 +3000,7 @@ GLvoid glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
   if (t->data == NULL) return;
   GLint rIn=-1,gIn=-1,bIn=-1,aIn=-1;
   GLint formatStride = 4;
+  GLint formatStride2 = 4;
   switch(format) {
   case GL_ALPHA:{aIn=0;formatStride = 1;} break;
   case GL_LUMINANCE:{rIn=0;gIn=0;bIn=0;formatStride = 1;} break;
@@ -2800,6 +3017,7 @@ GLvoid glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
   case GL_BGR_INTEGER:{rIn=2;gIn=1;bIn=0;} break;
   case GL_RGBA_INTEGER:{rIn=0;gIn=1;bIn=2;aIn=3;} break;
   case GL_BGRA_INTEGER:{rIn=2;gIn=1;bIn=0;aIn=3;} break;
+  case GL_STENCIL_INDEX8:{rIn=0;gIn=0;bIn=0;aIn=0;formatStride = 1;formatStride2 = 1;} break;
   }
   GLint input[4];
   input[0]=0xff;
@@ -2827,8 +3045,10 @@ GLvoid glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
       GLint y2 = y;
       x2 += xoffset;
       y2 += yoffset;
-      if (x2 >= 0 && y2 >= 0 && x2 < (GLint)t->width && y2 < (GLint)t->height)
-        t->data[x2+y2*t->width] = rgba;
+      if (x2 >= 0 && y2 >= 0 && x2 < (GLint)t->width && y2 < (GLint)t->height) {
+        if (formatStride2==1) ((GLubyte*)t->data)[x2+y2*t->width] = (GLubyte)(rgba & 255);
+        if (formatStride2==4) t->data[x2+y2*t->width] = rgba;
+      }
       i2++;
     }
   }
@@ -3852,6 +4072,7 @@ INLINE GLdouble getBary(GLdouble x, GLdouble y, const glVertex *v0, const glVert
   GLraster baryAdd0,baryAdd1,baryAdd2;\
   GLuint *pDest;\
   GLfloat *zDest;\
+  GLubyte *sDest;\
   for (y = pminy;y < pmaxy;y++) {
 
 #define __PAINTPOLYQUAD_INITBARYFORX__\
@@ -3867,6 +4088,7 @@ INLINE GLdouble getBary(GLdouble x, GLdouble y, const glVertex *v0, const glVert
   GLint dmaxx = pmaxx;\
   pDest = &glFrameBuffer[pminx+y*glFrameBufferWidth+glMultiSampleBase*glFrameBufferWidth*glFrameBufferHeight];\
   zDest = &glDepthBuffer[pminx+y*glFrameBufferWidth+glMultiSampleBase*glFrameBufferWidth*glFrameBufferHeight];\
+  sDest = &glStencilBuffer[y*glFrameBufferWidth+glMultiSampleBase*glFrameBufferWidth*glFrameBufferHeight];\
   for (x = dminx;x < dmaxx;x++) {
 
 #define __PAINTPOLYQUAD_BEGINX__TRI\
@@ -3874,6 +4096,7 @@ INLINE GLdouble getBary(GLdouble x, GLdouble y, const glVertex *v0, const glVert
   GLint dmaxx = pmaxx;\
   pDest = &glFrameBuffer[pminx+y*glFrameBufferWidth+glMultiSampleBase*glFrameBufferWidth*glFrameBufferHeight];\
   zDest = &glDepthBuffer[pminx+y*glFrameBufferWidth+glMultiSampleBase*glFrameBufferWidth*glFrameBufferHeight];\
+  sDest = &glStencilBuffer[y*glFrameBufferWidth+glMultiSampleBase*glFrameBufferWidth*glFrameBufferHeight];\
   GLint xp[3]; GLint xc=0;\
   if ((y >= vk0->sy) && (y < vk1->sy)) xp[xc++]=(GLint)((vk1->sx-vk0->sx)*(y-vk0->sy)/(vk1->sy-vk0->sy)+vk0->sx);\
   if ((y >= vk0->sy) && (y < vk2->sy)) xp[xc++]=(GLint)((vk2->sx-vk0->sx)*(y-vk0->sy)/(vk2->sy-vk0->sy)+vk0->sx);\
@@ -4280,6 +4503,27 @@ void glApplyTextureMatrix(GLfloat *tx,GLfloat *ty,GLfloat *tz,GLfloat *tw,GLdoub
   *tw = (GLfloat)w;
 }
 
+
+INLINE GLvoid glApplyStencileOp(GLint op, GLubyte *buffer, GLubyte stencilWriteMask, GLubyte stencilRef) {
+  if (stencilWriteMask == 255) {
+    switch(op) {
+    case GL_KEEP: return;
+    case GL_REPLACE: {*buffer = stencilRef;} return;
+    case GL_INCR: {(*buffer)++;} return;
+    case GL_DECR: {(*buffer)--;} return;
+    case GL_INVERT: {(*buffer)^= 255;} return;
+    }
+    return;
+  }
+  switch(op) {
+  case GL_KEEP: return;
+  case GL_REPLACE: {*buffer = (GLubyte)(((*buffer)&(255^stencilWriteMask))|(stencilRef&stencilWriteMask));} return;
+  case GL_INCR: {*buffer = (GLubyte)(((*buffer)&(255^stencilWriteMask))|(((*buffer)+1)&stencilWriteMask));} return;
+  case GL_DECR: {*buffer = (GLubyte)(((*buffer)&(255^stencilWriteMask))|(((*buffer)-1)&stencilWriteMask));} return;
+  case GL_INVERT: {*buffer = (GLubyte)(((*buffer)&(255^stencilWriteMask))|(((*buffer)^255)&stencilWriteMask));} return;
+  }
+}
+
 GLvoid glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVertex *v2) {
   GLboolean forceWrapRepeat = GL_FALSE;
 
@@ -4676,6 +4920,23 @@ GLvoid glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVer
   const GLuint wrapT = forceWrapRepeat ? GL_REPEAT : t->wrapT;
   GLint tpx,tpy,tpxa,tpya;
 
+  GLboolean useStencilBuffer = glIsEnabled2(context,GL_STENCIL_TEST) && (glStencilBuffer != NULL);
+  if (context->stencilFunc == GL_ALWAYS &&
+    context->stencilOpFail == GL_KEEP &&
+    context->stencilOpZFail == GL_KEEP &&
+    context->stencilOpZPass == GL_KEEP) useStencilBuffer = GL_FALSE;
+  const GLboolean stencilDepthTest = (context->stencilOpZFail != GL_KEEP)||(context->stencilOpZPass != GL_KEEP);
+  GLboolean stencilPassed = GL_TRUE;
+  const GLint stencilFunc = (GLint)context->stencilFunc;
+  const GLubyte stencilValueMask = (GLubyte)(context->stencilFuncMask & 255);
+  const GLubyte stencilWriteMask = (GLubyte)(context->stencilMask & 255);
+  const GLubyte stencilRef = (GLubyte)(context->stencilFuncRef & 255) & stencilValueMask;
+  GLboolean depthTestPassed = GL_TRUE;
+  const GLint stencilOpFail = (GLint)context->stencilOpFail;
+  const GLint stencilOpZFail = (GLint)context->stencilOpZFail;
+  const GLint stencilOpZPass = (GLint)context->stencilOpZPass;
+  const GLboolean stencilFullReplace = (stencilWriteMask==255)&&(context->stencilFunc == GL_ALWAYS)&&(context->stencilOpFail == GL_REPLACE)&&(context->stencilOpZFail == GL_REPLACE)&&(context->stencilOpZPass == GL_REPLACE);
+
   glDontPaint = GL_FALSE;
   __PAINTPOLYQUAD_BEGINY__
   __PAINTPOLYQUAD_INITBARYFORX__
@@ -4691,6 +4952,40 @@ GLvoid glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVer
   __PAINTPOLYQUAD_BEGINX__
       if (bary0 >= 0 && bary1 >= 0 && bary2 >= 0) {
         GLraster zp = (GLraster)(__BARY0__(v0z)+__BARY1__(v1z)+__BARY2__(v2z));
+        if (useStencilBuffer) {
+          GLubyte *stencilHere = &sDest[x];
+          if (stencilFullReplace) {
+            *stencilHere = stencilRef;
+          } else { // stencilFullReplace
+            switch(stencilFunc) {
+            case GL_NEVER: {stencilPassed = GL_FALSE;} break;
+            case GL_LESS: {stencilPassed = stencilRef < ((*stencilHere) & stencilValueMask) ? GL_TRUE : GL_FALSE;} break;
+            case GL_EQUAL: {stencilPassed = stencilRef == ((*stencilHere) & stencilValueMask) ? GL_TRUE : GL_FALSE;} break;
+            case GL_LEQUAL: {stencilPassed = stencilRef <= ((*stencilHere) & stencilValueMask) ? GL_TRUE : GL_FALSE;} break;
+            case GL_GREATER: {stencilPassed = stencilRef > ((*stencilHere) & stencilValueMask) ? GL_TRUE : GL_FALSE;} break;
+            case GL_NOTEQUAL: {stencilPassed = stencilRef != ((*stencilHere) & stencilValueMask) ? GL_TRUE : GL_FALSE;} break;
+            case GL_GEQUAL: {stencilPassed = stencilRef >= ((*stencilHere) & stencilValueMask) ? GL_TRUE : GL_FALSE;} break;
+            case GL_ALWAYS: {stencilPassed = GL_TRUE;} break;
+            }
+            if (stencilPassed) {
+              if (stencilDepthTest) {
+                depthTestPassed = (!depthTest) || glCheckDepthFunction(*zDest,(GLfloat)zp,depthFunction);
+                if (depthTestPassed)
+                  glApplyStencileOp(stencilOpZPass,stencilHere,stencilWriteMask,stencilRef);
+                else
+                  glApplyStencileOp(stencilOpZFail,stencilHere,stencilWriteMask,stencilRef);
+              }
+            } else { // stencilPassed
+              glApplyStencileOp(stencilOpFail,stencilHere,stencilWriteMask,stencilRef);
+              pDest++;
+              zDest++;
+              bary0+=baryAdd0;
+              bary1+=baryAdd1;
+              bary2+=baryAdd2;
+              continue; // !ATTENTION!
+            }
+          }
+        }
         if ((!depthTest) || glCheckDepthFunction(*zDest,(GLfloat)zp,depthFunction)) {
           if (wValue) iw = (GLraster)(1.0/(__BARY0__(v0w)+__BARY1__(v1w)+__BARY2__(v2w)));
           GLuint rgba;
@@ -5006,21 +5301,6 @@ GLvoid glDrawTriangleNone(_GLContext *context, glVertex *v0, glVertex *v1, glVer
   __UNUSED(v2);
 }
 
-GLvoid glDrawQuad(_GLContext *context,glVertex *v0,glVertex *v1,glVertex *v2,glVertex *v3) {
-  //glVertices[3].sx -= pointSizeX;
-  //glVertices[3].sy -= pointSizeY;
-  //glVertices[2].sx += pointSizeX;
-  //glVertices[2].sy -= pointSizeY;
-  //glVertices[1].sx += pointSizeX;
-  //glVertices[1].sy += pointSizeY;
-  //glVertices[0].sx -= pointSizeX;
-  //glVertices[0].sy += pointSizeY;
-  //01
-  //32
-  glDrawTriangle(context,v0,v1,v2);
-  glDrawTriangle(context,v2,v3,v0);
-}
-
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
@@ -5149,7 +5429,7 @@ GLuint *glGetTexturePointer(GLuint textureId) {
   return t->data;
 }
 
-GLvoid glCleanSetup(GLuint width, GLuint height, GLuint *frameBuffer, GLfloat *depthBuffer) {
+GLvoid glCleanSetup(GLuint width, GLuint height, GLuint *frameBuffer, GLfloat *depthBuffer, GLubyte *stencilBuffer) {
   constructGL();
   glDirectBlit = GL_FALSE;
   glHiColor = GL_FALSE;
@@ -5163,14 +5443,17 @@ GLvoid glCleanSetup(GLuint width, GLuint height, GLuint *frameBuffer, GLfloat *d
   glFrameBuffer0 = frameBuffer;
   glDepthBuffer = depthBuffer;
   glDepthBuffer0 = depthBuffer;
+  glStencilBuffer = stencilBuffer;
+  glStencilBuffer0 = stencilBuffer;
   memset(glFrameBuffer,0,width*height*glFrameBufferBytesPerPixel*glFrameBufferMultiSample);
-  memset(glDepthBuffer,0,width*height*glFrameBufferMultiSample*sizeof(GLfloat));
+  if (glDepthBuffer != NULL) memset(glDepthBuffer,0,width*height*glFrameBufferMultiSample*sizeof(GLfloat));
+  if (glStencilBuffer != NULL) memset(glStencilBuffer,0,width*height*glFrameBufferMultiSample*sizeof(GLubyte));
   glViewport(0,0,width,height);
   glSetTime(0);
 }
 
-GLboolean glDirect(GLuint *frameBuffer, GLfloat *depthBuffer, GLuint width, GLuint height) {
-  glCleanSetup(width, height, frameBuffer, depthBuffer);
+GLboolean glDirect(GLuint *frameBuffer, GLfloat *depthBuffer, GLubyte *stencilBuffer, GLuint width, GLuint height) {
+  glCleanSetup(width, height, frameBuffer, depthBuffer, stencilBuffer);
   glDirectBlit = GL_TRUE;
   return GL_TRUE;
 }
@@ -5499,6 +5782,8 @@ GLboolean glVesa(GLint xRes,GLint yRes, GLint bPP) {
       if (frameBuffer == NULL) {glSetError(GL_OUT_OF_MEMORY); return GL_FALSE;}
       GLfloat *depthBuffer = (GLfloat *)__MALLOC(xRes*yRes*glFrameBufferMultiSample*sizeof(GLfloat));
       if (depthBuffer == NULL) {__FREE(frameBuffer);glSetError(GL_OUT_OF_MEMORY); return GL_FALSE;}
+      GLubyte *stencilBuffer = (GLubyte *)__MALLOC(xRes*yRes*glFrameBufferMultiSample*sizeof(GLubyte));
+      if (stencilBuffer == NULL) {__FREE(frameBuffer);__FREE(depthBuffer);glSetError(GL_OUT_OF_MEMORY); return GL_FALSE;}
 
       glBits = bPP;
       if (glBits == 15 || glBits == 16) 
@@ -5512,7 +5797,7 @@ GLboolean glVesa(GLint xRes,GLint yRes, GLint bPP) {
       regs.bx = (uint16_t)(mode|0x4000);
       glDPMI_int386(0x10,&regs,&regs); // needed here for later mouse setup
 
-      glCleanSetup(xRes, yRes, frameBuffer, depthBuffer);
+      glCleanSetup(xRes, yRes, frameBuffer, depthBuffer, stencilBuffer);
       glSetupMouse();
 
       glFrameBufferDedicated = (GLuint*)glMapPhysicalToLinear(modeInfo.linearFrameBuffer,4096*1024-1);
@@ -5619,6 +5904,8 @@ GLboolean glVesa(GLint xRes,GLint yRes, GLint bPP) {
       if (frameBuffer == NULL) {glSetError(GL_OUT_OF_MEMORY); return GL_FALSE;}
       GLfloat *depthBuffer = (GLfloat *)__MALLOC(xRes*yRes*glFrameBufferMultiSample*sizeof(GLfloat));
       if (depthBuffer == NULL) {__FREE(frameBuffer);glSetError(GL_OUT_OF_MEMORY); return GL_FALSE;}
+      GLubyte *stencilBuffer = (GLubyte *)__MALLOC(xRes*yRes*glFrameBufferMultiSample*sizeof(GLubyte));
+      if (stencilBuffer == NULL) {__FREE(frameBuffer);__FREE(depthBuffer);glSetError(GL_OUT_OF_MEMORY); return GL_FALSE;}
 
       glBits = bPP;
       if (glBits == 15 || glBits == 16) 
@@ -5632,7 +5919,7 @@ GLboolean glVesa(GLint xRes,GLint yRes, GLint bPP) {
       regs.x.bx = (uint16_t)(mode|0x4000);
       __dpmi_simulate_real_mode_interrupt(0x10, &regs); // needed here for later mouse setup
 
-      glCleanSetup(xRes, yRes, frameBuffer, depthBuffer);
+      glCleanSetup(xRes, yRes, frameBuffer, depthBuffer, stencilBuffer);
       glSetupMouse();
 
       // linear framebuffer mapping to vesasel not glFrameBufferDedicated
@@ -5732,6 +6019,8 @@ GLboolean glVGA() {
   if (frameBuffer == NULL) {glSetError(GL_OUT_OF_MEMORY); return GL_FALSE;}
   GLfloat *depthBuffer = (GLfloat *)__MALLOC(xRes*yRes*glFrameBufferMultiSample*sizeof(GLfloat));
   if (depthBuffer == NULL) {__FREE(frameBuffer);glSetError(GL_OUT_OF_MEMORY); return GL_FALSE;}
+      GLubyte *stencilBuffer = (GLubyte *)__MALLOC(xRes*yRes*glFrameBufferMultiSample*sizeof(GLubyte));
+      if (stencilBuffer == NULL) {__FREE(frameBuffer);__FREE(depthBuffer);glSetError(GL_OUT_OF_MEMORY); return GL_FALSE;}
 
   glGraphicsModeToRestore = glGetBiosGraphicsMode();
 
@@ -5745,7 +6034,7 @@ GLboolean glVGA() {
   glSetVGABufferStart(0);
   for (GLint i = 0; i < 256; i++) glHiRedTab[i] = (uint8_t)(128+(((i>>4)&15)<<3));
 
-  glCleanSetup(xRes, yRes, frameBuffer, depthBuffer);
+  glCleanSetup(xRes, yRes, frameBuffer, depthBuffer, stencilBuffer);
   glSetupMouse();
   glHiColor = GL_TRUE;
 
@@ -5891,11 +6180,15 @@ GLvoid glDone() {
   if (!glDirectBlit) { // glDirect?
 
     if (glFrameBuffer0 != NULL) {
-      __FREE(glFrameBuffer0); glFrameBuffer0 = NULL;
+      __FREE(glFrameBuffer0); glFrameBuffer0 = NULL; glFrameBuffer = NULL;
     }
 
     if (glDepthBuffer0 != NULL) {
-      __FREE(glDepthBuffer0); glDepthBuffer0 = NULL;
+      __FREE(glDepthBuffer0); glDepthBuffer0 = NULL; glDepthBuffer = NULL;
+    }
+
+    if (glStencilBuffer0 != NULL) {
+      __FREE(glStencilBuffer0); glStencilBuffer0 = NULL; glStencilBuffer = NULL;
     }
 
     if (glFrameBufferDedicated != NULL) {

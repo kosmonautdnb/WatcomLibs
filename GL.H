@@ -65,12 +65,12 @@ typedef unsigned int GLenum;
 typedef unsigned char GLboolean;
 typedef unsigned int GLbitfield;
 typedef signed char GLbyte;
-typedef int GLint;
+typedef signed int GLint;
 typedef long GLintptr;
-typedef int GLsizei;
+typedef signed int GLsizei;
 typedef long GLsizeiptr;
 typedef unsigned char GLubyte;
-typedef short GLshort;
+typedef signed short GLshort;
 typedef unsigned short GLushort;
 typedef unsigned int GLuint;
 typedef float GLfloat;
@@ -86,7 +86,7 @@ typedef void GLvoid;
 
 GLboolean glVesa(GLint xRes,GLint yRes, GLint bPP); // e.g. glVesa(320,200,32) enables Vesa mode 320x200x32BitColors (only 32 bit, yet)
 GLboolean glVGA(); // 320x200 with 6 bit green, 3 bit blue, 4 bit red, actually it's 320x400
-GLboolean glDirect(GLuint *frameBuffer, GLfloat *depthBuffer, GLuint width, GLuint height); // setup direct rendering to a framebuffer+depthbuffer // look also at glSetRenderTarget() // you need to delete the buffers yourself // antialiasing needs buffers twice as big
+GLboolean glDirect(GLuint *frameBuffer, GLfloat *depthBuffer, GLubyte *stencilBuffer, GLuint width, GLuint height); // setup direct rendering to a framebuffer+depthbuffer // look also at glSetRenderTarget() // you need to delete the buffers yourself // antialiasing needs buffers twice as big
 
 GLvoid glRefresh(); // copies the framebuffer to the actual screen and updates per frame stuff
 
@@ -99,6 +99,7 @@ extern GLint glFrameBufferWidth;
 extern GLint glFrameBufferHeight;
 extern GLuint *glFrameBuffer;
 extern GLfloat *glDepthBuffer;
+extern GLubyte *glStencilBuffer;
 extern GLint glFrameBufferBytesPerPixel;
 extern GLdouble glPixelCenterX;
 extern GLdouble glPixelCenterY;
@@ -156,8 +157,10 @@ GLvoid glClear(GLbitfield mask); // supported
 GLvoid glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha); // supported
 GLvoid glClearDepthf(GLclampf depth); // supported
 GLvoid glClearDepth(GLclampf depth); // supported
-GLvoid glClearStencil(GLint s);
-GLvoid glClientActiveTexture(GLenum texture);
+GLvoid glClearStencil(GLint s); // supported
+GLvoid glClientActiveTexture(GLenum texture); // supported
+GLvoid glClipPlane(GLenum plane, const GLdouble *equation); // supported
+GLvoid glClipPlanef(GLenum plane, const GLfloat *equation); // supported
 GLvoid glColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha); // supported
 GLvoid glColor4fv(const GLfloat *v); // supported
 GLvoid glColor4ub(GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha); // supported
@@ -171,12 +174,12 @@ GLvoid glDepthFunc(GLenum func); // supported
 GLvoid glDepthMask(GLboolean flag); // supported
 GLvoid glDepthRangef(GLclampf zNear, GLclampf zFar); // supported (no clipping of values, gluProject/gluUnProject not right here)
 GLvoid glDisable(GLenum cap); // supported
-GLvoid glDisableClientState(GLenum array);
+GLvoid glDisableClientState(GLenum array);  // supported
 GLvoid glDrawArrays(GLenum mode, GLint first, GLsizei count); // supported
 GLvoid glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices); // supported
 GLvoid glDrawPixels(GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
 GLvoid glEnable(GLenum cap); // supported
-GLvoid glEnableClientState(GLenum array);
+GLvoid glEnableClientState(GLenum array); // supported
 GLvoid glEnd(); // supported
 GLvoid glEndList();
 GLvoid glFinish(); // supported
@@ -211,17 +214,17 @@ GLboolean glIsBuffer(GLuint buffer); // supported
 GLboolean glIsEnabled(GLenum cap); // supported
 GLvoid glLightf(GLenum light, GLenum pname, GLfloat param); // supported
 GLvoid glLightfv(GLenum light, GLenum pname, const GLfloat *params); // supported
-GLvoid glLightModelfv(GLenum pname, const GLfloat *params);
-GLvoid glLightModeli(GLenum pname, const GLenum param); // supported partially (GL_SEPARATE_SPECULAR_COLOR,GL_SINGLE_COLOR,GL_LIGHT_MODEL_TWO_SIDE)
-GLvoid glLightModelf(GLenum pname, const GLfloat param); // supported partially (GL_LIGHT_MODEL_TWO_SIDE)
+GLvoid glLightModelfv(GLenum pname, const GLfloat *params); // supported
+GLvoid glLightModeli(GLenum pname, const GLenum param); // supported
+GLvoid glLightModelf(GLenum pname, const GLfloat param); // supported
 GLvoid glLineStipple(GLint factor, GLushort pattern);
 GLvoid glLineWidth(GLfloat width); // supported
 GLvoid glListBase(GLuint base);
 GLvoid glLoadIdentity(); // supported
 GLvoid glLoadMatrixf(const GLfloat *m); // supported
 GLvoid glLoadMatrixd(const GLdouble *m); // supported
-GLvoid glMaterialf(GLenum face, GLenum pname, GLfloat param);
-GLvoid glMaterialfv(GLenum face, GLenum pname, const GLfloat *params);
+GLvoid glMaterialf(GLenum face, GLenum pname, GLfloat param); // supported
+GLvoid glMaterialfv(GLenum face, GLenum pname, const GLfloat *params); // supported
 GLvoid glMatrixMode(GLenum mode); // supported
 GLvoid glMultMatrixf(const GLfloat *m); // supported
 GLvoid glMultMatrixd(const GLdouble *m); // supported
@@ -233,10 +236,10 @@ GLvoid glNormal3fv(const GLfloat *v); // supported
 GLvoid glNormalPointer(GLenum type, GLsizei stride, const GLvoid *pointer); // supported
 GLvoid glOrthof(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar); // supported
 GLvoid glPixelStorei(GLenum pname, GLint param);
-GLvoid glPointParameteri(GLenum pname, GLint param);
-GLvoid glPointParameteriv(GLenum pname, const GLint *param);
-GLvoid glPointParameterf(GLenum pname, GLfloat param);
-GLvoid glPointParameterfv(GLenum pname, const GLfloat *param);
+GLvoid glPointParameteri(GLenum pname, GLint param); // supported
+GLvoid glPointParameteriv(GLenum pname, const GLint *param); // supported
+GLvoid glPointParameterf(GLenum pname, GLfloat param); // supported
+GLvoid glPointParameterfv(GLenum pname, const GLfloat *param); // supported
 GLvoid glPointSize(GLfloat size); // supported
 GLvoid glPolygonMode(GLenum face, GLenum mode); // supported
 GLvoid glPolygonOffset(GLfloat factor, GLfloat units); // supported
@@ -252,9 +255,9 @@ GLvoid glScaled(GLdouble x, GLdouble y, GLdouble z); // supported
 GLvoid glScaledv(const GLdouble *v); // supported
 GLvoid glScissor(GLint x, GLint y, GLsizei width, GLsizei height); // supported
 GLvoid glShadeModel(GLenum mode);
-GLvoid glStencilFunc(GLenum func, GLint ref, GLuint mask);
-GLvoid glStencilMask(GLuint mask);
-GLvoid glStencilOp(GLenum fail, GLenum zfail, GLenum zpass);
+GLvoid glStencilFunc(GLenum func, GLint ref, GLuint mask); // supported
+GLvoid glStencilMask(GLuint mask); // supported
+GLvoid glStencilOp(GLenum fail, GLenum zfail, GLenum zpass); // supported
 GLvoid glTexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer); // supported
 GLvoid glTexEnvfv(GLenum target, GLenum pname, const GLfloat *params);
 GLvoid glTexEnvi(GLenum target, GLenum pname, GLint param);
@@ -369,6 +372,12 @@ GLint gluProjectx(GLdouble objX, GLdouble objY, GLdouble objZ, GLdouble *model, 
 //GL_LIGHT6 0x4006 (0x06)
 //GL_LIGHT7 0x4007 (0x07)
 //GL_SCISSOR_TEST 0x0C11 (0x11)
+//GL_CLIP_PLANE0 (0x3000+0x20) (0x20)
+//GL_CLIP_PLANE1 (0x3001+0x20) (0x21)
+//GL_CLIP_PLANE2 (0x3002+0x20) (0x22)
+//GL_CLIP_PLANE3 (0x3003+0x20) (0x23)
+//GL_CLIP_PLANE4 (0x3004+0x20) (0x24)
+//GL_CLIP_PLANE5 (0x3005+0x20) (0x25)
 //GL_POLYGON_OFFSET_FILL 0x8037 (0x37)
 //GL_CULL_FACE 0x0B44 (0x44)
 //GL_LIGHTING 0x0B50 (0x50)
@@ -377,6 +386,7 @@ GLint gluProjectx(GLdouble objX, GLdouble objY, GLdouble objZ, GLdouble *model, 
 //GL_TEXTURE_GEN_T 0x0c61 (0x61)
 //GL_FOG 0x0B64 (0x64)
 //GL_DEPTH_TEST 0x0B71 (0x71)
+//GL_STENCIL_TEST 0x0B90 (0x90)
 //GL_ALPHA_TEST 0x0BC0 (0xC0)
 //GL_TEXTURE_2D 0x0DE1 (0xE1)
 //GL_BLEND 0x0BE2 (0xE2)
@@ -469,11 +479,19 @@ GLint gluProjectx(GLdouble objX, GLdouble objY, GLdouble objZ, GLdouble *model, 
 #define GL_VK_U_CTRL 21
 #define GL_VK_X_CTRL 24
 #define GL_VK_PLUS_CTRL 29
+#define GL_CLIP_PLANE0 (0x3000+0x20) // :modified:
+#define GL_CLIP_PLANE1 (0x3001+0x20) // :modified:
+#define GL_CLIP_PLANE2 (0x3002+0x20) // :modified:
+#define GL_CLIP_PLANE3 (0x3003+0x20) // :modified:
+#define GL_CLIP_PLANE4 (0x3004+0x20) // :modified:
+#define GL_CLIP_PLANE5 (0x3005+0x20) // :modified:
 #define GL_POINT_SIZE_MIN 0x8126
 #define GL_POINT_SIZE_MAX 0x8127
 #define GL_POINT_DISTANCE_ATTENUATION 0x8129
 #define GL_COLOR_ATTACHMENT0 0x8ce0
 #define GL_DEPTH_ATTACHMENT 0x8d00
+#define GL_STENCIL_ATTACHMENT 0x8d20
+#define GL_STENCIL_INDEX8 0x8d48
 #define GL_VERTEX_ARRAY 0x8074
 #define GL_NORMAL_ARRAY 0x8075
 #define GL_COLOR_ARRAY 0x8076
@@ -575,6 +593,7 @@ GLint gluProjectx(GLdouble objX, GLdouble objY, GLdouble objZ, GLdouble *model, 
 #define GL_TEXTURE_GEN_R 0x0c62
 #define GL_TEXTURE_GEN_Q 0x0c63
 #define GL_LIGHT_MODEL_TWO_SIDE 0x0b52
+#define GL_LIGHT_MODEL_LOCAL_VIEWER 0x0B51
 #define GL_POINT 0x1b00
 #define GL_LINE 0x1b01
 #define GL_FILL 0x1b02
@@ -866,6 +885,7 @@ GLfloat glGetZoomY(); // also non standard, hopefully you don't need it
 #define GLMAXTEXTUREUNITS 8
 #define GLMAXBUFFERS 1024
 #define GLMAXLIGHTS 8
+#define GLMAXCLIPPLANES 6
 
 // ------------------------
 // ------------------------
@@ -1011,6 +1031,7 @@ typedef struct _GLContext {
   GLdouble modelViewMatrix[4*4];
   GLdouble projectionMatrix[4*4];
   GLdouble textureMatrix[GLMAXTEXTUREUNITS][4*4];
+  GLdouble clipPlanes[GLMAXCLIPPLANES][4];
 } _GLContext;
 
 typedef struct glVertex {
@@ -1059,6 +1080,7 @@ typedef struct glTexture {
 
 extern _GLContext glContext;
 extern glTexture glTextures[GLMAXTEXTURES];
+extern GLboolean glTextureMatrixIsSet[GLMAXTEXTUREUNITS];
 
 // ------------------------
 // ------------------------
