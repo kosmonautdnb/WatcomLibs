@@ -928,6 +928,8 @@ GLvoid glPutOnClipStack(glVertex *v0,glVertex *v1,glVertex *v2) {
   glClipStackPos += 3;
 }
 
+#define CLIPNULL(__v0__,__v1__,__d__) ((__v1__)==0?((__v0__)==0?0:(__d__)):(__v0__)/(__v1__))
+
 GLint glProceedClip(_GLContext *context,glVertex *v0,glVertex *v1,glVertex *v2,GLdouble *plane) {
 //  const GLdouble *matrix = context->matrixForMode[GL_MODELVIEW & 1];
   glVertex *v[3];
@@ -976,15 +978,14 @@ GLint glProceedClip(_GLContext *context,glVertex *v0,glVertex *v1,glVertex *v2,G
       glTransformVertex(context,&poly[count],GL_FALSE);
       glLightVertex(context,&poly[count]);
       count++;
-      GLdouble f = (ci0) / (ci0-ci1);
+      GLdouble f = CLIPNULL((ci0) , (ci0-ci1), 1.0);
       interpolateVertex(&poly[count],v0,v1,f);
       glTransformVertex(context,&poly[count],GL_FALSE);
       glLightVertex(context,&poly[count]);
-      clipFlags &= glClipVertex(&glContext,&poly[count]);
       count++;
     } else 
     if((!currentInside) && nextInside) {
-      GLdouble f = (ci0) / (ci0-ci1);
+      GLdouble f = CLIPNULL((ci0) , (ci0-ci1), 1.0);
       interpolateVertex(&poly[count],v0,v1,f);
       glTransformVertex(context,&poly[count],GL_FALSE);
       glLightVertex(context,&poly[count]);
@@ -1002,7 +1003,7 @@ GLvoid glClipOnPlane(_GLContext *context,glVertex *v0,glVertex *v1,glVertex *v2,
     GLint clipped = glProceedClip(context,&glClipStack[i+0],&glClipStack[i+1],&glClipStack[i+2],plane);
     switch(clipped) {
     case 2: // partially visible the current one needs also to be deleted
-    case 0: {for (GLint j=i+3;j<glClipStackPos;j+=3) glClipStack[j-3]=glClipStack[j];glClipStackPos -= 3;} break; // not visible
+    case 0: {for (GLint j=i+3;j<glClipStackPos;j++) glClipStack[j-3]=glClipStack[j];glClipStackPos -= 3;} break; // not visible
     case 1: break; // fully visible
     }
   } 
@@ -1066,7 +1067,7 @@ GLvoid drawClippedNgon(_GLContext *context, glVertex *vertices[], GLint vertexCo
       glLightVertex(context,&poly[count]);
       clipFlags &= glClipVertex(&glContext,&poly[count]);
       count++;
-      GLdouble f = (w0+z0) / ((z0-z1)+(w0-w1));
+      GLdouble f = CLIPNULL((w0+z0) , ((z0-z1)+(w0-w1)), 1.0);
       interpolateVertex(&poly[count],v0,v1,f);
       glTransformVertex(context,&poly[count],GL_FALSE);
       glLightVertex(context,&poly[count]);
@@ -1074,7 +1075,7 @@ GLvoid drawClippedNgon(_GLContext *context, glVertex *vertices[], GLint vertexCo
       count++;
     } else 
     if((!currentInside) && nextInside) {
-      GLdouble f = (w0+z0) / ((z0-z1)+(w0-w1));
+      GLdouble f = CLIPNULL((w0+z0) , ((z0-z1)+(w0-w1)), 1.0);
       interpolateVertex(&poly[count],v0,v1,f);
       glTransformVertex(context,&poly[count],GL_FALSE);
       glLightVertex(context,&poly[count]);
@@ -1633,8 +1634,10 @@ GLvoid glBufferData(GLenum target, GLsizeiptr size, const GLvoid *data, GLenum u
     glSetError(GL_INVALID_VALUE);
     return;
   }
-  if (c->data != NULL) {__FREE(c->data); c->data = NULL;}
-  c->data = __MALLOC(size);
+  if (c->data == NULL || size != c->dataSize) {
+    if (c->data != NULL) {__FREE(c->data); c->data = NULL;}
+    c->data = __MALLOC(size);
+  }
   memset(c->data,0,size);
   c->dataSize = size;
   glBufferSubData(target,0,size,data);
@@ -2908,14 +2911,16 @@ GLvoid glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei wi
   if (glContext.boundTextures[glContext.activeTexture] == 0) 
     return;
   glTexture *t = &glTextures[glContext.boundTextures[glContext.activeTexture]];
-  if (t->data != NULL)  {
-    __FREE(t->data);
-    t->data = NULL;
-  }
-  t->data = (GLuint*)__MALLOC(sizeof(GLuint)*width*height);
-  if (t->data == NULL) {
-    glSetError(GL_OUT_OF_MEMORY);
-    return;
+  if (t->data == NULL || t->width != width || t->height != height) {
+    if (t->data != NULL)  {
+      __FREE(t->data);
+      t->data = NULL;
+    }
+    t->data = (GLuint*)__MALLOC(sizeof(GLuint)*width*height);
+    if (t->data == NULL) {
+      glSetError(GL_OUT_OF_MEMORY);
+      return;
+    }
   }
   t->width = width;
   t->height = height;
@@ -4549,6 +4554,7 @@ GLvoid glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVer
   GLboolean maskBlue = context->maskBlue;
   GLboolean maskAlpha = context->maskAlpha;
   GLboolean notMasked = maskRed && maskGreen && maskBlue && maskAlpha;
+  GLboolean fullyMasked = (!maskRed) && (!maskGreen) && (!maskBlue) && (!maskAlpha);
 
   GLdouble v0w = 1.0/(v0->sw);
   GLdouble v1w = 1.0/(v1->sw);
@@ -4936,6 +4942,7 @@ GLvoid glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVer
   const GLint stencilOpZFail = (GLint)context->stencilOpZFail;
   const GLint stencilOpZPass = (GLint)context->stencilOpZPass;
   const GLboolean stencilFullReplace = (stencilWriteMask==255)&&(context->stencilFunc == GL_ALWAYS)&&(context->stencilOpFail == GL_REPLACE)&&(context->stencilOpZFail == GL_REPLACE)&&(context->stencilOpZPass == GL_REPLACE);
+  const GLboolean dontWriteAnything = (!writeDepth) && fullyMasked;
 
   glDontPaint = GL_FALSE;
   __PAINTPOLYQUAD_BEGINY__
@@ -4956,6 +4963,14 @@ GLvoid glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVer
           GLubyte *stencilHere = &sDest[x];
           if (stencilFullReplace) {
             *stencilHere = stencilRef;
+            if (dontWriteAnything) {
+              pDest++;
+              zDest++;
+              bary0+=baryAdd0;
+              bary1+=baryAdd1;
+              bary2+=baryAdd2;
+              continue; // !ATTENTION!
+            }
           } else { // stencilFullReplace
             switch(stencilFunc) {
             case GL_NEVER: {stencilPassed = GL_FALSE;} break;
@@ -4974,6 +4989,14 @@ GLvoid glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVer
                   glApplyStencileOp(stencilOpZPass,stencilHere,stencilWriteMask,stencilRef);
                 else
                   glApplyStencileOp(stencilOpZFail,stencilHere,stencilWriteMask,stencilRef);
+              }
+              if (dontWriteAnything) {
+                pDest++;
+                zDest++;
+                bary0+=baryAdd0;
+                bary1+=baryAdd1;
+                bary2+=baryAdd2;
+                continue; // !ATTENTION!
               }
             } else { // stencilPassed
               glApplyStencileOp(stencilOpFail,stencilHere,stencilWriteMask,stencilRef);
@@ -5427,6 +5450,29 @@ GLuint *glGetTexturePointer(GLuint textureId) {
   glTexture *t = &glTextures[textureId];
   if (t->name == 0x00) return NULL;
   return t->data;
+}
+
+GLuint glDebugColors[8]={
+  0x00000000,
+  0x00fffffff,
+  0x000000ff,
+  0x0000ff00,
+  0x00ff0000,
+  0x00ff00ff,
+  0x0000ffff,
+  0x00ffff00
+};
+
+GLvoid glDebug(GLuint color) {
+#ifdef __WATCOMC__
+  if (glFrameBufferDedicated != NULL) {
+    for (int y = 0; y < 8; y++) {
+      for (int x = 0; x < 8; x++) {
+        glFrameBufferDedicated[x+y*glFrameBufferWidth]=glDebugColors[color & 7];
+      }
+    }
+  }
+#endif
 }
 
 GLvoid glCleanSetup(GLuint width, GLuint height, GLuint *frameBuffer, GLfloat *depthBuffer, GLubyte *stencilBuffer) {
