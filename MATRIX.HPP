@@ -47,8 +47,10 @@ public:
   double get(int x, int y) const;
   
   Matrix &setRow(int y, const Vector &b);
+  Matrix &setRow3(int y, const Vector &b);
   Vector getRow(int y) const;
   Matrix &setColumn(int x, const Vector &b);
+  Matrix &setColumn3(int x, const Vector &b);
   Vector getColumn(int x) const;
   
   Matrix &transpose();

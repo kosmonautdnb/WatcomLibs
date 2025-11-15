@@ -37,6 +37,13 @@ Matrix &Matrix::setRow(int y, const Vector &b) {
   return *this;
 }
 
+Matrix &Matrix::setRow3(int y, const Vector &b) {
+  set(y,0,b.x);
+  set(y,1,b.y);
+  set(y,2,b.z);
+  return *this;
+}
+
 Vector Matrix::getRow(int y) const {
   Vector r;
   r.x = get(y,0);
@@ -51,6 +58,13 @@ Matrix &Matrix::setColumn(int x, const Vector &b) {
   set(1,x,b.y);
   set(2,x,b.z);
   set(3,x,b.w);
+  return *this;
+}
+
+Matrix &Matrix::setColumn3(int x, const Vector &b) {
+  set(0,x,b.x);
+  set(1,x,b.y);
+  set(2,x,b.z);
   return *this;
 }
 
@@ -284,9 +298,9 @@ bool Matrix::invert() {
 }
 
 void Matrix::normalize3x3() {
-  setColumn(0,normalize(getColumn(0)));
-  setColumn(1,normalize(getColumn(1)));
-  setColumn(2,normalize(getColumn(2)));
+  setColumn3(0,normalize(getColumn(0)));
+  setColumn3(1,normalize(getColumn(1)));
+  setColumn3(2,normalize(getColumn(2)));
 }
 
 void Matrix::translate(const Vector &v) {
