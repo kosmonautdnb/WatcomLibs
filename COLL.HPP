@@ -9,13 +9,14 @@
 //---
 // :Collision Types:
 //---
-// Capsule+Capsule
+// Capsule+Capsule ( seems not to work right :(, maybe take Line+Line instead or implement a Line+Line to Capsule later)
 // Sphere+Sphere
 // Sphere+Line
 // Cube+Cube
 // Cube+Sphere
 // Cube+Line
 // Line+Triangle
+// Line+Line
 //---
 
 // Capsule-Collision
@@ -444,9 +445,9 @@ public:
 };
 
 // LINE+TRIANGLE
-double signedVolume(const Vector &a, const Vector &b, const Vector &c, const Vector &d) {return (1.0/6.0)*dot(cross(b-a,c-a),d-a);}
+static double signedVolume(const Vector &a, const Vector &b, const Vector &c, const Vector &d) {return (1.0/6.0)*dot(cross(b-a,c-a),d-a);}
 // LINE+TRIANGLE
-bool collided(const Vector &l0,const Vector &l1, const Vector &t0, const Vector &t1, const Vector &t2) {
+static bool collided(const Vector &l0,const Vector &l1, const Vector &t0, const Vector &t1, const Vector &t2) {
   const double s0 = signedVolume(l0,t0,t1,t2);
   const double s1 = signedVolume(l1,t0,t1,t2);
   if (s0*s1>=0) return false;
@@ -458,7 +459,7 @@ bool collided(const Vector &l0,const Vector &l1, const Vector &t0, const Vector 
   return true;
 }
 // LINE+TRIANGLE (to be called after collided returned true (it's just a ray collision not a line))
-bool collisionPoint(const Vector &l0,const Vector &l1, const Vector &t0, const Vector &t1, const Vector &t2, Vector &collisionPoint) {
+static bool collisionPoint(const Vector &l0,const Vector &l1, const Vector &t0, const Vector &t1, const Vector &t2, Vector &collisionPoint) {
   Vector e1 = t1-t0;
   Vector e2 = t2-t0;
   Vector rd = normalize(l1-l0); // ray dir
@@ -473,6 +474,22 @@ bool collisionPoint(const Vector &l0,const Vector &l1, const Vector &t0, const V
   bool hit = fabs(det)>=1e-6&&t>=0.0&&u>=0.0&&v>=0.0&&(u+v)<=1.0;
   if (hit) collisionPoint = l0 + t * rd;
   return hit;
+}
+
+// LINE+LINE
+static double lineLineDistance(const Vector &l0s,const Vector &l0e,const Vector &l1s,const Vector &l1e, Vector &collisionPoint) {
+  Vector e0 = l0e-l0s;
+  Vector e1 = l1e-l1s;
+  Vector n = cross(e0,e1);
+  if (length(n)==0) return -1; // parallel not handled right
+  double t0 = dot(cross(e1,n),(l1s-l0s)) / dot(n,n);
+  double t1 = dot(cross(e0,n),(l1s-l0s)) / dot(n,n);
+  if (t0<0||t0>1) return -1;
+  if (t1<0||t1>1) return -1;
+  Vector p0 = l0s + t0 * e0;
+  Vector p1 = l1s + t1 * e1;
+  collisionPoint = (p0+p1)*0.5;
+  return length(p1-p0);
 }
 
 #endif // __COLL_HPP__

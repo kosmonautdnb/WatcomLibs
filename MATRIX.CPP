@@ -181,6 +181,17 @@ Matrix Matrix::rotationMatrix3x3() {
   return result;
 }
 
+Matrix Matrix::matrix3x3() {
+  Matrix result;
+  result.identity();
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+      result.set(i,j,this->get(i,j));
+    }
+  }  
+  return result;
+}
+
 
 #define SWAP_ROWS_DOUBLE(a, b) { double *_tmp = a; (a)=(b); (b)=_tmp; }
 #define MAT(m,r,c) (m)[(c)*4+(r)]
