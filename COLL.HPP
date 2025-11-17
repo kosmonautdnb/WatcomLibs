@@ -9,7 +9,7 @@
 //---
 // :Collision Types:
 //---
-// Capsule+Capsule ( seems not to work right :(, maybe take Line+Line instead or implement a Line+Line to Capsule later)
+// Capsule+Capsule ( seems not to work right :(, take Line+Line instead (without capping))
 // Sphere+Sphere
 // Sphere+Line
 // Cube+Cube
@@ -477,15 +477,21 @@ static bool collisionPoint(const Vector &l0,const Vector &l1, const Vector &t0, 
 }
 
 // LINE+LINE
-static double lineLineDistance(const Vector &l0s,const Vector &l0e,const Vector &l1s,const Vector &l1e, Vector &collisionPoint) {
+static double lineLineDistance(const Vector &l0s,const Vector &l0e,const Vector &l1s,const Vector &l1e, Vector &collisionPoint, bool capped) {
   Vector e0 = l0e-l0s;
   Vector e1 = l1e-l1s;
   Vector n = cross(e0,e1);
   if (length(n)==0) return -1; // parallel not handled right
   double t0 = dot(cross(e1,n),(l1s-l0s)) / dot(n,n);
   double t1 = dot(cross(e0,n),(l1s-l0s)) / dot(n,n);
-  if (t0<0||t0>1) return -1;
-  if (t1<0||t1>1) return -1;
+  if (capped) {
+    if (t0<0||t0>1) return -1;
+    if (t1<0||t1>1) return -1;
+  }
+  if (t0<0) t0 = 0;
+  if (t0>1) t0 = 1;
+  if (t1<0) t1 = 0;
+  if (t1>1) t1 = 1;
   Vector p0 = l0s + t0 * e0;
   Vector p1 = l1s + t1 * e1;
   collisionPoint = (p0+p1)*0.5;
