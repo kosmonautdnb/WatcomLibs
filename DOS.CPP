@@ -10,7 +10,9 @@
 #endif // __WATCOMC__
 #ifdef __DJGPP__
 // todo: not implemented, yet
+#define NOT_DOS
 #include <dos.h>
+#include <unistd.h>
 #endif // __DJGPP__
 #ifdef ON_WINDOWS
 #include <vector>
@@ -253,6 +255,7 @@ bool dosHasDrive(const char driveLetter) {
 #endif
 }
 
+#ifndef NOT_DOS
 void dosCreateFolder(const String &folderName) {
   mkdir(dosFileName(folderName).c_str());
 }
@@ -268,6 +271,7 @@ void dosRemoveFile(const String &fileName) {
 void dosRenameFile(const String &oldFileName, const String &newFileName) {
   rename(dosFileName(oldFileName).c_str(), dosFileName(newFileName).c_str());
 }
+#endif
 
 String unixFileName(const String &filePath) {
   String r = String(filePath);
