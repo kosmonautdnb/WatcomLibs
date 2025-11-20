@@ -1,8 +1,6 @@
 #ifndef __KEYMTRIX_HPP__
 #define __KEYMTRIX_HPP__
 
-// this is not working in dos4gw, in !!!!!pmode/w!!!!! it's working
-
   // scan code pressed table
 extern bool keyPressed[0x80];
 

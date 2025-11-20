@@ -5,19 +5,16 @@
 #include <stdio.h>
 #ifdef __WATCOMC__
 #include <i86.h>
+#include <dos.h>
 #endif // __WATCOMC__
 #ifdef __DJGPP__
 // todo: not implemented, yet
 #include <dos.h>
 #endif // __DJGPP__
 
-// this is not working in dos4gw, in !!!!!pmode/w!!!!! it's working
-
 #ifdef __WATCOMC__
 typedef void (__interrupt __far* KeyboardHandler)();
 static KeyboardHandler oldKeyboardHandler = NULL;
-
-#define DPMIERROR {printf("DPMI Error. No appropiate DPMI interface. Maybe use PModeW at linking.\n");exit(0);}
 
 bool keyPressed[0x80] = {0};
 
@@ -34,32 +31,14 @@ static void (__interrupt __far keyboardHandler) (void) {
 void installKeyboardHandler() {
   if (oldKeyboardHandler != NULL)
     uninstallKeyboardHandler();
-  union REGS r;
-  memset(&r,0,sizeof(r));
-  r.w.ax = 0x204;
-  r.h.bl = 0x09;
-  int386 (0x31, &r, &r);
-  oldKeyboardHandler = (KeyboardHandler)MK_FP(r.x.ecx,r.x.edx);
-  memset(&r,0,sizeof(r));
-  r.w.ax = 0x205;
-  r.h.bl = 0x09;
-  r.x.ecx = FP_SEG(keyboardHandler);
-  r.x.edx = FP_OFF(keyboardHandler);
-  int386 (0x31, &r, &r);
-  if (r.w.cflag) DPMIERROR;
+  oldKeyboardHandler = _dos_getvect(0x09);
+  _dos_setvect(0x09,keyboardHandler);
   atexit(uninstallKeyboardHandler);
 }
 
 void uninstallKeyboardHandler() {
   if (oldKeyboardHandler != NULL) {
-    union REGS r;
-    memset(&r,0,sizeof(r));
-    r.w.ax = 0x205;
-    r.h.bl = 0x09;
-    r.x.ecx = FP_SEG(oldKeyboardHandler);
-    r.x.edx = FP_OFF(oldKeyboardHandler);
-    int386 (0x31, &r, &r);
-    if (r.w.cflag) DPMIERROR;
+    _dos_setvect(0x09,oldKeyboardHandler);
     oldKeyboardHandler = NULL;
   }
 }
