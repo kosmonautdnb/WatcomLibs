@@ -124,6 +124,7 @@ GLvoid glConfigureAntiAlias(); // to be called before any other gl call (also gl
 // ------------------------
 // ------------------------
 
+GLboolean glWatcomPrecisionTimer(GLboolean enable); // removes stutteryness of WatcomC timer by using the CPUs Time Stamp Counter instead of the 18.2hz clock (calling this needs 1 or 2 seconds to setup)
 GLdouble glSeconds(); // seconds elapsed since the start of OpenGL (it's quite stuttery on WatcomC)
 GLvoid glSetTime(GLdouble seconds); // sets the time (in seconds)
                         
@@ -138,6 +139,9 @@ GLuint glGetTextureHeight(GLuint textureId);
 GLvoid glExplicitAlpha(GLboolean useExplicitAlpha, GLfloat alpha); // writes this alpha to the framebuffer when rendering polygons (maybe helps as some sort of "stencil buffer") // alpha between 0 and 1
 GLboolean glPixel(GLboolean newXYZ, GLfloat xp, GLfloat yp, GLfloat GLzp, GLint x, GLint y, GLuint color); // paint pixel at 3d position (x,y,z) plus 2D offset (x,y) (returns GL_FALSE if clipped) (newXYZ calculates new 3d/2d pos from xp,yp,zp, without it, it will take just the last one)
 GLvoid glAdditionalPointSpriteXStretch(GLfloat widthStretch); // for better (quadratic) point sprites and lines on e.g. 16:9 screens
+
+void *glMalloc(GLsizei size); // aligns the mallocs to 4 byte boundaries. The size is incremented by 8 byte to store a void * at start of the malloced memory.
+void glFree(void *mem); // the mem must have been allocated with glMalloc().
 
 // ------------------------
 // ------------------------
@@ -865,8 +869,6 @@ GLint gluProjectx(GLdouble objX, GLdouble objY, GLdouble objZ, GLdouble *model, 
 // ------------------------
 // ------------------------
 
-// better use glTexImage2D()
-GLvoid glTexturePointer(GLint width, GLint height, GLuint *textureData);  // glBindTexture() must be called before
 GLuint *glGetTexturePointer(GLuint textureId);
 
 // ------------------------
