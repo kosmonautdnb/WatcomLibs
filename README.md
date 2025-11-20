@@ -10,7 +10,7 @@ DOS is case agnostic. Filenames are upper case because it's DOS default.
 
 ## WatcomGL / OpenGL
 https://github.com/kosmonautdnb/WatcomGL
-- GL.h  - an OpenGL subset with fixed function pipeline, except stencil buffer and projective textures, with some glu functions and Vesa/VGA support  
+- GL.h  - an OpenGL subset with fixed function pipeline, except projective textures, with some glu functions and Vesa/VGA support  
 - GLIMPL.cpp - complete OpenGL implementation  
 
 ## ImGui v1.43 included and working
