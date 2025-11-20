@@ -129,7 +129,7 @@ GLubyte *glStencilBuffer0 = NULL;
 // -----
 // WatcomC++ high precision timer. DJGPP already has a high precision timer.
 // -----
-
+#ifndef __GLDISABLEDOSFUNCTIONS__ 
 #ifdef __WATCOMC__
 
 GLubyte glCmosRead(GLubyte reg, GLboolean maskNMI) {
@@ -184,7 +184,7 @@ GLboolean glWatcomPrecisionTimer(GLboolean enable) {
   return GL_FALSE;
 #endif // __WATCOMC__
 }
-
+#endif //__GLDISABLEDOSFUNCTIONS__ 
 // -----
 // WatcomC++ high precision timer.
 // -----
@@ -2827,12 +2827,20 @@ GLvoid glPolygonOffset(GLfloat factor, GLfloat units) {
 
 GLvoid glPopMatrix() {
   glMatrixStackPos--;
-  memcpy(glContext.matrixForMode[glContext.matrixModeNr], glMatrixStack[glMatrixStackPos], 4*4*sizeof(GLdouble));
-  glUpdateMatrix();
+  if ((GLuint)glMatrixStackPos < __MATRIX_STACK_SIZE__) {
+    memcpy(glContext.matrixForMode[glContext.matrixModeNr], glMatrixStack[glMatrixStackPos], 4*4*sizeof(GLdouble));
+    glUpdateMatrix();
+  } else {
+    glSetError(GL_INVALID_VALUE);
+  }
 }
 
 GLvoid glPushMatrix() {
-  memcpy(glMatrixStack[glMatrixStackPos], glContext.matrixForMode[glContext.matrixModeNr], 4*4*sizeof(GLdouble));
+  if ((GLuint)glMatrixStackPos < __MATRIX_STACK_SIZE__) {
+    memcpy(glMatrixStack[glMatrixStackPos], glContext.matrixForMode[glContext.matrixModeNr], 4*4*sizeof(GLdouble));
+  } else {
+    glSetError(GL_INVALID_VALUE);
+  }
   glMatrixStackPos++;
 }
 
@@ -3420,16 +3428,24 @@ GLvoid glTexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *
 }
 
 GLvoid glPushAttrib(GLbitfield mask) { // mask not supported and behaves different than glPushAttrib + only small Stack Depth, yet
-  glContext.pushAttribBitsHere = mask; // maybe evaluate at glPopAttrib later
-  memcpy(&glAttribStack[glAttribStackPos], &glContext, sizeof(_GLContext));
-  glContext.pushAttribBitsHere = 0;
+  if ((GLuint)glAttribStackPos < __ATTRIB_STACK_SIZE__) {
+    glContext.pushAttribBitsHere = mask; // maybe evaluate at glPopAttrib later
+    memcpy(&glAttribStack[glAttribStackPos], &glContext, sizeof(_GLContext));
+    glContext.pushAttribBitsHere = 0;
+  } else {
+    glSetError(GL_INVALID_VALUE);
+  }
   glAttribStackPos++;
 }
 
 GLvoid glPopAttrib() {
   glAttribStackPos--;
-  memcpy(&glContext,&glAttribStack[glAttribStackPos], sizeof(_GLContext));
-  glUpdateMatrix();
+  if ((GLuint)glAttribStackPos < __ATTRIB_STACK_SIZE__) {
+    memcpy(&glContext,&glAttribStack[glAttribStackPos], sizeof(_GLContext));
+    glUpdateMatrix();
+  } else {
+    glSetError(GL_INVALID_VALUE);
+  }
 }
 
 GLvoid glTexParameterfv(GLenum target, GLenum pname, GLfloat *param) {
@@ -4256,17 +4272,17 @@ INLINE GLdouble getBary(GLdouble x, GLdouble y, const glVertex *v0, const glVert
 #define __BARY0__B(__v__) __BARY0__(__v__)
 #define __BARY1__B(__v__) __BARY1__(__v__)
 #define __BARY2__B(__v__) (__v__) // this is due to bary2 being 1-bary1-bary0
-#define __BARY0PADD__B(__v__) __BARY0PADD__((__v__) - xbaryAdd2)
-#define __BARY1PADD__B(__v__) __BARY1PADD__((__v__) - xbaryAdd2)
-#define __BARY2PADD__B(__v__) (bary2+xbaryAdd2)
+#define __BARY0PADD__B(__v__,__v2__) (((__v__)+(__v2__))*(bary0+xbaryAdd0))
+#define __BARY1PADD__B(__v__,__v2__) (((__v__)+(__v2__))*(bary1+xbaryAdd1))
+#define __BARY2PADD__B(__v__,__v2__) ((__v__)*(bary2+xbaryAdd2))
 #define __MAKEBARY__B(__v0__,__v1__,__v2__) {__v0__ = (__v0__) - (__v2__); __v1__ = (__v1__) - (__v2__);}
 #else // BARY_OPTIMIZATION
 #define __BARY0__B(__v__) __BARY0__(__v__)
 #define __BARY1__B(__v__) __BARY1__(__v__)
 #define __BARY2__B(__v__) __BARY2__(__v__)
-#define __BARY0PADD__B(__v__) __BARY0PADD__(__v__)
-#define __BARY1PADD__B(__v__) __BARY1PADD__(__v__)
-#define __BARY2PADD__B(__v__) __BARY2PADD__(__v__)
+#define __BARY0PADD__B(__v__,__v2__) __BARY0PADD__(__v__)
+#define __BARY1PADD__B(__v__,__v2__) __BARY1PADD__(__v__)
+#define __BARY2PADD__B(__v__,__v2__) __BARY2PADD__(__v__)
 #define __MAKEBARY__B(__v0__,__v1__,__v2__) {}
 #endif // BARY_OPTIMIZATION
 
@@ -5099,6 +5115,10 @@ GLvoid glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVer
   __MAKEBARY__B(sb0,sb1,sb2);
   __MAKEBARY__B(f0,f1,f2);
 
+  if (fullyMasked) {
+    textured = GL_FALSE;
+  }
+
   glDrawnTrianglesFrame++;
   glDontPaint = GL_FALSE;
   __PAINTPOLYQUAD_BEGINY__
@@ -5169,7 +5189,7 @@ GLvoid glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVer
           if (wValue) iw = (GLraster)(1.0/(__BARY0__B(v0w)+__BARY1__B(v1w)+__BARY2__B(v2w)));
           GLuint rgba;
           GLboolean writePixel = GL_TRUE;
-           GLboolean writePixel2 = GL_TRUE;
+           GLboolean writePixel2 = fullyMasked ? GL_FALSE : GL_TRUE;
           if (textured) {
             if (filtering) {
 #ifdef __FASTTEXTURING__
@@ -5179,10 +5199,10 @@ GLvoid glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVer
                   GLdouble iw2=iw*0x10000;
                   tpx = (GLint)FLOOR((__BARY0__B(tx0)+__BARY1__B(tx1)+__BARY2__B(tx2))*iw2);
                   tpy = (GLint)FLOOR((__BARY0__B(ty0)+__BARY1__B(ty1)+__BARY2__B(ty2))*iw2);
-                  if (wValue) iw2 = (1.0/(__BARY0PADD__B(v0w)+__BARY1PADD__B(v1w)+__BARY2PADD__B(v2w)))*0x10000;
+                  if (wValue) iw2 = (1.0/(__BARY0PADD__B(v0w,v2w)+__BARY1PADD__B(v1w,v2w)+__BARY2PADD__B(v2w,v2w)))*0x10000;
                   GLint k = glFastTextureSpanWidth;
-                  tpxa = ((GLint)FLOOR((__BARY0PADD__B(tx0)+__BARY1PADD__B(tx1)+__BARY2PADD__B(tx2))*iw2)-tpx)/k;
-                  tpya = ((GLint)FLOOR((__BARY0PADD__B(ty0)+__BARY1PADD__B(ty1)+__BARY2PADD__B(ty2))*iw2)-tpy)/k;
+                  tpxa = ((GLint)FLOOR((__BARY0PADD__B(tx0,tx2)+__BARY1PADD__B(tx1,tx2)+__BARY2PADD__B(tx2,tx2))*iw2)-tpx)/k;
+                  tpya = ((GLint)FLOOR((__BARY0PADD__B(ty0,ty2)+__BARY1PADD__B(ty1,ty2)+__BARY2PADD__B(ty2,ty2))*iw2)-tpy)/k;
                   if (k+x >= dmaxx) fastTexturing = GL_FALSE; // this is maybe not the triangle edge
                 }
                 fastX=x+1;
@@ -5256,10 +5276,10 @@ GLvoid glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVer
                   GLdouble iw2=iw*0x10000;
                   tpx = (GLint)FLOOR((__BARY0__B(tx0)+__BARY1__B(tx1)+__BARY2__B(tx2))*iw2);
                   tpy = (GLint)FLOOR((__BARY0__B(ty0)+__BARY1__B(ty1)+__BARY2__B(ty2))*iw2);
-                  if (wValue) iw2 = (1.0/(__BARY0PADD__B(v0w)+__BARY1PADD__B(v1w)+__BARY2PADD__B(v2w)))*0x10000;
+                  if (wValue) iw2 = (1.0/(__BARY0PADD__B(v0w,v2w)+__BARY1PADD__B(v1w,v2w)+__BARY2PADD__B(v2w,v2w)))*0x10000;
                   GLint k = glFastTextureSpanWidth;
-                  tpxa = ((GLint)FLOOR((__BARY0PADD__B(tx0)+__BARY1PADD__B(tx1)+__BARY2PADD__B(tx2))*iw2)-tpx)/k;
-                  tpya = ((GLint)FLOOR((__BARY0PADD__B(ty0)+__BARY1PADD__B(ty1)+__BARY2PADD__B(ty2))*iw2)-tpy)/k;
+                  tpxa = ((GLint)FLOOR((__BARY0PADD__B(tx0,tx2)+__BARY1PADD__B(tx1,tx2)+__BARY2PADD__B(tx2,tx2))*iw2)-tpx)/k;
+                  tpya = ((GLint)FLOOR((__BARY0PADD__B(ty0,ty2)+__BARY1PADD__B(ty1,ty2)+__BARY2PADD__B(ty2,ty2))*iw2)-tpy)/k;
                   if (k+x >= dmaxx) fastTexturing = GL_FALSE; // this is maybe not the triangle edge
                 }
                 fastX=x+1;
