@@ -72,6 +72,7 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
   //glOrtho(0,R,B,0,-1,1);       
 
   // Setup render state: alpha-blending enabled, no face culling, no depth testing
+  glDisable(GL_LIGHTING);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_ALPHA_TEST);
@@ -255,10 +256,10 @@ void InitImGui(int w, int h)
   s.ItemSpacing = ImVec2(3,3);
   s.WindowPadding = ImVec2(3,3);
   s.Colors[ImGuiCol_WindowBg] = ImVec4(0,0,0,100.0);
-  s.Colors[ImGuiCol_TitleBg] = ImVec4(0xff/255.f,0,0x40/255.f,0x20/255.f);
-  s.Colors[ImGuiCol_TitleBgActive] = ImVec4(0xff/255.f,0,0x40/255.f,0x50/255.f);
-  s.Colors[ImGuiCol_CloseButton] = ImVec4(0xff/255.f*0.15f,0,0x40/255.f*0.0f,0xff/255.f);
-  s.Colors[ImGuiCol_Button] = ImVec4(0xff/255.f*0.45f,0,0x40/255.f*0.2f,0xff/255.f);
+  s.Colors[ImGuiCol_TitleBg] = ImVec4(0x80/255.f,0,0x40/255.f,1.f);
+  s.Colors[ImGuiCol_TitleBgActive] = ImVec4(0xff/255.f,0,0x80/255.f,1.f);
+  s.Colors[ImGuiCol_CloseButton] = ImVec4(0xff/255.f*0.15f,0,0x40/255.f*0.0f,1.f);
+  s.Colors[ImGuiCol_Button] = ImVec4(0xff/255.f*0.45f,0,0x40/255.f*0.2f,1.f);
 }
 
 static void ImGuiKeyBoardInput() {
