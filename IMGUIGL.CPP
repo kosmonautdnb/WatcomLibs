@@ -81,6 +81,7 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
 
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
+  glDepthMask(GL_FALSE);
   glEnable(GL_SCISSOR_TEST);
   
   glEnable(GL_TEXTURE_2D); 
