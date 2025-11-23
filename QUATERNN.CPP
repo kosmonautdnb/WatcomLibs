@@ -120,7 +120,7 @@ Vector Quaternion::getYawPitchRoll() const {
   if (k<-1) k=-1;
   if (k>1) k=1;
   euler.x=asin(k);
-  if (PI_OVER_2-fabs(euler.x) > EPSILON) {
+//  if (PI_OVER_2-fabs(euler.x) > EPSILON) {
     double sqw,sqx,sqy,sqz;
     sqx = x*x;
     sqy = y*y;
@@ -128,12 +128,12 @@ Vector Quaternion::getYawPitchRoll() const {
     sqw = w*w;
     euler.z = atan2(2.0*(x*y+w*z),sqx-sqy-sqz+sqw);
     euler.y = atan2(2.0*(w*x+y*z),sqw-sqx-sqy+sqz);
-  } else {
+/*  } else {
     euler.z = PI+atan2(2*y*z-2*x*w,2*x*z+2*y*w);
     euler.y = 0;
     if (euler.x>0)
       euler.z = -euler.z;
-  }
+  }*/
   euler.w = 0;
   return euler;
 }

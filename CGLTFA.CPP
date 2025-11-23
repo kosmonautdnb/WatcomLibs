@@ -62,8 +62,8 @@ bool GLTFA_File::load(const char *fileName, const float textureScale) { // load 
 }
 
 void GLTFA_File::free() {
-#define __FREEMAPPOINTERS__(__a__) {Array<unsigned int> k=(__a__).keys();for (int i = 0; i < k.size(); i++) delete (__a__)[k[i]]; (__a__).clear();}
-#define __FREEARRAYPOINTERS__(__a__) {for (int i = 0; i < (__a__).size(); i++) delete (__a__)[i]; (__a__).clear();}
+#define __FREEMAPPOINTERS__(__a__) {Array<unsigned int> k=(__a__).keys();for (int i = 0; i < k.size(); i++) if ((__a__)[k[i]]!=NULL) delete (__a__)[k[i]]; (__a__).clear();}
+#define __FREEARRAYPOINTERS__(__a__) {for (int i = 0; i < (__a__).size(); i++) if ((__a__)[i]!=NULL) delete (__a__)[i]; (__a__).clear();}
   __FREEMAPPOINTERS__(gltfMaterials);
   __FREEMAPPOINTERS__(gltfMeshes);
   __FREEMAPPOINTERS__(gltfNodes);

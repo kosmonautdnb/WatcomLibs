@@ -66,7 +66,7 @@ public:
     }
   }
 
-  bool empty() {
+  bool empty() const {
     for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       if (elements[i] != NULL) 
         return false;
@@ -161,7 +161,7 @@ public:
     return false;
   }
 
-  Array<KEY> keys() {
+  Array<KEY> keys() const {
     Array<KEY> r;
     KEY lastKey = KEY();
     bool first = true;
@@ -179,7 +179,7 @@ public:
     return r;
   }
 
-  Array<VALUE> values() {
+  Array<VALUE> values() const {
     Array<VALUE> r;
     for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
@@ -191,7 +191,7 @@ public:
     return r;
   }
 
-  Array<KeyValue<KEY,VALUE> > entries() {
+  Array<KeyValue<KEY,VALUE> > entries() const {
     Array<KeyValue<KEY,VALUE> > r;
     for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
@@ -203,7 +203,7 @@ public:
     return r;
   }
 
-  size_t size() {
+  size_t size() const {
     size_t r = 0;
     for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
