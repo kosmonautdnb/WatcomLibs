@@ -260,7 +260,7 @@ Delaunator::Delaunator(Array<double> const& in_coords)
     double min_x = DOUBLE_MAX;
     double min_y = DOUBLE_MAX;
     Array<size_t> ids;
-    //ids.reserve(n); :mad:
+    ids.reserve(n);
 
     {for (size_t i = 0; i < n; i++) {
         const double x = coords[2 * i];
@@ -376,8 +376,8 @@ Delaunator::Delaunator(Array<double> const& in_coords)
     m_hash[hash_key(i2x, i2y)] = i2;
 
     size_t max_triangles = n < 3 ? 1 : 2 * n - 5;
-    //triangles.reserve(max_triangles * 3); :mad:
-    //halfedges.reserve(max_triangles * 3); :mad:
+    triangles.reserve(max_triangles * 3);
+    halfedges.reserve(max_triangles * 3);
     add_triangle(i0, i1, i2, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX);
 #define QUIETDOUBLENAN 0x00000 // :mad:
     double xp = QUIETDOUBLENAN;

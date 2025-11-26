@@ -50,6 +50,10 @@ public:
     allocatedSize = numElements;
   }
 
+  void reserve(size_t numElements) {
+    reAlloc(numElements);
+  }
+
   void erase(size_t pos, size_t count) {
     size_t i;
     for (i = pos+count; i < usedSize; i++) {
