@@ -94,6 +94,7 @@ public:
 };
 
 Quaternion normalize(const Quaternion &q);
+Quaternion inverse(const Quaternion &q);
 Quaternion rotationMatrixToQuaternion(const Matrix &m); // somehow not soo precise
 Quaternion slerp(const Quaternion &q0, const Quaternion &q1, double t);
 Quaternion nslerp(const Quaternion &q0, const Quaternion &q1, double t);

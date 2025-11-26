@@ -46,6 +46,9 @@ typedef unsigned int UINT;
 #define UINT64_MAX (0xffffffffffffffff)
 #define UINT64_MIN (0x0000000000000000)
 #define SIZE_MAX UINT32_MAX
+#define DOUBLE_MAX (1.79769E+306) // actually +308
+#define DOUBLE_MIN (-1.79769E+306) // actually +308
+#define DOUBLE_EPSILON (4.94065645841247E-306) // actually -324
 
 #ifndef NOT_DOS
 #define snprintf_x4(__a__,__b__,__c__,__d__) (sprintf(__a__,__c__,__d__) + (((char*)__a__)[(__b__)-1]=0))

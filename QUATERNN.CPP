@@ -155,6 +155,10 @@ Quaternion normalize(const Quaternion &q) {
   return b;
 }
 
+Quaternion inverse(const Quaternion &q) {
+  return q.inverse();
+}
+
 Quaternion rotationMatrixToQuaternion(const Matrix &m) {
   double trace;
   Quaternion q;

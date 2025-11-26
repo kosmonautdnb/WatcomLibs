@@ -14,7 +14,7 @@ unsigned int glLoadTexture(const char *name, int width, int height) {
   GLuint texture;
   glGenTextures(1,&texture);
   glBindTexture(GL_TEXTURE_2D,texture);
-  glTexturePointer(m.width, m.height, m.data);
+  glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,m.width,m.height,0,GL_RGBA,GL_UNSIGNED_BYTE,m.data);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
