@@ -72,6 +72,8 @@ __inline int mini(int a, int b) {return a<b?a:b;}
 __inline unsigned int minui(unsigned int a, unsigned int b) {return a<b?a:b;}
 __inline float minf(float a, float b) {return a<b?a:b;}
 __inline double mind(double a, double b) {return a<b?a:b;}
+__inline float lerpf(float a, float b, float c) {return (b-a)*c+a;}
+__inline double lerpd(double a, double b, double c) {return (b-a)*c+a;}
 
 
 #endif //__TYPES_HPP__

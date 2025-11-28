@@ -51,7 +51,8 @@ public:
   }
 
   void reserve(size_t numElements) {
-    reAlloc(numElements);
+    if (numElements>allocatedSize)
+      reAlloc(numElements);
   }
 
   void erase(size_t pos, size_t count) {

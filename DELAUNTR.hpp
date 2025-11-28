@@ -201,7 +201,7 @@ struct DelaunatorPoint {
 class Delaunator {
 
 public:
-    Array<double> const& coords;
+    Array<double> const *coords;
     Array<size_t> triangles;
     Array<size_t> halfedges;
     Array<size_t> hull_prev;
@@ -209,7 +209,9 @@ public:
     Array<size_t> hull_tri;
     size_t hull_start;
 
-    Delaunator(Array<double> const& in_coords);
+    //Delaunator(Array<double> const& in_coords); memory (?fragmentation?) problems with a new instance everytime, so not in constructor :mad:
+    Delaunator();
+    void delaunator(Array<double> const* in_coords);
 
     double get_hull_area();
 
@@ -240,20 +242,26 @@ int dSorter( const void *a, const void *b ) {
   return dCompare.compare(c,d);
 }
 
-Delaunator::Delaunator(Array<double> const& in_coords)
-    : coords(in_coords),
-      triangles(),
-      halfedges(),
-      hull_prev(),
-      hull_next(),
-      hull_tri(),
-      hull_start(),
-      m_hash(),
-      m_center_x(),
-      m_center_y(),
-      m_hash_size(),
-      m_edge_stack() {
-    size_t n = coords.size() >> 1;
+Delaunator::Delaunator() {
+}
+
+void Delaunator::delaunator(Array<double> const* in_coords) {
+
+    coords = in_coords;
+    triangles.clear();
+    halfedges.clear();
+    hull_prev.clear();
+    hull_next.clear();
+    hull_tri.clear();
+    hull_start=0;
+    m_hash.clear();
+    m_center_x=0;
+    m_center_y=0;
+    m_hash_size=0;
+    m_edge_stack.clear();
+
+
+    size_t n = coords->size() >> 1;
 
     double max_x = DOUBLE_MIN;
     double max_y = DOUBLE_MIN;
@@ -263,8 +271,8 @@ Delaunator::Delaunator(Array<double> const& in_coords)
     ids.reserve(n);
 
     {for (size_t i = 0; i < n; i++) {
-        const double x = coords[2 * i];
-        const double y = coords[2 * i + 1];
+        const double x = (*coords)[2 * i];
+        const double y = (*coords)[2 * i + 1];
 
         if (x < min_x) min_x = x;
         if (y < min_y) min_y = y;
@@ -283,30 +291,30 @@ Delaunator::Delaunator(Array<double> const& in_coords)
 
     // pick a seed point close to the centroid
     {for (size_t i = 0; i < n; i++) {
-        const double d = dist(cx, cy, coords[2 * i], coords[2 * i + 1]);
+        const double d = dist(cx, cy, (*coords)[2 * i], (*coords)[2 * i + 1]);
         if (d < min_dist) {
             i0 = i;
            min_dist = d;
         }
     }}
 
-    const double i0x = coords[2 * i0];
-    const double i0y = coords[2 * i0 + 1];
+    const double i0x = (*coords)[2 * i0];
+    const double i0y = (*coords)[2 * i0 + 1];
 
     min_dist = DOUBLE_MAX;
 
     // find the point closest to the seed
     {for (size_t i = 0; i < n; i++) {
         if (i == i0) continue;
-        const double d = dist(i0x, i0y, coords[2 * i], coords[2 * i + 1]);
+        const double d = dist(i0x, i0y, (*coords)[2 * i], (*coords)[2 * i + 1]);
         if (d < min_dist && d > 0.0) {
             i1 = i;
             min_dist = d;
         }
     }}
 
-    double i1x = coords[2 * i1];
-    double i1y = coords[2 * i1 + 1];
+    double i1x = (*coords)[2 * i1];
+    double i1y = (*coords)[2 * i1 + 1];
 
     double min_radius = DOUBLE_MAX;
 
@@ -315,7 +323,7 @@ Delaunator::Delaunator(Array<double> const& in_coords)
         if (i == i0 || i == i1) continue;
 
         const double r = circumradius(
-            i0x, i0y, i1x, i1y, coords[2 * i], coords[2 * i + 1]);
+            i0x, i0y, i1x, i1y, (*coords)[2 * i], (*coords)[2 * i + 1]);
 
         if (r < min_radius) {
             i2 = i;
@@ -328,8 +336,8 @@ Delaunator::Delaunator(Array<double> const& in_coords)
       return; // no Error check here :mad:
     }
 
-    double i2x = coords[2 * i2];
-    double i2y = coords[2 * i2 + 1];
+    double i2x = (*coords)[2 * i2];
+    double i2y = (*coords)[2 * i2 + 1];
 
     if (orient(i0x, i0y, i1x, i1y, i2x, i2y)) {
         swap2x(i1, i2);
@@ -342,7 +350,7 @@ Delaunator::Delaunator(Array<double> const& in_coords)
     m_center_y = kr.second;
 
     // sort the points by distance from the seed triangle circumcenter
-    dCompare.coords = &coords;
+    dCompare.coords = coords;
     dCompare.cx = m_center_x;
     dCompare.cy = m_center_y;
     qsort(&ids[0],ids.size(),sizeof(size_t),dSorter); // :mad:
@@ -384,8 +392,8 @@ Delaunator::Delaunator(Array<double> const& in_coords)
     double yp = QUIETDOUBLENAN;
     for (size_t k = 0; k < n; k++) {
         const size_t i = ids[k];
-        const double x = coords[2 * i];
-        const double y = coords[2 * i + 1];
+        const double x = (*coords)[2 * i];
+        const double y = (*coords)[2 * i + 1];
 
         // skip near-duplicate points
         if (k > 0 && check_pts_equal(x, y, xp, yp)) continue;
@@ -411,7 +419,7 @@ Delaunator::Delaunator(Array<double> const& in_coords)
         size_t e = start;
         size_t q;
 
-        while (q = hull_next[e], !orient(x, y, coords[2 * e], coords[2 * e + 1], coords[2 * q], coords[2 * q + 1])) { //TODO: does it works in a same way as in JS
+        while (q = hull_next[e], !orient(x, y, (*coords)[2 * e], (*coords)[2 * e + 1], (*coords)[2 * q], (*coords)[2 * q + 1])) { //TODO: does it works in a same way as in JS
             e = q;
             if (e == start) {
                 e = INVALID_INDEX;
@@ -438,7 +446,7 @@ Delaunator::Delaunator(Array<double> const& in_coords)
         size_t next = hull_next[e];
         while (
             q = hull_next[next],
-            orient(x, y, coords[2 * next], coords[2 * next + 1], coords[2 * q], coords[2 * q + 1])) {
+            orient(x, y, (*coords)[2 * next], (*coords)[2 * next + 1], (*coords)[2 * q], (*coords)[2 * q + 1])) {
             t = add_triangle(next, i, q, hull_tri[i], INVALID_INDEX, hull_tri[next]);
             hull_tri[i] = legalize(t + 2);
             hull_next[next] = next; // mark as removed
@@ -450,7 +458,7 @@ Delaunator::Delaunator(Array<double> const& in_coords)
         if (e == start) {
             while (
                 q = hull_prev[e],
-                orient(x, y, coords[2 * q], coords[2 * q + 1], coords[2 * e], coords[2 * e + 1])) {
+                orient(x, y, (*coords)[2 * q], (*coords)[2 * q + 1], (*coords)[2 * e], (*coords)[2 * e + 1])) {
                 t = add_triangle(q, i, e, INVALID_INDEX, hull_tri[e], hull_tri[q]);
                 legalize(t + 2);
                 hull_tri[q] = t;
@@ -468,7 +476,7 @@ Delaunator::Delaunator(Array<double> const& in_coords)
         hull_next[i] = next;
 
         m_hash[hash_key(x, y)] = i;
-        m_hash[hash_key(coords[2 * e], coords[2 * e + 1])] = e;
+        m_hash[hash_key((*coords)[2 * e], (*coords)[2 * e + 1])] = e;
     }
 
 }
@@ -477,7 +485,7 @@ double Delaunator::get_hull_area() {
     Array<double> hull_area;
     size_t e = hull_start;
     do {
-        hull_area.push_back((coords[2 * e] - coords[2 * hull_prev[e]]) * (coords[2 * e + 1] + coords[2 * hull_prev[e] + 1]));
+        hull_area.push_back(((*coords)[2 * e] - (*coords)[2 * hull_prev[e]]) * ((*coords)[2 * e + 1] + (*coords)[2 * hull_prev[e] + 1]));
         e = hull_next[e];
     } while (e != hull_start);
     return sum(hull_area);
@@ -531,14 +539,14 @@ size_t Delaunator::legalize(size_t a) {
         const size_t p1 = triangles[bl];
 
         const bool illegal = in_circle(
-            coords[2 * p0],
-            coords[2 * p0 + 1],
-            coords[2 * pr],
-            coords[2 * pr + 1],
-            coords[2 * pl],
-            coords[2 * pl + 1],
-            coords[2 * p1],
-            coords[2 * p1 + 1]);
+            (*coords)[2 * p0],
+            (*coords)[2 * p0 + 1],
+            (*coords)[2 * pr],
+            (*coords)[2 * pr + 1],
+            (*coords)[2 * pl],
+            (*coords)[2 * pl + 1],
+            (*coords)[2 * p1],
+            (*coords)[2 * p1 + 1]);
 
         if (illegal) {
             triangles[a] = p1;

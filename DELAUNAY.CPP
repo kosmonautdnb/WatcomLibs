@@ -13,6 +13,7 @@ Array<size_t> triangles;
 
 int main(int argc, const char **argv) {
   glVesa(640,480,32);
+  Delaunator delau;
   while(1) {
     if (glNextKey()!=0) break;
     double mdx, mdy;
@@ -22,7 +23,7 @@ int main(int argc, const char **argv) {
     if (a == 0 && la != 0) {
       points.push_back(mouseX);
       points.push_back(mouseY);
-      Delaunator delau(points);
+      delau.delaunator(&points);
       triangles = delau.triangles;
     }
     la = a;
