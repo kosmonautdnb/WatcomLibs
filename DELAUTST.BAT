@@ -1,4 +1,4 @@
-wcl386 /mf /xr delaunay.cpp
-del delaunay.obj
-delaunay.exe
-del delaunay.exe
+wcl386 /mf /xr delautst.cpp
+del delautst.obj
+delautst.exe
+del delautst.exe
