@@ -72,9 +72,8 @@ ImGui DOS Demo:
 - CGLTF - a gltf loader https://github.com/jkuhlmann/cgltf
 - CGLTFA - simple and fast coded GLTF scene object and skinning displayer
 - COLL.HPP - simple collisions (includes capsules, velocity stretched spheres).
-- DELAUNAY.CPP - 2D Delaunay triangulation test program. (Delaunator)
-- DELAUNAY.HPP - 2D Delaunay triangulation test program. (Delaunator)
 - DELAUNTR.HPP - 2D Delaunator derived from https://github.com/delfrrr/delaunator-cpp.git
+- DELAUTST.CPP - 2D Delaunay triangulation test program. (Delaunator)
 - DELAUTST.BAT - Builds 2D Delaunay triangulation test. (Delaunator)
 - DOS.HPP - easy access to DOS functionality, comes with long file name support
 - ENC_H264.HPP - an h264 encoder (with .cpp example). MINIH264. https://github.com/lieff/minih264 (ffmpeg -i your_file.h264 -vcodec copy output.mkv) or use minimp4.cpp
