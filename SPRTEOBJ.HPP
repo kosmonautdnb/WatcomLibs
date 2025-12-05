@@ -14,6 +14,6 @@ typedef struct SpriteObject {
 void createSpriteObjectFrameBuffer(SpriteObject *sp, int w, int h);
 void startSpriteObjectPainting(SpriteObject *sp, const class Vector *boundingMin, const class Vector *boundingMax);
 void finishSpriteObjectPainting();
-void blitSpriteObjectSprite(const SpriteObject *sp, const class Vector *pos);
+void blitSpriteObjectSprite(const SpriteObject *sp, const class Vector *pos, double scale, unsigned int color);
 
 #endif //__SPRTEOBJ_HPP__

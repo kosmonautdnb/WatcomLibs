@@ -30,8 +30,12 @@ void createSpriteObjectFrameBuffer(SpriteObject *sp, int w, int h) {
   glBindFramebuffer(GL_FRAMEBUFFER,0);
 }
 
-void startSpriteObjectPainting(SpriteObject *sp, const Vector *boundingMin, const Vector *boundingMax) {
+static int spViewport[4];
+static int spScissor[4];
 
+void startSpriteObjectPainting(SpriteObject *sp, const Vector *boundingMin, const Vector *boundingMax) {
+  glGetIntegerv(GL_VIEWPORT,spViewport);
+  glGetIntegerv(GL_SCISSOR_BOX,spScissor);
   glBindFramebuffer(GL_FRAMEBUFFER, sp->frameBuffer);
   glScissor(0,0,sp->width,sp->height);
   glViewport(0,0,sp->width,sp->height);
@@ -105,9 +109,12 @@ void finishSpriteObjectPainting() {
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
   glBindFramebuffer(GL_FRAMEBUFFER,0);
+  glViewport(spViewport[0],spViewport[1],spViewport[2],spViewport[3]);
+  glScissor(spScissor[0],spScissor[1],spScissor[2],spScissor[3]);
+
 }
 
-void blitSpriteObjectSprite(const SpriteObject *sp, const Vector *pos) {
+void blitSpriteObjectSprite(const SpriteObject *sp, const class Vector *pos, double scale, unsigned int color) {
   Matrix k;
   glGetDoublev(GL_MODELVIEW_MATRIX, k.m);
   k = k.matrix3x3();
@@ -115,8 +122,8 @@ void blitSpriteObjectSprite(const SpriteObject *sp, const Vector *pos) {
   glPushMatrix();
   glTranslatef(pos->x, pos->y, pos->z);
   glMultMatrixd(transpose(k).m);
-  const Vector mn = Vector(sp->minx,sp->miny);
-  const Vector mx = Vector(sp->maxx,sp->maxy);
+  const Vector mn = Vector(sp->minx,sp->miny)*scale;
+  const Vector mx = Vector(sp->maxx,sp->maxy)*scale;
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_ALPHA_TEST);
   glAlphaFunc(GL_GREATER,0.5);
@@ -124,7 +131,7 @@ void blitSpriteObjectSprite(const SpriteObject *sp, const Vector *pos) {
   glBindTexture(GL_TEXTURE_2D, sp->frameBufferColor);
   glVertex4f(0,0,0,1);
   glBegin(GL_QUADS);
-  glColor4f(1,1,1,1);
+  glColor4ubv((GLubyte*)&color);
   glTexCoord2f(1,0); glVertex3f(mx.x,mx.y,0);
   glTexCoord2f(0,0); glVertex3f(mn.x,mx.y,0);
   glTexCoord2f(0,1); glVertex3f(mn.x,mn.y,0);
