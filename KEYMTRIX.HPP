@@ -2,7 +2,7 @@
 #define __KEYMTRIX_HPP__
 
   // scan code pressed table
-extern bool keyPressed[0x80];
+extern volatile bool keyPressed[0x80];
 
   // checks if a scan code currently is pressed
 bool isKeyPressed(int scanCode);
