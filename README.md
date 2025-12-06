@@ -83,7 +83,7 @@ ImGui DOS Demo:
 - IMAGE.HPP - Image loading/saving/resizing PNG,JPG,BMP,TGA,GIF,PSD and others  
 - JSONREAD.HPP - a json reader https://github.com/rafagafe/tiny-json  
 - JSONWRT.HPP - a json writer https://github.com/rafagafe/tiny-json  
-- KEYMTRX.HPP - direct access to the keyboard matrix  
+- KEYMTRX.HPP - direct access to the keyboard matrix (for WatcomC and DJGPP) 
 - MARCHING.HPP - Marching Cubes and Marching Tetraeders.
 - MINIMP3.HPP - A mp3 decoder  https://github.com/lieff/minimp3  
 - MINIMP4.HPP - A mp4 muxer/demuxer (e.g. for h264 movies) https://github.com/lieff/minimp4
