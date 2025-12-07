@@ -108,7 +108,8 @@ ImGui DOS Demo:
 - TINYEXPR.HPP - a math expression solver (string input)  https://github.com/codeplea/tinyexpr  
 - TRUETYPE.HPP - true type font rendering (also in OpenGL). Wrapped in Truetype.hpp  
 - TSPLINE.HPP - a advanced spline evaluation/rendering library https://github.com/msteinbeck/tinyspline
-- UFBX.HPP - an .fbx loader, however too big for WatcomC to diggest/compile https://github.com/ufbx/ufbx   
+- UFBX.HPP - an .fbx loader, however too big for WatcomC to diggest/compile https://github.com/ufbx/ufbx
+- VALVETXT.HPP - can be used to transform a big black white bitmap into a tiny texture whilst maintaining the shapes and been rendering very fast (just alpha_test on).
 - XML.HPP a single header xml parser https://github.com/mrvladus/xml.h  
 
 ### WatcomC with 256 MB of memory instead of the 32 MB with Dos4gw
