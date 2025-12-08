@@ -54,6 +54,48 @@ delete img; // note that this will free all the image data, so any pointers you 
 
 */
 
+/*
+class PSD {
+public:
+  PSD() {;}
+  ~PSD() {Array<String> keys; keys = layers.keys(); for (int i = 0; i < keys.size(); i++) delete[] layers[keys[i]];}
+  int w,h;
+  HashMap<String, unsigned int*> layers;
+  static PSD *loadPSD(const char *name) {
+    PSDImage *img = new PSDImage();
+    if(!img->Load(name)) {
+      delete img; return NULL;
+    }
+    PSD *r = new PSD();
+    r->w = img->header.Columns;
+    r->h = img->header.Rows;
+    for(int i=0; i < img->NumLayers(); i++) {
+      int width, height, offset_x, offset_y;
+      DWORD* imagedata;
+      imagedata=img->GetLayerData(i, width, height, offset_x, offset_y);
+      if(imagedata!=NULL) {
+        if(img->LayerHidden(i)) {}
+        unsigned int *l = new unsigned int[r->w*r->h];
+        memset(l,0,r->w*r->h*sizeof(unsigned int));
+        String n = img->layers[i].name;
+        r->layers[toLower(n)] = l;
+        for (int y = 0; y < height; y++) {
+          int ry = y + offset_y;
+          if (ry<0||ry>r->h) continue;
+          for (int x = 0; x < width; x++) {
+            int rx = x + offset_x;
+            if (rx<0||rx>r->w) continue;
+            l[rx+ry*r->w] = imagedata[x+y*width];
+          }
+        }
+      }      
+    }
+    delete img;
+    return r;
+  }
+};
+*/
+
 class PSDImage
 {
 public:

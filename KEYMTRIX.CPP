@@ -19,14 +19,40 @@ bool isKeyPressed(int scanCode) {
   return keyPressed[scanCode & 0x7f];
 }
 
+static int key0xe0 = 0;
+static int key0xe0val = 0;
+static void keyboardHandler() {
+  unsigned char key = (unsigned char)inp(0x60);
+  if (key == 0xe0) {
+    key0xe0 = 2; // extended keyboard message tag
+  }
+  if (key0xe0 == 2 && key != 0xe0) {key0xe0 = 1; key0xe0val = key;} // not the extended message tag anymore but the message value
+  if (key0xe0 == 1 && key != key0xe0val) key0xe0 = 0x00; // not the extended value anymore
+  if (key0xe0 == 1) { // some extended messages belong to special keys here
+    switch(key & 0x7f) {
+    case SCANCODE_LEFT:
+    case SCANCODE_RIGHT:
+    case SCANCODE_UP:
+    case SCANCODE_DOWN:
+    case SCANCODE_WINDOWS:
+    case SCANCODE_ALT:
+    case SCANCODE_CTRL:
+      {key0xe0 = 0;} break; // clear extended message handling here
+    }
+  }
+  if (key0xe0 == 0) {
+    keyPressed[key & 0x7f] = key & 0x80 ? false : true;
+  }
+}
+
+
 #ifdef __WATCOMC__
 
 typedef void (__interrupt __far* KeyboardHandler)();
 static KeyboardHandler oldKeyboardHandler = NULL;
 
-static void (__interrupt __far keyboardHandler) (void) {
-  unsigned char key = inp(0x60);
-  keyPressed[key & 0x7f] = key & 0x80 ? false : true;
+static void (__interrupt __far newKeyboardHandler) (void) {
+  keyboardHandler();
   oldKeyboardHandler();
 }                                               
 
@@ -34,7 +60,7 @@ void installKeyboardHandler() {
   if (oldKeyboardHandler != NULL)
     uninstallKeyboardHandler();
   oldKeyboardHandler = _dos_getvect(0x09);
-  _dos_setvect(0x09,keyboardHandler);
+  _dos_setvect(0x09,newKeyboardHandler);
   atexit(uninstallKeyboardHandler);
 }
 
@@ -55,11 +81,6 @@ void uninstallKeyboardHandler() {
 static _go32_dpmi_seginfo old_keyboard_handler;
 static _go32_dpmi_seginfo new_keyboard_handler;
 static bool keyboard_handler_installed = false;
-
-static void keyboardHandler() {
-  unsigned char key = (unsigned char)inp(0x60);
-  keyPressed[key & 0x7f] = key & 0x80 ? false : true;
-}
 
 void uninstallKeyboardHandler() {
   if (keyboard_handler_installed) {
