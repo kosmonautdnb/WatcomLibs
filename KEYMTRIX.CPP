@@ -35,9 +35,9 @@ static void keyboardHandler() {
     case SCANCODE_UP:
     case SCANCODE_DOWN:
     case SCANCODE_WINDOWS:
-    case SCANCODE_ALT:
-    case SCANCODE_CTRL:
       {key0xe0 = 0;} break; // clear extended message handling here
+    case SCANCODE_LALT: {key = SCANCODE_RALT|(key&0X80); keyPressed[key & 0x7f] = key & 0x80 ? false : true;} break;
+    case SCANCODE_LCTRL: {key = SCANCODE_RCTRL|(key&0X80); keyPressed[key & 0x7f] = key & 0x80 ? false : true;} break;
     }
   }
   if (key0xe0 == 0) {

@@ -43,7 +43,7 @@ void uninstallKeyboardHandler();
 #define SCANCODE_ENTER 28
 #define SCANCODE_NUMENTER 28
 #define SCANCODE_PAUSE 29
-#define SCANCODE_CTRL 29
+#define SCANCODE_LCTRL 29
 #define SCANCODE_A 30
 #define SCANCODE_S 31
 #define SCANCODE_D 32
@@ -72,7 +72,7 @@ void uninstallKeyboardHandler();
 #define SCANCODE_RSHIFT 54
 #define SCANCODE_NUMMUL 55
 #define SCANCODE_PRINT 55
-#define SCANCODE_ALT 56
+#define SCANCODE_LALT 56
 #define SCANCODE_SPACE 57
 #define SCANCODE_SHIFTLOCK 58
 #define SCANCODE_F1 59
@@ -114,5 +114,7 @@ void uninstallKeyboardHandler();
 #define SCANCODE_F11 87
 #define SCANCODE_F12 88
 #define SCANCODE_WINDOWS 91
+#define SCANCODE_RALT 110 // :mad: non standard
+#define SCANCODE_RCTRL 111 // :mad: non standard
 
 #endif //__KEYMTRIX_HPP__
