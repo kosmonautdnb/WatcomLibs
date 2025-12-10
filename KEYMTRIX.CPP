@@ -19,32 +19,51 @@ bool isKeyPressed(int scanCode) {
   return keyPressed[scanCode & 0x7f];
 }
 
+#define NONSTANDARDKEY(__h__) {key = (__h__)|(key&0X80); keyPressed[key & 0x7f] = key & 0x80 ? false : true;} break;
 static int key0xe0 = 0;
 static int key0xe0val = 0;
+static bool keyWasPause = false;
 static void keyboardHandler() {
   unsigned char key = (unsigned char)inp(0x60);
-  if (key == 0xe0) {
-    key0xe0 = 2; // extended keyboard message tag
-  }
-  if (key0xe0 == 2 && key != 0xe0) {key0xe0 = 1; key0xe0val = key;} // not the extended message tag anymore but the message value
-  if (key0xe0 == 1 && key != key0xe0val) key0xe0 = 0x00; // not the extended value anymore
-  if (key0xe0 == 1) { // some extended messages belong to special keys here
+  if (keyWasPause) {keyWasPause = false; keyPressed[SCANCODE_PAUSE] = false;} // no better workaround currently :/
+  // e1 handling
+  if (key == 0xe1)  key0xe0 = 4;
+  if (key0xe0 == 4 && key != 0xe1) {key0xe0 = 3; key0xe0val = key;}
+  if (key0xe0 == 3 && key != key0xe0val) key0xe0 = 0x00;
+  if (key0xe0 == 3) {
     switch(key & 0x7f) {
-    case SCANCODE_LEFT:
-    case SCANCODE_RIGHT:
-    case SCANCODE_UP:
-    case SCANCODE_DOWN:
-    case SCANCODE_WINDOWS:
-      {key0xe0 = 0;} break; // clear extended message handling here
-    case SCANCODE_LALT: {key = SCANCODE_RALT|(key&0X80); keyPressed[key & 0x7f] = key & 0x80 ? false : true;} break;
-    case SCANCODE_LCTRL: {key = SCANCODE_RCTRL|(key&0X80); keyPressed[key & 0x7f] = key & 0x80 ? false : true;} break;
+    case 0x1d: NONSTANDARDKEY(SCANCODE_PAUSE)
+    }
+    if ((key & 0x7f) == SCANCODE_PAUSE) keyWasPause = true;
+  }
+  // e0 handling
+  if (key == 0xe0) key0xe0 = 2; 
+  if (key0xe0 == 2 && key != 0xe0) {key0xe0 = 1; key0xe0val = key;}
+  if (key0xe0 == 1 && key != key0xe0val) key0xe0 = 0x00;
+  if (key0xe0 == 1) {
+    switch(key & 0x7f) {
+    case 0x1c: NONSTANDARDKEY(SCANCODE_NUMENTER)
+    case 0x35: NONSTANDARDKEY(SCANCODE_NUMDIVIDE)
+    case 0x47: NONSTANDARDKEY(SCANCODE_START)
+    case 0x48: NONSTANDARDKEY(SCANCODE_UP)
+    case 0x49: NONSTANDARDKEY(SCANCODE_PAGEUP)
+    case 0x4b: NONSTANDARDKEY(SCANCODE_LEFT)
+    case 0x4d: NONSTANDARDKEY(SCANCODE_RIGHT)
+    case 0x4f: NONSTANDARDKEY(SCANCODE_END)
+    case 0x50: NONSTANDARDKEY(SCANCODE_DOWN)
+    case 0x51: NONSTANDARDKEY(SCANCODE_PAGEDOWN)
+    case 0x52: NONSTANDARDKEY(SCANCODE_INSERT)
+    case 0x53: NONSTANDARDKEY(SCANCODE_DELETE)
+    case 0x5b: NONSTANDARDKEY(SCANCODE_WINDOWS)
+    case SCANCODE_LALT: NONSTANDARDKEY(SCANCODE_RALT)
+    case SCANCODE_LCTRL: NONSTANDARDKEY(SCANCODE_RCTRL)
     }
   }
+  // normal handling
   if (key0xe0 == 0) {
     keyPressed[key & 0x7f] = key & 0x80 ? false : true;
   }
 }
-
 
 #ifdef __WATCOMC__
 
@@ -97,7 +116,7 @@ void installKeyboardHandler() {
   new_keyboard_handler.pm_offset = (unsigned long)keyboardHandler;
   new_keyboard_handler.pm_selector = _go32_my_cs();
   _go32_dpmi_chain_protected_mode_interrupt_vector(0x09,&new_keyboard_handler);
-  LOCK_FUNCTION(keyboardHandler,100);
+  LOCK_FUNCTION(keyboardHandler,2048);
   LOCK_VARIABLE(keyPressed);
 }
 
