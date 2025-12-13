@@ -117,6 +117,10 @@ void finishSpriteObjectPainting() {
 void blitSpriteObjectSprite(const SpriteObject *sp, const class Vector *pos, double scale, unsigned int color) {
   Matrix k;
   glGetDoublev(GL_MODELVIEW_MATRIX, k.m);
+
+  const float z2 = pos->x * k.m[0*4+2] + pos->y * k.m[1*4+2] + pos->z * k.m[2*4+2] + k.m[3*4+2];
+  if (z2 > 0) return; // may conflict with some GL_PROJECTION matrices
+
   k = k.matrix3x3();
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
