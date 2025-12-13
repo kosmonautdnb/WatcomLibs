@@ -299,6 +299,19 @@ void SMPL_File::genVertexColors(const Array<String> &vertexColorMaterials) {
   }
 }
 
+void SMPL_File::genFaceNormals() {
+  normals.resize(faces.size());
+  for (int32_t i = 0; i < faces.size(); i++) {
+    SMPL_Face &f = faces[i];
+    for (int32_t j = 0; j < f.c; j++)
+      f.n[j] = i;
+    const Vector &v0 = vertices[f.v[0]];
+    const Vector &v1 = vertices[f.v[1]];
+    const Vector &v2 = vertices[f.v[2]];
+    normals[i] = normalize(cross(v1-v0,v2-v0));
+  }
+}
+
 bool SMPL_File::makeFrontFacing(bool ccw) {
   const bool somethingChanged = false;
   if (normals.empty()) return false;

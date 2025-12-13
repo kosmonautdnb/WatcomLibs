@@ -95,6 +95,7 @@ public:
   Array<SMPL_Material*> materialsById;
   void loadTextures(TextureLoad_t functor);
   void genVertexColors(const Array<String> &vertexColorMaterials);
+  void genFaceNormals();
   bool makeFrontFacing(bool ccw);
 };
 
