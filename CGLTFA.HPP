@@ -189,10 +189,13 @@ extern int gltfaPaintedTriangles;
 extern bool gltfaForceNoSkinning;
 
 typedef bool (*HITTESTFUNCTION)(const Matrix &cubeMatrix, Vector &hitPoint, double &hitDistance, const GLTFA_Node &node);
+
+typedef unsigned int (*GLTFA_TextureCallback)(class RGBAImage *img);
+
 class GLTFA_File {
 public:
 
-  GLTFA_File() {displayWithoutTexture = false;currentAnimCycle = 2;}
+  GLTFA_File() {displayWithoutTexture = false;currentAnimCycle = 2;textureCallback=NULL;}
 
   HashMap<unsigned int, GLTFA_Material *> gltfMaterials;
   HashMap<unsigned int, GLTFA_Mesh *> gltfMeshes;
@@ -204,6 +207,7 @@ public:
   bool displayWithoutTexture;
   unsigned int defaultScene;
   unsigned int currentAnimCycle;
+  GLTFA_TextureCallback textureCallback;
 
   bool load(const char *fileName, const float textureScale); // load .glt or .glb file (glb also features embedded textures etc..)
   void free();

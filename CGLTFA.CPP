@@ -90,6 +90,7 @@ unsigned int GLTFA_File::loadTexture(cgltf_image *v, double texSizeMul) {
     image.free();
     image = image2;
   }
+  if (textureCallback != NULL) {unsigned int r = textureCallback(&image);image.free();return r;}
   glGenTextures(1, &r);
   glBindTexture(GL_TEXTURE_2D, r);
   glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,image.width,image.height,0,GL_RGBA,GL_UNSIGNED_BYTE,image.data);
