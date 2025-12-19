@@ -59,6 +59,7 @@ static bool loadMaterialLib(SMPL_File *f,const String &fileName) {
     if (*s=='n') {
       if (sscanf(s,"newmtl %s",buffer2)==1) {
         currentMaterial = buffer2;
+        f->materials[currentMaterial].diffuse = Vector(1,1,1,1);
       }
       continue;
     }

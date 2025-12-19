@@ -117,7 +117,7 @@ void glDrawTextTTF(int fontIndex, float xp, float yp, float zp, const float scal
   glGetIntegerv(GL_VIEWPORT,view);
   double sx1,sy1,sz1;  
   gluProjectx(xp,yp,zp,model,projection,view,&sx1,&sy1,&sz1);
-  //if (abs(sz1) >= 1.0) return; // i don't know what glu makes here, >1 seems to be the far plane? or the near plane?   
+  if (abs(sz1) >= 1.0) return; // i don't know what glu makes here, >1 seems to be the far plane? or the near plane?   
 
   glMatrixMode(GL_PROJECTION);
   glPushMatrix();
@@ -136,5 +136,21 @@ void glDrawTextTTF(int fontIndex, float xp, float yp, float zp, const float scal
   glMatrixMode(GL_PROJECTION);
   glPopMatrix();
   glMatrixMode(GL_MODELVIEW);
+}
+
+void glDrawText3DTTF(int fontIndex, float xp, float yp, float zp, const float scale, const char *text, uint32_t color, float anchorX, float anchorY) {
+  double model[16];
+  double projection[16];
+  glGetDoublev(GL_MODELVIEW_MATRIX,model);
+  glGetDoublev(GL_PROJECTION_MATRIX,projection);
+  const double x0 = xp * model[0*4+0] + yp * model[1*4+0] + zp * model[2*4+0] + model[3*4+0];
+  const double y0 = xp * model[0*4+1] + yp * model[1*4+1] + zp * model[2*4+1] + model[3*4+1];
+  const double z0 = xp * model[0*4+2] + yp * model[1*4+2] + zp * model[2*4+2] + model[3*4+2];
+  const double w0 = xp * model[0*4+3] + yp * model[1*4+3] + zp * model[2*4+3] + model[3*4+3];
+  //const double x1 = x0 * projection[0*4+0] + y0 * projection[1*4+0] + z0 * projection[2*4+0] + w0 * projection[3*4+0];
+  //const double y1 = x0 * projection[0*4+1] + y0 * projection[1*4+1] + z0 * projection[2*4+1] + w0 * projection[3*4+1];
+  const double z1 = x0 * projection[0*4+2] + y0 * projection[1*4+2] + z0 * projection[2*4+2] + w0 * projection[3*4+2];
+  //const double w1 = x0 * projection[0*4+3] + y0 * projection[1*4+3] + z0 * projection[2*4+3] + w0 * projection[3*4+3];
+  glDrawTextTTF(fontIndex, xp, yp, zp, scale * (fabs(z1)!=0?1.0/abs(z1):1), text, color, anchorX, anchorY);
 }
 

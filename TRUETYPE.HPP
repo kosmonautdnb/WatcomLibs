@@ -11,5 +11,6 @@ void stb_clearfont(int fontIndex);
 void stb_print(int fontIndex, float x, float y, const char *text, uint32_t color, float anchorX, float anchorY);
 
 void glDrawTextTTF(int fontIndex, float xp, float yp, float zp, const float scale, const char *text, uint32_t color, float anchorX, float anchorY);
+void glDrawText3DTTF(int fontIndex, float xp, float yp, float zp, const float scale, const char *text, uint32_t color, float anchorX, float anchorY);
 
 #endif //__TRUETYPE_HPP__
