@@ -15,5 +15,6 @@ void createSpriteObjectFrameBuffer(SpriteObject *sp, int w, int h);
 void startSpriteObjectPainting(SpriteObject *sp, const class Vector *boundingMin, const class Vector *boundingMax);
 void finishSpriteObjectPainting();
 void blitSpriteObjectSprite(const SpriteObject *sp, const class Vector *pos, double scale, unsigned int color);
+void blitSpriteObjectSpriteNoTexture(const SpriteObject *sp, const class Vector *pos, double scale, unsigned int colorMul, unsigned int colorAdd);
 
 #endif //__SPRTEOBJ_HPP__
