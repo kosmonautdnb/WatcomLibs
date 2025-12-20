@@ -10,7 +10,7 @@
 #include <string.h>
 
 #define SMPL_MAXV 4
-#define SMPL_MAXV_LOAD 24
+#define SMPL_MAXV_LOAD 50
 
 class SMPL_Face {
 public:

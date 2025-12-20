@@ -7,6 +7,9 @@
 static char buffer[SMPL_BUFFSIZE];
 static char buffer2[SMPL_BUFFSIZE];
 
+
+static int32_t helper[SMPL_MAXV_LOAD][4];
+
 void addTexture(SMPL_Texture &t, const String &params, const String &materialLibFileName) {
   t.used = true;
   String a = params;
@@ -188,7 +191,6 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
           int32_t value = 0;
           int32_t vertexId = 0;
           int32_t componentId = 0;
-          int32_t helper[SMPL_MAXV_LOAD][4];
           memset(helper,0,sizeof(helper));
           while(*s2==' '||*s2=='\t') s2++;
           while(*s2 != 0x00) {
