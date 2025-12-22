@@ -208,6 +208,7 @@ public:
   unsigned int defaultScene;
   unsigned int currentAnimCycle;
   GLTFA_TextureCallback textureCallback;
+  String gltfName;
 
   bool load(const char *fileName, const float textureScale); // load .glt or .glb file (glb also features embedded textures etc..)
   void free();

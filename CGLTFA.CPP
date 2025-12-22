@@ -46,6 +46,7 @@ bool GLTFA_File::load(const char *fileName, const float textureScale) { // load 
     }
   }
   if (result == cgltf_result_success) {
+    gltfName = fileName;
     defaultScene = (unsigned int)data->scene;
     initMaterials(data->materials,data->materials_count,textureScale);
     initMeshes(data->meshes,data->meshes_count);

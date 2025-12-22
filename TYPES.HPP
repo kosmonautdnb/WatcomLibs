@@ -74,6 +74,35 @@ __inline float minf(float a, float b) {return a<b?a:b;}
 __inline double mind(double a, double b) {return a<b?a:b;}
 __inline float lerpf(float a, float b, float c) {return (b-a)*c+a;}
 __inline double lerpd(double a, double b, double c) {return (b-a)*c+a;}
+__inline float halffloat(unsigned short f) { // not tested
+  int sign = (f>>15) & 1;
+  int exponent = (f>>10) & 0x1f;
+  int mantissa = f & 0x3ff;
+  unsigned int fsign = sign<<31;
+  unsigned int fexponent;
+  unsigned int fmantissa;
+  if (exponent==0) {
+    if(mantissa==0) {
+      fexponent = 0;
+      fmantissa = 0;
+    } else {
+      int msb=0;
+      for (int i = 0; i < 10; i++) if ((mantissa>>i)&1) msb = i;
+      fexponent = (127-14)-(9-msb);
+      fmantissa = (mantissa & ((1<<msb)-1))<<(23-msb);
+    }
+  } else {
+    if (exponent==31) {
+      fexponent=255<<23;
+      fmantissa=(mantissa==0)?0:(1<<22);
+    } else {
+      fexponent=(exponent-15+127)<<23;
+      fmantissa=mantissa<<(23-10);
+    }
+  }
+  unsigned int fbits = fsign|fexponent|fmantissa;
+  return *((float*)&fbits);
+}
 
 
 #endif //__TYPES_HPP__

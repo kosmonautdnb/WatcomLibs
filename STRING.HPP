@@ -372,6 +372,10 @@ public:
   bool startsWith(const String &v) {
     return find(v) == 0;
   }
+
+  bool endsWith(const String &v) {
+    return findLast(v) == length()-v.length();
+  }
  
   int32_t findLast(int32_t pos, const String &v) const {
     int32_t l1 = pos;
