@@ -195,7 +195,7 @@ typedef unsigned int (*GLTFA_TextureCallback)(class RGBAImage *img);
 class GLTFA_File {
 public:
 
-  GLTFA_File() {displayWithoutTexture = false;currentAnimCycle = 2;textureCallback=NULL;}
+  GLTFA_File() {displayWithoutTexture = false;currentAnimCycle = 2;textureCallback=NULL; gltfId = 0;}
 
   HashMap<unsigned int, GLTFA_Material *> gltfMaterials;
   HashMap<unsigned int, GLTFA_Mesh *> gltfMeshes;
@@ -209,6 +209,7 @@ public:
   unsigned int currentAnimCycle;
   GLTFA_TextureCallback textureCallback;
   String gltfName;
+  unsigned int gltfId;
 
   bool load(const char *fileName, const float textureScale); // load .glt or .glb file (glb also features embedded textures etc..)
   void free();
