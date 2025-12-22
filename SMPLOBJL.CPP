@@ -315,6 +315,32 @@ void SMPL_File::genFaceNormals() {
   }
 }
 
+void SMPL_File::genVertexNormals() {
+  Array<Vector> faceNormals;
+  faceNormals.resize(faces.size());
+  for (int32_t i = 0; i < faces.size(); i++) {
+    SMPL_Face &f = faces[i];
+    for (int32_t j = 0; j < f.c; j++)
+      f.n[j] = i;
+    const Vector &v0 = vertices[f.v[0]];
+    const Vector &v1 = vertices[f.v[1]];
+    const Vector &v2 = vertices[f.v[2]];
+    faceNormals[i] = normalize(cross(v1-v0,v2-v0));
+  }
+  normals.clear();
+  normals.resize(vertices.size());
+  {for (int32_t i = 0; i < faces.size(); i++) {
+    SMPL_Face &f = faces[i];
+    for (int32_t j = 0; j < f.c; j++) {
+      f.n[j] =f.v[j];
+      normals[f.n[j]] += faceNormals[i];
+    }
+  }}
+  {for (int32_t i = 0; i < normals.size(); i++) {
+    normals[i] = normalize(normals[i]);
+  }}
+}
+
 bool SMPL_File::makeFrontFacing(bool ccw) {
   const bool somethingChanged = false;
   if (normals.empty()) return false;

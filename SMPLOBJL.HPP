@@ -96,6 +96,7 @@ public:
   void loadTextures(TextureLoad_t functor);
   void genVertexColors(const Array<String> &vertexColorMaterials);
   void genFaceNormals();
+  void genVertexNormals();
   bool makeFrontFacing(bool ccw);
 };
 
