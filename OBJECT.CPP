@@ -1,14 +1,14 @@
 #include "object.hpp"
 #include "string.hpp"
 
-uint32_t getHash(const Object &v) {
+uint32_t2 getHash(const Object &v) {
   return v.hash();
 }
 
-uint32_t getHash(const char *v) {
-  int32_t hash = 0;
+uint32_t2 getHash(const char *v) {
+  int32_t2 hash = 0;
   const char *s=v;
-  int32_t i = 0;
+  int32_t2 i = 0;
   while (*s != 0x00) {
     hash += *s*((i%547)+1);
     s++;
@@ -18,47 +18,47 @@ uint32_t getHash(const char *v) {
   return hash;
 }
 
-uint32_t getHash(const void *v) {
-  return (int32_t)((intptr_t)v);
+uint32_t2 getHash(const void *v) {
+  return (int32_t2)((intptr_t)v);
 }
 
-uint32_t getHash(const uint8_t &v) {
+uint32_t2 getHash(const uint8_t &v) {
   return v;
 }
 
-uint32_t getHash(const int8_t &v) {
+uint32_t2 getHash(const int8_t &v) {
   return v;
 }
 
-uint32_t getHash(const uint16_t &v) {
+uint32_t2 getHash(const uint16_t &v) {
   return v;
 }
 
-uint32_t getHash(const int16_t &v) {
+uint32_t2 getHash(const int16_t &v) {
   return v;
 }
 
-uint32_t getHash(const uint32_t &v) {
+uint32_t2 getHash(const uint32_t2 &v) {
   return v;
 }
 
-uint32_t getHash(const int32_t &v) {
+uint32_t2 getHash(const int32_t2 &v) {
   return v;
 }
 
-uint32_t getHash(const uint64_t &v) {
+uint32_t2 getHash(const uint64_t &v) {
   return (v & 0xffffffff)^(v>>32);
 }
 
-uint32_t getHash(const int64_t &v) {
+uint32_t2 getHash(const int64_t &v) {
   return (v & 0xffffffff)^(v>>32);
 }
 
-uint32_t getHash(const float &v) {
+uint32_t2 getHash(const float &v) {
   return *((int*)&v);
 }
 
-uint32_t getHash(const double &v) {
+uint32_t2 getHash(const double &v) {
   return (*((int*)&v))^*(((int*)&v)+1);
 }
 
@@ -94,11 +94,11 @@ bool equals(const int16_t &a,const int16_t &b) {
   return a == b;
 }
 
-bool equals(const uint32_t &a,const uint32_t &b) {
+bool equals(const uint32_t2 &a,const uint32_t2 &b) {
   return a == b;
 }
 
-bool equals(const int32_t &a,const int32_t &b) {
+bool equals(const int32_t2 &a,const int32_t2 &b) {
   return a == b;
 }
 
@@ -146,11 +146,11 @@ String toString(const int16_t &v) {
   return String::fromInt(v);
 }
 
-String toString(const uint32_t &v) {
+String toString(const uint32_t2 &v) {
   return String::fromInt(v);
 }
 
-String toString(const int32_t &v) {
+String toString(const int32_t2 &v) {
   return String::fromInt(v);
 }
 
@@ -169,3 +169,29 @@ String toString(const float &v) {
 String toString(const double &v) {
   return String::fromFloat((float)v);
 }
+
+#ifdef __DJGPP__
+uint32_t2 getHash(const uint32_t &v) {
+  return v;
+}
+
+uint32_t2 getHash(const int32_t &v) {
+  return v;
+}
+
+bool equals(const uint32_t &a,const uint32_t &b) {
+  return a == b;
+}
+
+bool equals(const int32_t &a,const int32_t &b) {
+  return a == b;
+}
+
+String toString(const uint32_t &v) {
+  return String::fromInt(v);
+}
+
+String toString(const int32_t &v) {
+  return String::fromInt(v);
+}
+#endif // __DJGPP__

@@ -9,11 +9,11 @@
 
 class RGBAImage {
 public:
-  int32_t width;
-  int32_t height;
-  uint32_t *data;
+  int width;
+  int height;
+  unsigned int *data;
 
-  RGBAImage(int width = -1, int height = -1, uint32_t *data = 0) {
+  RGBAImage(int width = -1, int height = -1, unsigned int *data = 0) {
     this->width = width;
     this->height = height;
     this->data = data;

@@ -16,7 +16,7 @@
 
 #define ABYTE unsigned char
 #define AWORD unsigned short
-#define ADWORD unsigned long
+#define ADWORD unsigned int
 
 /*
 

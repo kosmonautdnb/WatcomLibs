@@ -29,6 +29,9 @@ typedef unsigned int DWORD;
 typedef unsigned int UINT;
 #endif
 
+#define int32_t2 signed int // DJGPP has different datatypes for int32_t and intc
+#define uint32_t2 unsigned int // DJGPP has different datatypes for uint32_t and unsigned int
+
 #define INT8_MAX (0x7f)
 #define INT8_MIN (-0x80)
 #define INT16_MAX (0x7fff)

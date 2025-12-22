@@ -32,6 +32,9 @@ String getCWD() {
   currentWorkingDirectory.resize(strlen(currentWorkingDirectory.c_str()));
   return unixFileName(currentWorkingDirectory+"/");
 #endif
+#ifdef __DJGPP__
+  return ".";
+#endif
 #ifdef ON_WINDOWS
  return unixFileName(String((std::filesystem::current_path().string().c_str())))+"/";
 #endif
@@ -164,6 +167,9 @@ Array<File> dosGetFiles(const String &filePath) {
   }
   return ret;
 #endif
+#ifdef __DJGPP__
+  return Array<File>();
+#endif
 #ifdef ON_WINDOWS
   Array<File> ret;
   std::string path = filePath.c_str();
@@ -203,6 +209,10 @@ FileTime dosGetFileTime(const String &filePath) {
   r = toFileTime(date,time);
   return r;
 #endif
+#ifdef __DJGPP__
+  FileTime r;
+  return r;
+#endif
 #ifdef ON_WINDOWS
   FileTime r;
   struct stat filestat;
@@ -236,6 +246,9 @@ bool dosHasDrive(const char driveLetter) {
   r.h.bl = d & 255;
   int386(0x21,&r,&r);
   return (r.w.ax==0x00)||(r.w.ax==0x01);
+#endif
+#ifdef __DJGPP__
+  return false;
 #endif
 #ifdef ON_WINDOWS
   std::vector<std::string> arrayOfDrives;
