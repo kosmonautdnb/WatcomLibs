@@ -1076,10 +1076,10 @@ static int jsmn_parse(jsmn_parser *parser, const char *js, size_t len, jsmntok_t
 #ifndef CGLTF_CONSTS
 #define GlbHeaderSize 12
 #define GlbChunkHeaderSize 8
-static const uint32_t2 GlbVersion = 2;
-static const uint32_t2 GlbMagic = 0x46546C67;
-static const uint32_t2 GlbMagicJsonChunk = 0x4E4F534A;
-static const uint32_t2 GlbMagicBinChunk = 0x004E4942;
+static const uint32_t GlbVersion = 2;
+static const uint32_t GlbMagic = 0x46546C67;
+static const uint32_t GlbMagicJsonChunk = 0x4E4F534A;
+static const uint32_t GlbMagicBinChunk = 0x004E4942;
 #define CGLTF_CONSTS
 #endif
 
@@ -1223,7 +1223,7 @@ cgltf_result cgltf_parse(const cgltf_options* options, const void* data, cgltf_s
     fixed_options.memory.free_func = &cgltf_default_free;
   }
 
-  uint32_t2 tmp;
+  uint32_t tmp;
   // Magic
   memcpy(&tmp, data, 4);
   if (tmp != GlbMagic)
@@ -1254,7 +1254,7 @@ cgltf_result cgltf_parse(const cgltf_options* options, const void* data, cgltf_s
   const uint8_t* ptr = (const uint8_t*)data;
   // Version
   memcpy(&tmp, ptr + 4, 4);
-  uint32_t2 version = tmp;
+  uint32_t version = tmp;
   if (version != GlbVersion)
   {
     return version < GlbVersion ? cgltf_result_legacy_gltf : cgltf_result_unknown_format;
@@ -1275,7 +1275,7 @@ cgltf_result cgltf_parse(const cgltf_options* options, const void* data, cgltf_s
   }
 
   // JSON chunk: length
-  uint32_t2 json_length;
+  uint32_t json_length;
   memcpy(&json_length, json_chunk, 4);
   if (json_length > size - GlbHeaderSize - GlbChunkHeaderSize)
   {
@@ -1300,7 +1300,7 @@ cgltf_result cgltf_parse(const cgltf_options* options, const void* data, cgltf_s
     const uint8_t* bin_chunk = json_chunk + json_length;
 
     // Bin chunk: length
-    uint32_t2 bin_length;
+    uint32_t bin_length;
     memcpy(&bin_length, bin_chunk, 4);
     if (bin_length > size - GlbHeaderSize - GlbChunkHeaderSize - json_length - GlbChunkHeaderSize)
     {
@@ -2327,7 +2327,7 @@ static cgltf_ssize cgltf_component_read_integer(const void* in, cgltf_component_
     case cgltf_component_type_r_16u:
       return *((const uint16_t*) in);
     case cgltf_component_type_r_32u:
-      return *((const uint32_t2*) in);
+      return *((const uint32_t*) in);
     case cgltf_component_type_r_8:
       return *((const int8_t*) in);
     case cgltf_component_type_r_8u:
@@ -2344,7 +2344,7 @@ static cgltf_size cgltf_component_read_index(const void* in, cgltf_component_typ
     case cgltf_component_type_r_16u:
       return *((const uint16_t*) in);
     case cgltf_component_type_r_32u:
-      return *((const uint32_t2*) in);
+      return *((const uint32_t*) in);
     case cgltf_component_type_r_8u:
       return *((const uint8_t*) in);
     default:
@@ -2574,7 +2574,7 @@ static cgltf_uint cgltf_component_read_uint(const void* in, cgltf_component_type
       return *((const uint16_t*) in);
 
     case cgltf_component_type_r_32u:
-      return *((const uint32_t2*) in);
+      return *((const uint32_t*) in);
 
     default:
       return 0;
@@ -2787,7 +2787,7 @@ cgltf_size cgltf_accessor_unpack_indices(const cgltf_accessor* accessor, void* o
   case 4:
   {  for (cgltf_size index = 0; index < index_count; index++, element += accessor->stride)
     {
-      ((uint32_t2*)out)[index] = (uint32_t2)cgltf_component_read_index(element, accessor->component_type);
+      ((uint32_t*)out)[index] = (uint32_t)cgltf_component_read_index(element, accessor->component_type);
     } }
     break;
   default:
@@ -2834,7 +2834,7 @@ static cgltf_size cgltf_json_to_size(jsmntok_t const* tok, const uint8_t* json_c
   int size = (size_t)(tok->end - tok->start) < sizeof(tmp) ? (int)(tok->end - tok->start) : (int)(sizeof(tmp) - 1);
   strncpy(tmp, (const char*)json_chunk + tok->start, size);
   tmp[size] = 0;
-  int32_t2 res = CGLTF_ATOLL(tmp); // :mad: int64_t
+  int32_t res = CGLTF_ATOLL(tmp); // :mad: int64_t
   return res < 0 ? 0 : (cgltf_size)res;
 }
 

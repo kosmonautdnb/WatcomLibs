@@ -26,14 +26,14 @@ class HashMap {
 public:
   ElementLink<KEY,VALUE> *elements[HashMap_ELEMENTCOUNT];
   HashMap() {
-    for (int32_t2 i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       elements[i] = NULL;
     }
   }
 
   const HashMap<KEY,VALUE> &operator=(const HashMap<KEY,VALUE> &b) {
     clear();
-    for (int32_t2 i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = b.elements[i];
       while(t != NULL) {
         insert((const KEY)t->key, t->value);
@@ -44,7 +44,7 @@ public:
   }
 
   virtual ~HashMap() {
-    for (int32_t2 i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {
         ElementLink<KEY,VALUE> *d = t;
@@ -55,7 +55,7 @@ public:
   }
 
   void clear() {
-    for (int32_t2 i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {
         ElementLink<KEY,VALUE> *d = t;
@@ -67,7 +67,7 @@ public:
   }
 
   bool empty() const {
-    for (int32_t2 i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       if (elements[i] != NULL) 
         return false;
     }
@@ -75,7 +75,7 @@ public:
   }
 
   const VALUE at(const KEY& key) const {
-    uint32_t2 hash = getHash(key) % HashMap_ELEMENTCOUNT;
+    uint32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
     while(t != NULL)  {
       if (equals((const KEY)t->key,key)) {
@@ -91,7 +91,7 @@ public:
   }
 
   VALUE &at(const KEY& key) {
-    uint32_t2 hash = getHash(key) % HashMap_ELEMENTCOUNT;
+    uint32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
     ElementLink<KEY,VALUE> *f = NULL;
     while(t != NULL)  {
@@ -135,7 +135,7 @@ public:
   }
 
   bool has(const KEY& key) const {
-    uint32_t2 hash = getHash(key) % HashMap_ELEMENTCOUNT;
+    uint32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
     while(t != NULL)  {
       if (equals((const KEY)t->key,key)) {
@@ -147,7 +147,7 @@ public:
   }
 
   bool erase(const KEY& key) {
-    uint32_t2 hash = getHash(key) % HashMap_ELEMENTCOUNT;
+    uint32_t hash = getHash(key) % HashMap_ELEMENTCOUNT;
     ElementLink<KEY,VALUE> *t = elements[hash];
     while(t != NULL)  {
       if (equals((const KEY)t->key, key)) {
@@ -165,7 +165,7 @@ public:
     Array<KEY> r;
     KEY lastKey = KEY();
     bool first = true;
-    for (int32_t2 i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {
         if ((!equals((const KEY)t->key,lastKey)) || first) {
@@ -181,7 +181,7 @@ public:
 
   Array<VALUE> values() const {
     Array<VALUE> r;
-    for (int32_t2 i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {
         r.push_back(t->value);
@@ -193,7 +193,7 @@ public:
 
   Array<KeyValue<KEY,VALUE> > entries() const {
     Array<KeyValue<KEY,VALUE> > r;
-    for (int32_t2 i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {
         r.push_back(KeyValue<KEY,VALUE>(t->key,t->value));
@@ -205,7 +205,7 @@ public:
 
   size_t size() const {
     size_t r = 0;
-    for (int32_t2 i = 0; i < HashMap_ELEMENTCOUNT; i++) {
+    for (int32_t i = 0; i < HashMap_ELEMENTCOUNT; i++) {
       ElementLink<KEY,VALUE> *t = elements[i];
       while(t != NULL) {
         r++;
