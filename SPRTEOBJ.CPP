@@ -263,7 +263,7 @@ void blitSpriteObjectSpriteNoTexture(const SpriteObject *sp, const class Vector 
     unsigned int tx = tx0;
     for (int i = ix1-ix0; i>0; i--) {
       const unsigned int rgba = data2[tx>>SPRITESHIFT];
-      const int a = (((rgba>>24)&255)*sp_a)>>8;
+      const int a = (rgba>>24)&255;
       if (a > alphaRef) {
         if (zp0<=*destZ) {
           *destZ = zp0;
