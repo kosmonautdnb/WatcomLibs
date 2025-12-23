@@ -267,15 +267,9 @@ void blitSpriteObjectSpriteNoTexture(const SpriteObject *sp, const class Vector 
       if (a > alphaRef) {
         if (zp0<=*destZ) {
           *destZ = zp0;
-          int rh = *destP & 255;
-          int gh = (*destP>>8) & 255;
-          int bh = (*destP>>16) & 255;
-          const int rt = rgba & 255;
-          const int gt = (rgba>>8) & 255;
-          const int bt = (rgba>>16) & 255;
-          rh += (((((rt*sp_r)>>8) - rh)*a)>>8)+sp2_r;
-          gh += (((((gt*sp_g)>>8) - gh)*a)>>8)+sp2_g;
-          bh += (((((bt*sp_b)>>8) - bh)*a)>>8)+sp2_b;
+          int rh = (((rgba & 255) * sp_r)>>8) + sp2_r;
+          int gh = ((((rgba>>8) & 255) * sp_g)>>8) + sp2_g;
+          int bh = ((((rgba>>16) & 255) * sp_b)>>8) + sp2_b;
           if (rh > 255) rh = 255;
           if (gh > 255) gh = 255;
           if (bh > 255) bh = 255;
