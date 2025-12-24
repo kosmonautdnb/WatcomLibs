@@ -130,7 +130,7 @@ void blitSpriteObjectSprite(const SpriteObject *sp, const class Vector *pos, dou
   const Vector mx = Vector(sp->maxx,sp->maxy)*scale;
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_ALPHA_TEST);
-  glAlphaFunc(GL_GREATER,0.5);
+  glAlphaFunc(GL_GREATER,0.0);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, sp->frameBufferColor);
   glVertex4f(0,0,0,1);
@@ -155,11 +155,11 @@ static double spriteTexelCenterY = 0.0;
 
 // alphatest "is" gl_greater here
 void blitSpriteObjectSpriteNoTexture(const SpriteObject *sp, const class Vector *pos, double scale, unsigned int colorMul, unsigned int colorAdd) {
+
   Matrix modelMatrix;
   Matrix projectionMatrix;
   glGetDoublev(GL_MODELVIEW_MATRIX, modelMatrix.m);   
   glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix.m);   
-  double ref; glGetDoublev(GL_ALPHA_TEST_REF, &ref);
 
   const Vector mn = Vector(sp->minx,sp->miny)*scale;
   const Vector mx = Vector(sp->maxx,sp->maxy)*scale;
@@ -171,6 +171,11 @@ void blitSpriteObjectSpriteNoTexture(const SpriteObject *sp, const class Vector 
   if (p2.z < -p2.w || p2.z > p2.w || p2.w == 0) {
     return;
   }
+
+  glEnable(GL_ALPHA_TEST);
+  glAlphaFunc(GL_GREATER,0.0);
+  double ref; glGetDoublev(GL_ALPHA_TEST_REF, &ref);
+
   double zoomX; 
   double zoomY;
   glGetDoublev(GL_ZOOM_X,&zoomX);
@@ -251,7 +256,8 @@ void blitSpriteObjectSpriteNoTexture(const SpriteObject *sp, const class Vector 
   int sp2_g = (colorAdd >> 8) & 255;
   int sp2_b = (colorAdd >> 16) & 255;
   int sp2_a = (colorAdd >> 24) & 255;
-  int alphaRef = ref * 255; // assuming greater by default here
+  const unsigned int alphaRef = ((unsigned int)(ref*255.0)) * 0x01000000; // assuming greater by default here
+  const unsigned int alpha2 = colorMul & 0xff000000;
 
   unsigned int *destP0 = &glFrameBuffer[iy0 * glFrameBufferWidth+ix0];
   float *destZ0 = &glDepthBuffer[iy0 * glFrameBufferWidth+ix0];
@@ -263,8 +269,7 @@ void blitSpriteObjectSpriteNoTexture(const SpriteObject *sp, const class Vector 
     unsigned int tx = tx0;
     for (int i = ix1-ix0; i>0; i--) {
       const unsigned int rgba = data2[tx>>SPRITESHIFT];
-      const int a = (rgba>>24)&255;
-      if (a > alphaRef) {
+      if (rgba > alphaRef) {
         if (zp0<=*destZ) {
           *destZ = zp0;
           int rh = (((rgba & 255) * sp_r)>>8) + sp2_r;
@@ -273,7 +278,7 @@ void blitSpriteObjectSpriteNoTexture(const SpriteObject *sp, const class Vector 
           if (rh > 255) rh = 255;
           if (gh > 255) gh = 255;
           if (bh > 255) bh = 255;
-          *destP = rh|(gh<<8)|(bh<<16)|(colorMul&0xff000000);
+          *destP = rh|(gh<<8)|(bh<<16)|alpha2;
         }
       }
       tx += txadd;
@@ -284,4 +289,6 @@ void blitSpriteObjectSpriteNoTexture(const SpriteObject *sp, const class Vector 
     destZ0 += glFrameBufferWidth;
     ty += tyadd;
   }
+
+  glDisable(GL_ALPHA_TEST);
 }
