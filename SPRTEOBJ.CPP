@@ -256,7 +256,7 @@ void blitSpriteObjectSpriteNoTexture(const SpriteObject *sp, const class Vector 
   int sp2_g = (colorAdd >> 8) & 255;
   int sp2_b = (colorAdd >> 16) & 255;
   int sp2_a = (colorAdd >> 24) & 255;
-  const unsigned int alphaRef = ((unsigned int)(ref*255.0)) * 0x01000000; // assuming greater by default here
+  const unsigned int alphaRef = (((unsigned int)(ref*255.0)) * 0x01000000)+0x00ffffff; // assuming greater by default here
   const unsigned int alpha2 = colorMul & 0xff000000;
 
   unsigned int *destP0 = &glFrameBuffer[iy0 * glFrameBufferWidth+ix0];
