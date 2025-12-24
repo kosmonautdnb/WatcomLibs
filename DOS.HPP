@@ -10,7 +10,7 @@ String getCWD();
   // disable dos "control c" program break (awful with copy/paste)
 void disableControlBreak();
   // read real time clock(rtc) (with register nr)
-int rtcRead(int reg);
+int rtcRead(unsigned char reg);
 String currentTimeString();
 
 typedef long FileSize;
