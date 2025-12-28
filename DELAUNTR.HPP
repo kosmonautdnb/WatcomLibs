@@ -552,7 +552,7 @@ size_t Delaunator::legalize(size_t a) {
             triangles[a] = p1;
             triangles[b] = p0;
 
-            auto hbl = halfedges[bl];
+            size_t hbl = halfedges[bl];
 
             // edge swapped on the other side of the hull (rare); fix the halfedge reference
             if (hbl == INVALID_INDEX) {
