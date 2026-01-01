@@ -1,4 +1,4 @@
-#include "C:\_OPENGL_\GL.H"
+#include "GL.H"
 #include "textures.hpp"
 #include "image.hpp"
 
