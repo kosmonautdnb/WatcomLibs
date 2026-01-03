@@ -92,6 +92,7 @@ static bool isIMRECT(IMTRI *t0, IMTRI *t1) {
   int sameVertices = 0;
   int sameVerticet0[2];
   int sameVerticet1[2];
+  const bool hasTexture = !t0->noTexture;
   for (int i = 0; i < 3; i++) {
     const ImDrawVert *a = t0->v[i];
     for (int j = 0; j < 3; j++) {
@@ -99,9 +100,8 @@ static bool isIMRECT(IMTRI *t0, IMTRI *t1) {
       if (a->pos.x != b->pos.x) continue;
       if (a->pos.y != b->pos.y) continue;
       if (a->col != b->col) return false;
-      // currently there is a texture coordinate check missing for the min/max point(s) because the "handcrafted" rect routine only can have orthogonal textures
-      if (a->uv.x != b->uv.x) continue;
-      if (a->uv.y != b->uv.y) continue;
+      if (hasTexture && (a->uv.x != b->uv.x)) continue;
+      if (hasTexture && (a->uv.y != b->uv.y)) continue;
       if (sameVertices>=2) return false;
       sameVerticet0[sameVertices] = i;
       sameVerticet1[sameVertices] = j;
@@ -121,6 +121,27 @@ static bool isIMRECT(IMTRI *t0, IMTRI *t1) {
       if (foundt0) p0 = i;
       if (foundt1) p1 = i;
     }
+    if (hasTexture) {
+      double t0x[2],t0y[2];
+      double t1x[2],t1y[2];
+      t0x[0] = t0->v[(p0+1)%3]->uv.x-t0->v[p0]->uv.x;
+      t0x[1] = t0->v[(p0+2)%3]->uv.x-t0->v[p0]->uv.x;
+      t0y[0] = t0->v[(p0+1)%3]->uv.y-t0->v[p0]->uv.y;
+      t0y[1] = t0->v[(p0+2)%3]->uv.y-t0->v[p0]->uv.y;
+      t1x[0] = t1->v[(p1+1)%3]->uv.x-t1->v[p1]->uv.x;
+      t1x[1] = t1->v[(p1+2)%3]->uv.x-t1->v[p1]->uv.x;
+      t1y[0] = t1->v[(p1+1)%3]->uv.y-t1->v[p1]->uv.y;
+      t1y[1] = t1->v[(p1+2)%3]->uv.y-t1->v[p1]->uv.y;
+      int found = 0;
+      for (int i = 0; i < 2; i++) {
+        if (t0x[i] == 0 && t0y[i] != 0) found++;
+        if (t0x[i] != 0 && t0y[i] == 0) found++;
+        if (t1x[i] == 0 && t1y[i] != 0) found++;
+        if (t1x[i] != 0 && t1y[i] == 0) found++;
+      }
+      if (found != 4) return false;
+    }
+
     double minx,miny,maxx,maxy;
     minx = t0->v[p0]->pos.x; if (t1->v[p1]->pos.x < minx) minx = t1->v[p1]->pos.x;
     miny = t0->v[p0]->pos.y; if (t1->v[p1]->pos.y < miny) miny = t1->v[p1]->pos.y;
