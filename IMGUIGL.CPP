@@ -1,6 +1,8 @@
 #include "gl.h"
 #include "imguigl.hpp"
 
+#define FASTIMGUIGL 1 // define that for non polygonal drawing (rectangles)
+
 extern int glFrameBufferWidth;
 extern int glFrameBufferHeight;
 extern int glMouseW;
@@ -44,6 +46,221 @@ static void drawMouseArrow(int mouseX, int mouseY) {
     }
   }
 }
+
+typedef struct IMTRI {
+  ImDrawVert *v[3];
+  int flags;
+  bool noTexture;
+  bool isTransparentColor;
+  ImDrawVert *minv;
+  ImDrawVert *maxv;
+  ImVec4 ClipRect;
+  unsigned int texture;
+} IMTRI;
+
+static void drawIMTRI(const IMTRI *t) {
+  if (t->v[0] == NULL) return;
+  if (t->flags == 0) {
+    if (t->noTexture) {
+      glDisable(GL_TEXTURE_2D); 
+      glDisable(GL_ALPHA_TEST);
+      if (t->isTransparentColor) 
+        glEnable(GL_BLEND);
+      else
+        glDisable(GL_BLEND);
+    }
+    else {
+      glEnable(GL_TEXTURE_2D);
+      glEnable(GL_BLEND);
+      glEnable(GL_ALPHA_TEST);
+    }
+    for (int i = 0; i < 3; i++) {
+      ImDrawVert *a = t->v[i];
+      glColor4ubv((GLubyte*)&a->col);
+      glTexCoord2f(a->uv.x, a->uv.y);
+      glVertex2f(a->pos.x+0.75,a->pos.y+0.75);
+    }
+  }
+}
+
+#ifdef FASTIMGUIGL
+static bool isIMRECT(IMTRI *t0, IMTRI *t1) {
+  if (t0->v[0] == NULL || t1->v[0] == NULL) return false;
+  if (t0->flags != t1->flags) return false;
+  if (t0->noTexture != t1->noTexture) return false;
+  if (t0->isTransparentColor != t1->isTransparentColor) return false;
+  int sameVertices = 0;
+  int sameVerticet0[2];
+  int sameVerticet1[2];
+  for (int i = 0; i < 3; i++) {
+    const ImDrawVert *a = t0->v[i];
+    for (int j = 0; j < 3; j++) {
+      const ImDrawVert *b = t1->v[j];
+      if (a->pos.x != b->pos.x) continue;
+      if (a->pos.y != b->pos.y) continue;
+      if (a->col != b->col) return false;
+      // currently there is a texture coordinate check missing for the min/max point(s) because the "handcrafted" rect routine only can have orthogonal textures
+      if (a->uv.x != b->uv.x) continue;
+      if (a->uv.y != b->uv.y) continue;
+      if (sameVertices>=2) return false;
+      sameVerticet0[sameVertices] = i;
+      sameVerticet1[sameVertices] = j;
+      sameVertices++;
+    }
+  }
+  if (sameVertices == 2) {
+    int p0 = 0;
+    int p1 = 0;
+    for (int i = 1; i < 3; i++) {
+      bool foundt0 = true;
+      bool foundt1 = true;
+      for (int j = 0; j < sameVertices; j++) {
+        if (sameVerticet0[j] == i) foundt0 = false;
+        if (sameVerticet1[j] == i) foundt1 = false;
+      }
+      if (foundt0) p0 = i;
+      if (foundt1) p1 = i;
+    }
+    double minx,miny,maxx,maxy;
+    minx = t0->v[p0]->pos.x; if (t1->v[p1]->pos.x < minx) minx = t1->v[p1]->pos.x;
+    miny = t0->v[p0]->pos.y; if (t1->v[p1]->pos.y < miny) miny = t1->v[p1]->pos.y;
+    maxx = t0->v[p0]->pos.x; if (t1->v[p1]->pos.x > maxx) maxx = t1->v[p1]->pos.x;
+    maxy = t0->v[p0]->pos.y; if (t1->v[p1]->pos.y > maxy) maxy = t1->v[p1]->pos.y;
+    for (int k = 0; k < 3; k++) {
+      if ( (t0->v[k]->pos.x != minx) && (t0->v[k]->pos.x != maxx) ) return false;
+      if ( (t0->v[k]->pos.y != miny) && (t0->v[k]->pos.y != maxy) ) return false;
+      if ( (t1->v[k]->pos.x != minx) && (t1->v[k]->pos.x != maxx) ) return false;
+      if ( (t1->v[k]->pos.y != miny) && (t1->v[k]->pos.y != maxy) ) return false;
+    }
+    if (t0->v[p0]->pos.x == minx && t1->v[p1]->pos.x == maxx && t0->v[p0]->pos.y == maxy && t1->v[p1]->pos.y == miny) {
+      t0->minv = t0->v[p0]; t1->minv = t0->v[p0];
+      t0->maxv = t1->v[p1]; t1->maxv = t1->v[p1];
+      return true;
+    }
+    if (t0->v[p0]->pos.x == maxx && t1->v[p1]->pos.x == minx && t0->v[p0]->pos.y == miny && t1->v[p1]->pos.y == maxy) {
+      t0->minv = t1->v[p1]; t1->minv = t1->v[p1];
+      t0->maxv = t0->v[p0]; t1->maxv = t0->v[p0];
+      return true;
+    }
+  }
+  return false;
+}
+
+static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
+  if (t0->flags != 0) return;
+  const float R = ImGui::GetIO().DisplaySize.x;
+  const float B = ImGui::GetIO().DisplaySize.y;
+  const float minx = t0->minv->pos.x+0.75;
+  const float maxx = t0->maxv->pos.x+0.75;
+  const float miny = t0->maxv->pos.y+0.75;
+  const float maxy = t0->minv->pos.y+0.75;
+  if (maxy-miny<=0) return;
+  if (maxx-minx<=0) return;
+
+  const int textureWidth = glGetTextureWidth(t0->texture);
+  const int textureHeight = glGetTextureHeight(t0->texture);
+  unsigned int *texture = glGetTexturePointer(t0->texture);
+
+  const float tx0 = t0->minv->uv.x * textureWidth;
+  const float ty0 = t0->maxv->uv.y * textureHeight;
+  const float tx1 = t0->maxv->uv.x * textureWidth;
+  const float ty1 = t0->minv->uv.y * textureHeight;
+  const float txa = (tx1 - tx0)/(maxx-minx);
+  const float tya = (ty1 - ty0)/(maxy-miny);
+  float tx  = tx0;
+  float ty  = ty0;
+
+  int px = (int)minx;
+  int py = (int)miny;
+  int lx = (int)maxx - px;
+  int ly = (int)maxy - py;
+
+  int left = 0;
+  int top = 0;
+  int right = R;
+  int bottom = B;
+  if (t0->ClipRect.x > left) left = (int)t0->ClipRect.x;
+  if (t0->ClipRect.z < right) right = (int)t0->ClipRect.z;
+  if (t0->ClipRect.y > top) top = (int)t0->ClipRect.y;
+  if (t0->ClipRect.w < bottom) bottom = (int)t0->ClipRect.w;
+
+  if (px >= right) return;
+  if (py >= bottom) return;
+
+  if (px < left) {
+    lx -= left-px;
+    tx += (left-px) * txa;
+    px = left;
+  }
+
+  if (py < top) {
+    ly -= top-py;
+    ty += (top-py) * tya;
+    py = top;
+  }
+
+  if (px + lx > right) {
+    lx -= (px + lx) - right;
+  }
+
+  if (py + ly > bottom) {
+    ly -= (py + ly) - bottom;
+  }
+
+  if (lx <= 0) return;
+  if (ly <= 0) return;
+
+  const bool noTexture = (texture == NULL) || t0->noTexture;
+ 
+  unsigned int color = t0->v[0]->col;
+  for (int y = 0; y < ly; y++) {
+    unsigned int *write = &glFrameBuffer[(y+py)*glFrameBufferWidth + px];
+    if (noTexture && (!t0->isTransparentColor)) {
+      for (int x = 0; x < lx; x++) {
+        *write++ = color;
+      }
+    }
+    if (noTexture && (t0->isTransparentColor)) {
+      const int a = (color>>24) & 255;
+      for (int x = 0; x < lx; x++) {
+        const unsigned int rgba = *write;
+        const int r = ((((color & 255) - (rgba & 255))*a)>>8)+(rgba & 255);
+        const int g = (((((color>>8) & 255) - ((rgba>>8) & 255))*a)>>8)+((rgba>>8) & 255);
+        const int b = (((((color>>16) & 255) - ((rgba>>16) & 255))*a)>>8)+((rgba>>16) & 255);
+        *write++ = r|(g<<8)|(b<<16)|0xff000000;
+      }
+    }
+    if (!noTexture) {
+      int txp = (int)(tx*256.0);
+      int txpa = (int)(txa*256.0);
+      int typ = (int)(ty + tya * y);
+      if (typ < 0) typ = 0;
+      if (typ >= textureHeight) typ = textureHeight-1;
+      unsigned int *texp = texture + typ * textureWidth;
+      for (int x = 0; x < lx; x++) {
+        const unsigned int rgba = *write;
+        const unsigned int tex = texp[txp>>8];
+        const int rc = ((tex & 255)*(color & 255))>>8;
+        const int gc = (((tex>>8) & 255)*((color>>8) & 255))>>8;
+        const int bc = (((tex>>16) & 255)*((color>>16) & 255))>>8;
+        const int a = (((tex>>24) & 255)*((color>>24) & 255))>>8;
+        const int r = (((rc - (rgba & 255))*a)>>8)+(rgba & 255);
+        const int g = (((gc - ((rgba>>8) & 255))*a)>>8)+((rgba>>8) & 255);
+        const int b = (((bc - ((rgba>>16) & 255))*a)>>8)+((rgba>>16) & 255);
+        *write++ = r|(g<<8)|(b<<16)|0xff000000;
+        txp += txpa;
+      }
+    }
+  }
+}
+#else // FASTIMGUIGL
+static bool isIMRECT(IMTRI *t0, IMTRI *t1) {
+  return false;
+}
+static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
+  return;
+}
+#endif // FASTIMGUIGL
 
 static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
 { 
@@ -105,6 +322,9 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
 
       ImDrawVert *vtx_data = (ImDrawVert *)&cmd_list->VtxBuffer[0];
 
+      IMTRI lastTri;
+      lastTri.v[0] = NULL;
+
       for (const ImDrawCmd* pcmd = cmd_list->CmdBuffer.begin(); pcmd != cmd_list->CmdBuffer.end(); pcmd++)
       {
           if (pcmd->UserCallback)
@@ -132,29 +352,24 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
                     if (((a.col>>24)&255) > 0) flags &= 31 - 16;
                     if (((a.col>>24)&255) < 250) isTransparentColor = true;
                   }
-                  if (flags == 0) {
-                    if (noTexture) {
-                      glDisable(GL_TEXTURE_2D); 
-                      glDisable(GL_ALPHA_TEST);
-                      if (isTransparentColor) 
-                        glEnable(GL_BLEND);
-                      else
-                        glDisable(GL_BLEND);
-                    }
-                    else {
-                      glEnable(GL_TEXTURE_2D);
-                      glEnable(GL_BLEND);
-                      glEnable(GL_ALPHA_TEST);
-                    }
-        
-                    for (i = j; i < j + 3; i++) {
-                      ImDrawVert &a = vtx_data[idx_buffer[i]];
-                      glColor4ubv((GLubyte*)&a.col);
-                      glTexCoord2f(a.uv.x, a.uv.y);
-                      glVertex2f(a.pos.x+0.75,a.pos.y+0.75);
-                    }
+                  IMTRI t;
+                  t.flags = flags;
+                  t.noTexture = noTexture;
+                  t.isTransparentColor = isTransparentColor;
+                  t.v[0] = &vtx_data[idx_buffer[j+0]];
+                  t.v[1] = &vtx_data[idx_buffer[j+1]];
+                  t.v[2] = &vtx_data[idx_buffer[j+2]];
+                  if (isIMRECT(&t,&lastTri)) {
+                    t.ClipRect = pcmd->ClipRect; lastTri.ClipRect = pcmd->ClipRect;
+                    t.texture = (GLuint)pcmd->TextureId; lastTri.texture = (GLuint)pcmd->TextureId;
+                    drawIMRECT(&t,&lastTri);
+                    lastTri.v[0] = NULL;
+                  } else {
+                    drawIMTRI(&lastTri);
+                    lastTri = t;
                   }
                 }
+                drawIMTRI(&lastTri);
                 glEnd();
           }
           idx_buffer += pcmd->ElemCount;

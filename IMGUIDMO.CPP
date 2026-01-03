@@ -8,12 +8,14 @@
 
 int main(int argc, const char *argv[]) {
 
+  glWatcomPrecisionTimer(GL_TRUE);
+
   const bool pureVGA = false;
   if (pureVGA) {
     glVGA();
   } else {
-    if (!glVesa(XRES,YRES,32)) {
-      printf("No Vesa %dx%dx32 found.\n", XRES, YRES);
+    if (!glVesa(XRES,YRES,16)) {
+      printf("No Vesa %dx%dx16 found.\n", XRES, YRES);
       if (!glVGA())
       {
         printf("No VGA device found.\n");
