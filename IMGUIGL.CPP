@@ -212,7 +212,8 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
 
   const bool noTexture = (texture == NULL) || t0->noTexture;
  
-  unsigned int color = t0->v[0]->col;
+  const unsigned int color = t0->v[0]->col;
+  const int textureWidth2 = textureWidth<<8;
   for (int y = 0; y < ly; y++) {
     unsigned int *write = &glFrameBuffer[(y+py)*glFrameBufferWidth + px];
     if (noTexture && (!t0->isTransparentColor)) {
@@ -239,7 +240,7 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
       unsigned int *texp = texture + typ * textureWidth;
       for (int x = 0; x < lx; x++) {
         const unsigned int rgba = *write;
-        const unsigned int tex = texp[txp>>8];
+        const unsigned int tex = ((unsigned int)txp<textureWidth2)?texp[txp>>8]:0xffffffff;
         const int rc = ((tex & 255)*(color & 255))>>8;
         const int gc = (((tex>>8) & 255)*((color>>8) & 255))>>8;
         const int bc = (((tex>>16) & 255)*((color>>16) & 255))>>8;
