@@ -259,18 +259,31 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
       if (typ < 0) typ = 0;
       if (typ >= textureHeight) typ = textureHeight-1;
       unsigned int *texp = texture + typ * textureWidth;
-      for (int x = 0; x < lx; x++) {
-        const unsigned int rgba = *write;
-        const unsigned int tex = ((unsigned int)txp<textureWidth2)?texp[txp>>8]:0xffffffff;
-        const int rc = ((tex & 255)*(color & 255))>>8;
-        const int gc = (((tex>>8) & 255)*((color>>8) & 255))>>8;
-        const int bc = (((tex>>16) & 255)*((color>>16) & 255))>>8;
-        const int a = (((tex>>24) & 255)*((color>>24) & 255))>>8;
-        const int r = (((rc - (rgba & 255))*a)>>8)+(rgba & 255);
-        const int g = (((gc - ((rgba>>8) & 255))*a)>>8)+((rgba>>8) & 255);
-        const int b = (((bc - ((rgba>>16) & 255))*a)>>8)+((rgba>>16) & 255);
-        *write++ = r|(g<<8)|(b<<16)|0xff000000;
-        txp += txpa;
+      if (color == 0xffffffff) {
+        for (int x = 0; x < lx; x++) {
+          const unsigned int rgba = *write;
+          const unsigned int tex = ((unsigned int)txp<textureWidth2)?texp[txp>>8]:0xffffffff;
+          const int a = (tex>>24) & 255;
+          const int r = ((((tex & 255) - (rgba & 255))*a)>>8)+(rgba & 255);
+          const int g = (((((tex>>8) & 255) - ((rgba>>8) & 255))*a)>>8)+((rgba>>8) & 255);
+          const int b = (((((tex>>16) & 255) - ((rgba>>16) & 255))*a)>>8)+((rgba>>16) & 255);
+          *write++ = r|(g<<8)|(b<<16)|0xff000000;
+          txp += txpa;
+        }
+      } else {
+        for (int x = 0; x < lx; x++) {
+          const unsigned int rgba = *write;
+          const unsigned int tex = ((unsigned int)txp<textureWidth2)?texp[txp>>8]:0xffffffff;
+          const int rc = ((tex & 255)*(color & 255))>>8;
+          const int gc = (((tex>>8) & 255)*((color>>8) & 255))>>8;
+          const int bc = (((tex>>16) & 255)*((color>>16) & 255))>>8;
+          const int a = (((tex>>24) & 255)*((color>>24) & 255))>>8;
+          const int r = (((rc - (rgba & 255))*a)>>8)+(rgba & 255);
+          const int g = (((gc - ((rgba>>8) & 255))*a)>>8)+((rgba>>8) & 255);
+          const int b = (((bc - ((rgba>>16) & 255))*a)>>8)+((rgba>>16) & 255);
+          *write++ = r|(g<<8)|(b<<16)|0xff000000;
+          txp += txpa;
+        }
       }
     }
   }
@@ -497,6 +510,7 @@ void InitImGui(int w, int h)
   s.Colors[ImGuiCol_TitleBgActive] = ImVec4(0xff/255.f,0,0x80/255.f,1.f);
   s.Colors[ImGuiCol_CloseButton] = ImVec4(0xff/255.f*0.15f,0,0x40/255.f*0.0f,1.f);
   s.Colors[ImGuiCol_Button] = ImVec4(0xff/255.f*0.45f,0,0x40/255.f*0.2f,1.f);
+  s.Colors[ImGuiCol_Text] = ImVec4(1,1,1,1);
 }
 
 static void ImGuiKeyBoardInput() {
