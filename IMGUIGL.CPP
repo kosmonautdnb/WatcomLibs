@@ -1,17 +1,26 @@
 #include "gl.h"
 #include "imguigl.hpp"
 
+#ifdef __WATCOMC__
+#include <i86.h>
+#endif // __WATCOMC__
+#ifdef __DJGPP__
+#include <sys/exceptn.h>
+#endif // __DJGPP__
+
 #define FASTIMGUIGL 1 // define that for non polygonal drawing (rectangles)
 
 extern int glFrameBufferWidth;
 extern int glFrameBufferHeight;
-extern int glMouseW;
 
 double mouseX = 60, mouseY = 60;
 double mouseDeltaX = 0, mouseDeltaY = 0;
 double mouseSpeed = 1.0;
 int mouseButtons = 0;
 int currentKey = 0;
+GLboolean currentKeyAlt = GL_FALSE;
+GLboolean currentKeyCtrl = GL_FALSE;
+GLboolean currentKeyShift = GL_FALSE;
 char *clipBoardString = NULL;
 GLuint g_FontTexture;
 ImVec2 imGuiWhitePixel();
@@ -46,6 +55,25 @@ static void drawMouseArrow(int mouseX, int mouseY) {
     }
   }
 }
+
+#ifdef __WATCOMC__
+static void disableControlBreak() {
+  union REGS regs;
+  regs.h.ah = 0x33;
+  regs.h.al = 1;
+  regs.h.dl = 0;
+  int386(0x21, &regs, &regs);
+}
+#else // __WATCOMC__
+#ifdef __DJGPP__
+void disableControlBreak() {
+  __djgpp_set_ctrl_c(0);
+}
+#else // __DJGPP__
+void disableControlBreak() {
+}
+#endif // __DJGPP__
+#endif // __WATCOMC__
 
 typedef struct IMTRI {
   ImDrawVert *v[3];
@@ -471,6 +499,8 @@ void ImGui_CreateFontsTexture()
 
 void InitImGui(int w, int h)
 {
+  disableControlBreak();
+
   ImGuiIO& io = ImGui::GetIO();
   io.DisplaySize = ImVec2((float)w, (float)h); // sadly this +1 is needed it seems (font rendering)
   io.DeltaTime = 1.0f/60.0f;
@@ -523,6 +553,11 @@ static void ImGuiKeyBoardInput() {
     ImGui::GetIO().KeysDown[c]=true;
   } else  
     ImGui::GetIO().KeysDown[c]=true;
+
+  glSpecialKeys(&currentKeyShift,&currentKeyCtrl,&currentKeyAlt);
+  ImGui::GetIO().KeyShift = currentKeyShift;
+  ImGui::GetIO().KeyCtrl = currentKeyCtrl;
+  ImGui::GetIO().KeyAlt = currentKeyAlt;
 }
 
 void ImGuiNewFrame() {
