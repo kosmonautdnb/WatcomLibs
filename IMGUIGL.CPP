@@ -44,7 +44,7 @@ static void drawMouseArrow(int mouseX, int mouseY) {
   "00989000"
   "00099000"
   ;
-  mouseX -= glFrameBufferWidth*0.5f-glFrameBufferWidth*0.5f*glGetZoomX();
+  //mouseX -= glFrameBufferWidth*0.5f-glFrameBufferWidth*0.5f*glGetZoomX();
   bool first = true;
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
@@ -55,7 +55,7 @@ static void drawMouseArrow(int mouseX, int mouseY) {
           color = 0xff000000;
         if (c == '6')
           color = 0xffffffff;
-        glPixel(first,0,0,1,x+mouseX,y+mouseY,color);
+        glPixel(first,0.5+0.1,0.5+0.1,1,x+mouseX,y+mouseY,color);
         first = false;
       }
     }
@@ -118,11 +118,12 @@ static void drawIMTRI(const IMTRI *t) {
       glEnable(GL_ALPHA_TEST);
 //      glBindTexture(GL_TEXTURE_2D, t->texture);
     }
+    const float SUBPIXEL = -0.25f; // seems there is an offset currently ?somehow ImGui specific?
     for (int i = 0; i < 3; i++) {
       ImDrawVert *a = t->v[i];
       glColor4ubv((GLubyte*)&a->col);
       glTexCoord2f(a->uv.x, a->uv.y);
-      glVertex2f(a->pos.x+0.75,a->pos.y+0.75);
+      glVertex2f(a->pos.x+SUBPIXEL,a->pos.y+SUBPIXEL);
     }
   }
 }
@@ -216,7 +217,7 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
   if (t0->flags != 0) return;
   const float R = ImGui::GetIO().DisplaySize.x;
   const float B = ImGui::GetIO().DisplaySize.y;
-  const float SUBPIXEL = 1.f; // seems there is an offset currently ?somehow ImGui specific?
+  const float SUBPIXEL = 0.f; // seems there is an offset currently ?somehow ImGui specific?
   const float minx = t0->minv->pos.x+SUBPIXEL;
   const float maxx = t0->maxv->pos.x+SUBPIXEL;
   const float miny = t0->maxv->pos.y+SUBPIXEL;
