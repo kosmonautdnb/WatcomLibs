@@ -116,6 +116,7 @@ static void drawIMTRI(const IMTRI *t) {
       glEnable(GL_TEXTURE_2D);
       glEnable(GL_BLEND);
       glEnable(GL_ALPHA_TEST);
+//      glBindTexture(GL_TEXTURE_2D, t->texture);
     }
     for (int i = 0; i < 3; i++) {
       ImDrawVert *a = t->v[i];
@@ -136,6 +137,7 @@ static bool isIMRECT(IMTRI *t0, IMTRI *t1) {
   int sameVerticet0[2];
   int sameVerticet1[2];
   const bool hasTexture = !t0->noTexture;
+  //if (hasTexture && t0->texture != t1->texture) return false;
   for (int i = 0; i < 3; i++) {
     const ImDrawVert *a = t0->v[i];
     for (int j = 0; j < 3; j++) {
@@ -214,10 +216,11 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
   if (t0->flags != 0) return;
   const float R = ImGui::GetIO().DisplaySize.x;
   const float B = ImGui::GetIO().DisplaySize.y;
-  const float minx = t0->minv->pos.x+0.75;
-  const float maxx = t0->maxv->pos.x+0.75;
-  const float miny = t0->maxv->pos.y+0.75;
-  const float maxy = t0->minv->pos.y+0.75;
+  const float SUBPIXEL = 1.f; // seems there is an offset currently ?somehow ImGui specific?
+  const float minx = t0->minv->pos.x+SUBPIXEL;
+  const float maxx = t0->maxv->pos.x+SUBPIXEL;
+  const float miny = t0->maxv->pos.y+SUBPIXEL;
+  const float maxy = t0->minv->pos.y+SUBPIXEL;
   if (maxy-miny<=0) return;
   if (maxx-minx<=0) return;
 
@@ -243,10 +246,10 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
   int top = 0;
   int right = R;
   int bottom = B;
-  if (t0->ClipRect.x > left) left = (int)t0->ClipRect.x;
-  if (t0->ClipRect.z < right) right = (int)t0->ClipRect.z;
-  if (t0->ClipRect.y > top) top = (int)t0->ClipRect.y;
-  if (t0->ClipRect.w < bottom) bottom = (int)t0->ClipRect.w;
+  if (t0->ClipRect.x+SUBPIXEL > left) left = (int)t0->ClipRect.x+SUBPIXEL;
+  if (t0->ClipRect.z+SUBPIXEL < right) right = (int)t0->ClipRect.z+SUBPIXEL;
+  if (t0->ClipRect.y+SUBPIXEL > top) top = (int)t0->ClipRect.y+SUBPIXEL;
+  if (t0->ClipRect.w+SUBPIXEL < bottom) bottom = (int)t0->ClipRect.w+SUBPIXEL;
 
   if (px >= right) return;
   if (py >= bottom) return;
@@ -437,9 +440,9 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
                   t.v[0] = &vtx_data[idx_buffer[j+0]];
                   t.v[1] = &vtx_data[idx_buffer[j+1]];
                   t.v[2] = &vtx_data[idx_buffer[j+2]];
+                  t.texture = (GLuint)pcmd->TextureId;
                   if (isIMRECT(&t,&lastTri)) {
                     t.ClipRect = pcmd->ClipRect; lastTri.ClipRect = pcmd->ClipRect;
-                    t.texture = (GLuint)pcmd->TextureId; lastTri.texture = (GLuint)pcmd->TextureId;
                     drawIMRECT(&t,&lastTri);
                     lastTri.v[0] = NULL;
                   } else {
@@ -448,6 +451,7 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
                   }
                 }
                 drawIMTRI(&lastTri);
+                lastTri.v[0] = NULL;
                 glEnd();
           }
           idx_buffer += pcmd->ElemCount;
