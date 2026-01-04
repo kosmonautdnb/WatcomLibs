@@ -15,6 +15,7 @@
 
 #define FASTIMGUIGL // define that for non polygonal drawing (rectangles) (ImGui just supports GL_NEAREST sampling for (QUAD)textures if enabled)
 #define DISABLECTRLCBREAK // program doesn't close on ctrl c
+#define SHIFTCURSORFORMOUSEWHEEL // enables SHIFT+UP/SHIFT+DOWN as mouse scrollwheel "keys"
 
 extern int glFrameBufferWidth;
 extern int glFrameBufferHeight;
@@ -572,16 +573,25 @@ void InitImGui(int w, int h)
 
 static void ImGuiKeyBoardInput() {
   currentKey = glNextKey();
+  glSpecialKeys(&currentKeyShift,&currentKeyCtrl,&currentKeyAlt);
+
+#ifdef SHIFTCURSORFORMOUSEWHEEL
+  if (currentKeyShift) {
+    if (currentKey == GL_VK_UP) {currentKeyShift=false; ImGui::GetIO().MouseWheel = 1; currentKey = 0;}
+    if (currentKey == GL_VK_DOWN) {currentKeyShift=false; ImGui::GetIO().MouseWheel = -1; currentKey = 0;}
+  }
+#endif
+
   for (int i = 0; i < 512; i++)
     ImGui::GetIO().KeysDown[i]=false;
   int c = translate(currentKey);
+
   if (c<256) {
     ImGui::GetIO().AddInputCharacter(c);
     ImGui::GetIO().KeysDown[c]=true;
   } else  
     ImGui::GetIO().KeysDown[c]=true;
 
-  glSpecialKeys(&currentKeyShift,&currentKeyCtrl,&currentKeyAlt);
   ImGui::GetIO().KeyShift = currentKeyShift;
   ImGui::GetIO().KeyCtrl = currentKeyCtrl;
   ImGui::GetIO().KeyAlt = currentKeyAlt;
