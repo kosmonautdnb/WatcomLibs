@@ -101,6 +101,7 @@ typedef struct IMTRI {
   unsigned int texture;
 } IMTRI;
 
+#include <stdio.h>
 static void drawIMTRI(const IMTRI *t) {
   if (t->v[0] == NULL) return;
   if (t->flags == 0) {
@@ -118,7 +119,7 @@ static void drawIMTRI(const IMTRI *t) {
       glEnable(GL_ALPHA_TEST);
 //      glBindTexture(GL_TEXTURE_2D, t->texture);
     }
-    const float SUBPIXEL = -0.25f; // seems there is an offset currently ?somehow ImGui specific?
+    const float SUBPIXEL = -0.25f; // the vertices that arrive here from imgui seem to have many times a pixel center of (0.5,0.4), and sometimes also some different ones, -0.25 was just working well here. todo: maybe look into this again
     for (int i = 0; i < 3; i++) {
       ImDrawVert *a = t->v[i];
       glColor4ubv((GLubyte*)&a->col);
@@ -457,7 +458,6 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
           }
           idx_buffer += pcmd->ElemCount;
       }
-
   }
 
   glDisable(GL_BLEND);
