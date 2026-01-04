@@ -10,6 +10,7 @@
 // - In ultra rare cases polygons may have seams. (DJGPP no -Ofast,-ffast-math), maybe add 0.001 to the coordinates
 // - Better take public domain PModeW for 256MB of memory.
 // - On problems with Vesa on DOS, maybe UniVBE (or similar) may help. Not tested that, though.
+// - The fogging (and GL_SEPARATE_SPECULAR) stage is applied before blending.
 // --
 #ifndef __GL_H__
 #define __GL_H__
@@ -391,6 +392,7 @@ GLint gluProjectx(GLdouble objX, GLdouble objY, GLdouble objZ, GLdouble *model, 
 //GL_COLOR_MATERIAL 0x0B57 (0x57)
 //GL_TEXTURE_GEN_S 0x0c60 (0x60)
 //GL_TEXTURE_GEN_T 0x0c61 (0x61)
+//GL_POINT_SPRITE (0x8861+1) (0x62)
 //GL_FOG 0x0B64 (0x64)
 //GL_DEPTH_TEST 0x0B71 (0x71)
 //GL_STENCIL_TEST 0x0B90 (0x90)
@@ -476,15 +478,32 @@ GLint gluProjectx(GLdouble objX, GLdouble objY, GLdouble objZ, GLdouble *model, 
 #define GL_VK_INSERT (82*256)
 #define GL_VK_DELETE GL_VK_ENTF
 #define GL_VK_BACKSPACE 8
+#define GL_VK_A_CTRL 1
+#define GL_VK_B_CTRL 2
 #define GL_VK_C_CTRL 3
-#define GL_VK_P_CTRL 16
-#define GL_VK_V_CTRL 22
-#define GL_VK_S_CTRL 19
-#define GL_VK_L_CTRL 12
+#define GL_VK_D_CTRL 4
+#define GL_VK_E_CTRL 5
 #define GL_VK_F_CTRL 6
 #define GL_VK_G_CTRL 7
+#define GL_VK_H_CTRL 8 // same as GL_VK_BACKSPACE
+#define GL_VK_I_CTRL 9 // same as GL_VK_TAB
+#define GL_VK_J_CTRL 10
+#define GL_VK_K_CTRL 11
+#define GL_VK_L_CTRL 12
+#define GL_VK_M_CTRL 13 // same as GL_VK_ENTER
+#define GL_VK_N_CTRL 14
+#define GL_VK_O_CTRL 15
+#define GL_VK_P_CTRL 16
+#define GL_VK_Q_CTRL 17
+#define GL_VK_R_CTRL 18
+#define GL_VK_S_CTRL 19
+#define GL_VK_T_CTRL 20
 #define GL_VK_U_CTRL 21
+#define GL_VK_V_CTRL 22
+#define GL_VK_W_CTRL 23
 #define GL_VK_X_CTRL 24
+#define GL_VK_Y_CTRL 25
+#define GL_VK_Z_CTRL 26
 #define GL_VK_PLUS_CTRL 29
 #define GL_FRAMEBUFFER 0x8f64
 #define GL_FRAMEBUFFER_COMPLETE 0x8cd5
@@ -866,6 +885,10 @@ GLint gluProjectx(GLdouble objX, GLdouble objY, GLdouble objZ, GLdouble *model, 
 #define GL_COLOR_TABLE_ALPHA_SIZE_EXT 0x80DD
 #define GL_COLOR_TABLE_LUMINANCE_SIZE_EXT 0x80DE
 #define GL_COLOR_TABLE_INTENSITY_SIZE_EXT 0x80DF
+#define GL_POINT_SPRITE_COORD_ORIGIN 0x8CA0
+#define GL_LOWER_LEFT 0x8CA1
+#define GL_UPPER_LEFT 0x8CA2
+#define GL_POINT_SPRITE (0x8861+1)
 
 // ------------------------
 // ------------------------

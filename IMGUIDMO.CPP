@@ -29,7 +29,7 @@ int main(int argc, const char *argv[]) {
   bool quit = false;
   while(!quit) {
 
-    if (currentKey == GL_VK_ESCAPE) quit = true;
+    if (currentKey == GL_VK_END) quit = true;
 
     glClearColor(0.6,0.8,1.0,0);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -44,6 +44,7 @@ int main(int argc, const char *argv[]) {
     ImGui::Checkbox("Exit##Exit2",&quit);
     ImGui::SameLine();
     ImGui::Checkbox("Exit##Exit3",&quit);
+    ImGui::Text("<end> key to exit.");
     ImGui::Text("MouseX %d,MouseY %d",(int)mouseX,(int)mouseY);
     ImGui::Text("MouseDeltaX %d,MouseDeltaY %d",(int)mouseDeltaX,(int)mouseDeltaY);
     ImGui::Text("MouseButtons %d",mouseButtons);

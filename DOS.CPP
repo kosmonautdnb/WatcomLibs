@@ -11,6 +11,7 @@
 #ifdef __DJGPP__
 // todo: not implemented, yet
 #define NOT_DOS
+#include <sys/exceptn.h>
 #include <dos.h>
 #include <unistd.h>
 #endif // __DJGPP__
@@ -41,12 +42,15 @@ String getCWD() {
 }
 
 void disableControlBreak() {
-#ifndef NOT_DOS
+#ifdef __WATCOMC__
   union REGS regs;
   regs.h.ah = 0x33;
   regs.h.al = 1;
   regs.h.dl = 0;
   int386(0x21, &regs, &regs);
+#endif
+#ifdef __DJGPP__
+  __djgpp_set_ctrl_c(0);
 #endif
 }
 

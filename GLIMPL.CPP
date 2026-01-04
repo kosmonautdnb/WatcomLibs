@@ -10,6 +10,7 @@
 // - In ultra rare cases polygons may have seams. (DJGPP no -Ofast,-ffast-math), maybe add 0.001 to the coordinates
 // - Better take public domain PModeW for 256MB of memory.
 // - On problems with Vesa on DOS, maybe UniVBE (or similar) may help. Not tested that, though.
+// - The fogging (and GL_SEPARATE_SPECULAR) stage is applied before blending.
 // --
 #define WATCOMGLAPI
 #include "GL.H"
@@ -132,12 +133,18 @@ GLubyte *glStencilBuffer0 = NULL;
 #ifndef __GLDISABLEDOSFUNCTIONS__ 
 #ifdef __WATCOMC__
 
+#pragma aux glCLI="cli" modify[]
+#pragma aux glSTI="sti" modify[]
+
 GLubyte glCmosRead(GLubyte reg, GLboolean maskNMI) {
+  glCLI();
   outp(0x70, reg | (maskNMI?0x80:00));
-  return (GLubyte)inp(0x71);
+  GLubyte r = (GLubyte)inp(0x71);
+  glSTI();
+  return r;
 }
 
-volatile GLubyte glCmosUpdateInProgress() {
+GLubyte glCmosUpdateInProgress() {
   return (GLubyte)(glCmosRead(0x0a, GL_TRUE) & 0x80);
 }
 
@@ -1658,6 +1665,10 @@ GLvoid glActiveTexture(GLenum texture) {
   glContext.matrixForMode[2] = glContext.textureMatrix[glContext.activeTexture];
 }              
 
+GLvoid glAdditionalPointSpriteXStretch(GLfloat widthStretch) {
+  additionalPointSpriteXStretch = widthStretch;
+}
+
 GLvoid glAlphaFunc(GLenum func, GLclampf ref) {
   glContext.alphaFunc = func;
   glContext.alphaFuncRef = ref;
@@ -2225,7 +2236,7 @@ GLvoid glEnableClientState(GLenum array) {
 }
 
 GLvoid glEnd() {
-  glContext.beginMode = 0;
+  glContext.beginMode = GL_INVALID_ENUM;
 }
 
 GLvoid glFinish() {
@@ -5173,6 +5184,17 @@ GLvoid glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVer
     }
   }
 
+  bool nullAlphaIsTransparent = false;
+  if (alphaTest) {
+    switch(alphaFunction) {
+    case GL_NEVER: {nullAlphaIsTransparent = GL_TRUE;} break;
+    case GL_EQUAL: {nullAlphaIsTransparent = (alphaRef != 0) ? GL_TRUE : GL_FALSE;} break;
+    case GL_GREATER: {nullAlphaIsTransparent = (alphaRef >= 0) ? GL_TRUE : GL_FALSE;} break;
+    case GL_GEQUAL: {nullAlphaIsTransparent = (alphaRef > 0) ? GL_TRUE : GL_FALSE;} break;
+    case GL_NOTEQUAL: {nullAlphaIsTransparent = (alphaRef == 0) ? GL_TRUE : GL_FALSE;} break;
+    }
+  }
+
   iw = 1.0/v0w; // for constantW
   const GLboolean constantW = (v0w == v1w) && (v1w == v2w);
   const GLboolean wValue = ((textured || interpolateColor || interpolateSpecular || fogging) && (!constantW)) ? GL_TRUE : GL_FALSE;
@@ -5180,7 +5202,7 @@ GLvoid glDrawTrianglePrecise(_GLContext *context,glVertex *v0,glVertex *v1,glVer
   const GLboolean preMultipliedAlpha = (blendFuncS == GL_ONE && blendFuncD == GL_ONE_MINUS_SRC_ALPHA && blendEquation == GL_FUNC_ADD) ? GL_TRUE : GL_FALSE;
   const GLboolean normalAlphaBlendingOrPreMultipliedAlpha = (normalAlphaBlending || preMultipliedAlpha) ? GL_TRUE : GL_FALSE;
   const GLboolean useExplicitAlpha = (context->useExplicitAlpha) ? GL_TRUE : GL_FALSE;
-  const GLboolean alphaSolelyOpacity = (blending && (normalAlphaBlending || (blendFuncS == GL_SRC_ALPHA && blendFuncD == GL_ONE && blendEquation == GL_FUNC_ADD))) ? GL_TRUE : GL_FALSE;
+  const GLboolean alphaSolelyOpacity = ((blending && (normalAlphaBlending || (blendFuncS == GL_SRC_ALPHA && blendFuncD == GL_ONE && blendEquation == GL_FUNC_ADD))) ? GL_TRUE : GL_FALSE) || nullAlphaIsTransparent;
   const GLboolean colorSolelyPossible = ((texEnvMode == GL_MODULATE) || (texEnvMode == GL_ADD) || (texEnvMode == GL_REPLACE)) ? GL_TRUE : GL_FALSE;
   const GLboolean colorSolelyOpacity = (colorSolelyPossible && blending && (blendFuncS == GL_ONE && blendFuncD == GL_ONE && blendEquation == GL_FUNC_ADD)) ? GL_TRUE : GL_FALSE;
 

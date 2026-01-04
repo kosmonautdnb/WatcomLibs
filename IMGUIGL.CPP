@@ -9,6 +9,7 @@
 #endif // __DJGPP__
 
 #define FASTIMGUIGL 1 // define that for non polygonal drawing (rectangles)
+#define DISABLECTRLCBREAK 1 // program doesn't close on ctrl c
 
 extern int glFrameBufferWidth;
 extern int glFrameBufferHeight;
@@ -56,6 +57,7 @@ static void drawMouseArrow(int mouseX, int mouseY) {
   }
 }
 
+#ifdef DISABLECTRLCBREAK
 #ifdef __WATCOMC__
 static void disableControlBreak() {
   union REGS regs;
@@ -74,6 +76,10 @@ void disableControlBreak() {
 }
 #endif // __DJGPP__
 #endif // __WATCOMC__
+#else // DISABLECTRLCBREAK
+void disableControlBreak() {
+}
+#endif // DISABLECTRLCBREAK
 
 typedef struct IMTRI {
   ImDrawVert *v[3];
@@ -468,6 +474,11 @@ static void ImImpl_SetClipboardTextFn(const char* text)
 }
 
 static int translate(int c) {
+  switch(c) {
+  case GL_VK_TAB_SHIFT: c = GL_VK_TAB; break;
+  case GL_VK_LEFT_CTRL: c = GL_VK_LEFT; break;
+  case GL_VK_RIGHT_CTRL: c = GL_VK_RIGHT; break;
+  }
   if (c > 255) return (c >> 8)+256;
   if (c < 32) return c + 512-32;
   return c;
@@ -515,6 +526,9 @@ void InitImGui(int w, int h)
   io.KeyMap[ImGuiKey_Backspace] = translate(GL_VK_BACKSPACE);
   io.KeyMap[ImGuiKey_Enter] = translate(GL_VK_ENTER);
   io.KeyMap[ImGuiKey_Escape] = translate(GL_VK_ESCAPE);
+  io.KeyMap[ImGuiKey_A] = translate(GL_VK_A_CTRL);
+  io.KeyMap[ImGuiKey_Z] = translate(GL_VK_Z_CTRL);
+  io.KeyMap[ImGuiKey_Y] = translate(GL_VK_Y_CTRL);
   io.KeyMap[ImGuiKey_C] = translate(GL_VK_C_CTRL);
   io.KeyMap[ImGuiKey_V] = translate(GL_VK_V_CTRL);
   io.KeyMap[ImGuiKey_X] = translate(GL_VK_X_CTRL);

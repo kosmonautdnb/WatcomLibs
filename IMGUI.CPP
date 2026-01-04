@@ -1807,14 +1807,14 @@ bool ImGuiTextFilter::PassFilter(const char* val) const
 #define va_copy(dest, src) (dest = src)
 #endif
 
+static char testBuffer[0x4000]; // :mad: todo unreliably was vsnprintf(NULL,0
+
 // Helper: Text buffer for logging/accumulating text
 void ImGuiTextBuffer::appendv(const char* fmt, va_list args)
 {
     va_list args_copy;
     args_copy[0] = args[0];
     //va_copy(args_copy, args);
-
-    char testBuffer[1024]; // :mad: todo unreliably was vsnprintf(NULL,0
 
     int len = vsprintf(testBuffer, fmt, args);         // FIXME-OPT: could do a first pass write attempt, likely successful on first pass.
     if (len <= 0)
