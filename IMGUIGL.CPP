@@ -5,7 +5,12 @@
 #include <i86.h>
 #endif // __WATCOMC__
 #ifdef __DJGPP__
-#include <sys/exceptn.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <io.h>
+#include <go32.h>
+#include <signal.h>
+#include <dos.h>
 #endif // __DJGPP__
 
 #define FASTIMGUIGL 1 // define that for non polygonal drawing (rectangles)
@@ -68,16 +73,20 @@ static void disableControlBreak() {
 }
 #else // __WATCOMC__
 #ifdef __DJGPP__
-void disableControlBreak() {
-  __djgpp_set_ctrl_c(0);
+static void exitProgram(int signal) {
+  glDone(); printf("CTRL+BREAK pressed. I don't know how to disable this key !properly! in DJGPP.\n"); exit(0);
+}
+static void disableControlBreak() {
+  setmode(fileno(stdin),O_BINARY); // CTRL-C is normal again
+  signal(SIGINT,exitProgram); // CTRL-BREAK exits, due to invalid keyboard after CTRL-BREAK
 }
 #else // __DJGPP__
-void disableControlBreak() {
+static void disableControlBreak() {
 }
 #endif // __DJGPP__
 #endif // __WATCOMC__
 #else // DISABLECTRLCBREAK
-void disableControlBreak() {
+static void disableControlBreak() {
 }
 #endif // DISABLECTRLCBREAK
 
@@ -473,17 +482,6 @@ static void ImImpl_SetClipboardTextFn(const char* text)
   clipBoardString[text_end-text] = 0;
 }
 
-static int translate(int c) {
-  switch(c) {
-  case GL_VK_TAB_SHIFT: c = GL_VK_TAB; break;
-  case GL_VK_LEFT_CTRL: c = GL_VK_LEFT; break;
-  case GL_VK_RIGHT_CTRL: c = GL_VK_RIGHT; break;
-  }
-  if (c > 255) return (c >> 8)+256;
-  if (c < 32) return c + 512-32;
-  return c;
-}
-
 void ImGui_CreateFontsTexture()
 {
     ImGuiIO& io = ImGui::GetIO();
@@ -506,6 +504,17 @@ void ImGui_CreateFontsTexture()
     // Cleanup (don't clear the input data if you want to append new fonts later)
     io.Fonts->ClearInputData();
     io.Fonts->ClearTexData();
+}
+
+static int translate(int c) {
+  switch(c) {
+  case GL_VK_TAB_SHIFT: c = GL_VK_TAB; break;
+  case GL_VK_LEFT_CTRL: c = GL_VK_LEFT; break;
+  case GL_VK_RIGHT_CTRL: c = GL_VK_RIGHT; break;
+  }
+  if (c > 255) return (c >> 8)+256;
+  if (c < 32) return c + 512-32;
+  return c;
 }
 
 void InitImGui(int w, int h)
