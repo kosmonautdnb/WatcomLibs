@@ -13,8 +13,8 @@
 #include <dos.h>
 #endif // __DJGPP__
 
-#define FASTIMGUIGL 1 // define that for non polygonal drawing (rectangles)
-#define DISABLECTRLCBREAK 1 // program doesn't close on ctrl c
+#define FASTIMGUIGL // define that for non polygonal drawing (rectangles) (ImGui just supports GL_NEAREST sampling for (QUAD)textures if enabled)
+#define DISABLECTRLCBREAK // program doesn't close on ctrl c
 
 extern int glFrameBufferWidth;
 extern int glFrameBufferHeight;
