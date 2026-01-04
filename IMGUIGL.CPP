@@ -101,7 +101,6 @@ typedef struct IMTRI {
   unsigned int texture;
 } IMTRI;
 
-#include <stdio.h>
 static void drawIMTRI(const IMTRI *t) {
   if (t->v[0] == NULL) return;
   if (t->flags == 0) {
