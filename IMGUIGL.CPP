@@ -277,7 +277,7 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
   const bool noTexture = (texture == NULL) || t0->noTexture;
  
   const unsigned int color = t0->v[0]->col;
-  const int textureWidth2 = textureWidth<<8;
+  const int textureWidth2 = textureWidth<<12;
   for (int y = 0; y < ly; y++) {
     unsigned int *write = &glFrameBuffer[(y+py)*glFrameBufferWidth + px];
     if (noTexture && (!t0->isTransparentColor)) {
@@ -296,8 +296,8 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
       }
     }
     if (!noTexture) {
-      int txp = (int)(tx*256.0);
-      int txpa = (int)(txa*256.0);
+      int txp = (int)(tx*4096.0);
+      int txpa = (int)(txa*4096.0);
       int typ = (int)(ty + tya * y);
       if (typ < 0) typ = 0;
       if (typ >= textureHeight) typ = textureHeight-1;
@@ -305,7 +305,7 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
       if (color == 0xffffffff) {
         for (int x = 0; x < lx; x++) {
           const unsigned int rgba = *write;
-          const unsigned int tex = ((unsigned int)txp<textureWidth2)?texp[txp>>8]:0xffffffff;
+          const unsigned int tex = ((unsigned int)txp<textureWidth2)?texp[txp>>12]:0xffffffff;
           const int a = (tex>>24) & 255;
           const int r = ((((tex & 255) - (rgba & 255))*a)>>8)+(rgba & 255);
           const int g = (((((tex>>8) & 255) - ((rgba>>8) & 255))*a)>>8)+((rgba>>8) & 255);
@@ -316,7 +316,7 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
       } else {
         for (int x = 0; x < lx; x++) {
           const unsigned int rgba = *write;
-          const unsigned int tex = ((unsigned int)txp<textureWidth2)?texp[txp>>8]:0xffffffff;
+          const unsigned int tex = ((unsigned int)txp<textureWidth2)?texp[txp>>12]:0xffffffff;
           const int rc = ((tex & 255)*(color & 255))>>8;
           const int gc = (((tex>>8) & 255)*((color>>8) & 255))>>8;
           const int bc = (((tex>>16) & 255)*((color>>16) & 255))>>8;
