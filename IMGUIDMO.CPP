@@ -14,7 +14,7 @@ int main(int argc, const char *argv[]) {
   if (pureVGA) {
     glVGA();
   } else {
-    if (!glVesa(XRES,YRES,16)) {
+    if (!glVesa(XRES,YRES,16)) { // 16 bit is a lot faster than 32 bit on NVidia cards
       printf("No Vesa %dx%dx16 found.\n", XRES, YRES);
       if (!glVGA())
       {

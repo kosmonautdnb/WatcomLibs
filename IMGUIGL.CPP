@@ -75,7 +75,7 @@ static void disableControlBreak() {
 #else // __WATCOMC__
 #ifdef __DJGPP__
 static void exitProgram(int signal) {
-  glDone(); printf("CTRL+BREAK pressed. I don't know how to disable this key !properly! in DJGPP.\n"); exit(0);
+  glDone(); printf("CTRL+BREAK pressed. Sadly it seems there is no docu on how to disable this !properly!.\n"); exit(0);
 }
 static void disableControlBreak() {
   setmode(fileno(stdin),O_BINARY); // CTRL-C is normal again
