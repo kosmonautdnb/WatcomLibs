@@ -19,12 +19,26 @@
 #endif // __DJGPP__
 
 //--------------------------
+
 #define MP4MUXBUFFERSIZE (1024*1024)
 char glRecordDescFileName[MAXGLRECORDFILENAMELENGTH] = {"record.dsc"};
 char glRecordFileName[MAXGLRECORDFILENAMELENGTH] = {"r:/snapshot.rec"}; // please use a ramdisc here
-char glRecordH264FileName[MAXGLRECORDFILENAMELENGTH] = {"r:/h264.264"};
+char glRecordH264FileName[MAXGLRECORDFILENAMELENGTH] = {"c:/h264.264"};
 char glRecordMP4FileName[MAXGLRECORDFILENAMELENGTH] = {"c:/video.mp4"};
 static double glRecordFrameRate = 25.0;
+int glRecordWidth = -1;
+int glRecordHeight = -1;
+
+//--------------------------
+
+static void recSetBiosCursor(int x, int y) {
+    union REGS regs;
+    regs.w.ax = 0x200;
+    regs.h.bh = 0;
+    regs.h.dl = x;
+    regs.h.dh = y;
+    int386(0x10, &regs, &regs);
+}
 
 //--------------------------
 
@@ -67,16 +81,16 @@ public:
         printf("H264E_init error = %d\n", error);
         return;
     }
-    enc     = (H264E_persist_t *)malloc(sizeof_persist);
-    scratch = (H264E_scratch_t *)malloc(sizeof_scratch);
+    enc     = (H264E_persist_t *)glMalloc(sizeof_persist);
+    scratch = (H264E_scratch_t *)glMalloc(sizeof_scratch);
     error = H264E_init(enc, &create_param);
     width = w;
     height = h;
   }
 
   ~H264Writer() {
-    if (enc) free(enc);
-    if (scratch) free(scratch);
+    if (enc) glFree(enc);
+    if (scratch) glFree(scratch);
   }
 
   bool yuvToFile(unsigned char *y, unsigned char *u, unsigned char *v, FILE *file, int uvstride = -1) {
@@ -111,9 +125,9 @@ public:
   }
 
   bool rgbaToFile(unsigned int *rgba, FILE *file) {
-    unsigned char *y = (unsigned char*)malloc(width*height);
-    unsigned char *u = (unsigned char*)malloc(width*height);
-    unsigned char *v = (unsigned char*)malloc(width*height);
+    unsigned char *y = (unsigned char*)glMalloc(width*height);
+    unsigned char *u = (unsigned char*)glMalloc(width*height);
+    unsigned char *v = (unsigned char*)glMalloc(width*height);
     unsigned char *yk = y;
     unsigned char *uk = u;
     unsigned char *vk = v;
@@ -145,9 +159,9 @@ public:
       }
     }
     yuvToFile(y, u, v, file, width); // stride is width not width/2
-    free(y);
-    free(u);
-    free(v);
+    glFree(y);
+    glFree(u);
+    glFree(v);
     return error==0;
   }
 };
@@ -168,7 +182,7 @@ static void stopH264Recording() {
 
 static void startH264Recording(const char *fileName) {
   stopH264Recording();
-  h264Writer = new H264Writer(glFrameBufferWidth, glFrameBufferHeight);
+  h264Writer = new H264Writer(glRecordWidth > 0 ? glRecordWidth : glFrameBufferWidth, glRecordHeight > 0 ? glRecordHeight : glFrameBufferHeight);
   h264File = fopen(fileName,"wb");
   currentH264FrameWritten = 0;
 }
@@ -333,6 +347,14 @@ int demux(uint8_t *input_buf, ssize_t input_size, FILE *fout, int ntrack)
     return 0;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+GLushort gl2NextKey();
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
 void muxh264(const char *h264FileName, const char *mp4FileName) {
 
   int is_hevc = false;
@@ -356,7 +378,7 @@ void muxh264(const char *h264FileName, const char *mp4FileName) {
   int h264_size = ftell(fin);
   int h264_pos = 0;
   fseek(fin,h264_pos,SEEK_SET);
-  uint8_t *alloc_buf = (uint8_t*)malloc(MP4MUXBUFFERSIZE);
+  uint8_t *alloc_buf = (uint8_t*)glMalloc(MP4MUXBUFFERSIZE);
   uint8_t *buf_h264 = NULL;
 
   MP4E_mux_t *mux;
@@ -372,7 +394,8 @@ void muxh264(const char *h264FileName, const char *mp4FileName) {
   fseek(fin,h264_pos,SEEK_SET);
   fread(alloc_buf,1,MP4MUXBUFFERSIZE,fin);
   buf_h264 = alloc_buf;
-  
+
+  int nals = 0;  
   while (h264_size > 0)
   {
       ssize_t nal_size = get_nal_size(buf_h264, h264_size);
@@ -383,7 +406,6 @@ void muxh264(const char *h264FileName, const char *mp4FileName) {
           h264_size -= 1;
           continue;
       }
-  
       if (MP4E_STATUS_OK != mp4_h26x_write_nal(&mp4wr, buf_h264, nal_size, 90000/glRecordFrameRate))
       {
           printf("error: mp4_h26x_write_nal failed\n");
@@ -392,12 +414,18 @@ void muxh264(const char *h264FileName, const char *mp4FileName) {
       h264_size -= nal_size;
       h264_pos += nal_size;
 
+      recSetBiosCursor(0,0);
+      nals++;
+      printf("muxing nal:%d\n",nals);
+      if (gl2NextKey()==GL_VK_END) {glDone(); printf("END key pressed in mp4 muxing.\n"); exit(0);}
+
+
       fseek(fin,h264_pos,SEEK_SET);
       fread(alloc_buf,1,MP4MUXBUFFERSIZE,fin);
       buf_h264 = alloc_buf;
   }
   if (alloc_buf)
-      free(alloc_buf);
+      glFree(alloc_buf);
   MP4E_close(mux);
   mp4_h26x_write_close(&mp4wr);
   if (fout)
@@ -879,11 +907,13 @@ static GLvoid playSetTime(GLdouble seconds) {
   playEvent(GLRECEVENT_GLSETTIME,&seconds,sizeof(GLdouble));
 }
 
+static GLushort playCurrentKey = 0;
+
 static GLushort playNextKey() {
   GLushort k = gl2NextKey();
-  GLushort k2 = k;
+  playCurrentKey = k;
   playEvent(GLRECEVENT_GLNEXTKEY,&k,sizeof(GLushort));
-  if (k2 != 0) k = k2;
+  if (playCurrentKey != 0) k = playCurrentKey;
   return k;
 }
 
@@ -920,11 +950,30 @@ static GLvoid playDone() {
 // ----------------------------------------
 
 static GLvoid renderRefresh() {
+
+  if (playCurrentKey == GL_VK_END) {glDone(); printf("END pressed during h264 rendering.\n");exit(0);}
+
   double timeStamp = playEvent(GLRECEVENT_GLREFRESH,NULL,0);
   int frameNr = timeStamp * glRecordFrameRate;
   if (h264Writer != NULL) {
     while(frameNr > currentH264FrameWritten) {
-      h264Writer->rgbaToFile(glFrameBuffer0, h264File);
+      recSetBiosCursor(0,0);
+      printf("h264frame:%d for second:%f\n",currentH264FrameWritten,timeStamp);
+      if (glRecordWidth > 0 || glRecordHeight > 0) {
+        unsigned int *frame = (unsigned int*)glMalloc(glRecordWidth*glRecordHeight*sizeof(unsigned int));
+        for (int y = 0; y < glRecordHeight; y++) {
+          unsigned int *source = &glFrameBuffer0[(y*glFrameBufferHeight/glRecordHeight)*glFrameBufferWidth];
+          unsigned int txp = 0;
+          unsigned int txa = 4096*glFrameBufferWidth/glRecordWidth;
+          for (int x = 0; x < glRecordWidth; x++) {
+            frame[x+y*glRecordWidth] = source[txp>>12];
+            txp += txa;
+          }
+        }
+        h264Writer->rgbaToFile(frame, h264File);
+        glFree(frame);
+      } else 
+        h264Writer->rgbaToFile(glFrameBuffer0, h264File);
       currentH264FrameWritten++;
     }
   }
@@ -999,6 +1048,11 @@ void useGLRecordWithDescFile(const char *fileName) {
   fclose(out);
 }
 
+void overideGLRecordVideoResolution(int width, int height) {
+  glRecordWidth = width;
+  glRecordHeight = height;
+}
+
 void setGLRecordRenderFrameRate(double frameRate) {
   glRecordFrameRate = frameRate;
 }
@@ -1024,7 +1078,7 @@ GLvoid glKeyMatrixRecord(bool *keys, int keyCount) {
   for (int i = 0; i < keyCount; i++) if (keys[i] != (bool)(lastKeyMatrix[i])) keysChanged++;
   unsigned char *arr = (unsigned char*)malloc(keysChanged*2+2);
   int j = 0;
-  for (int i = 0; i < keyCount; i++) if (keys[i] != (bool)(lastKeyMatrix[i])) {arr[j*2+0] = i; arr[j*2+1] = keys[i]; j++; lastKeyMatrix[i]=keys[i];}
+  {for (int i = 0; i < keyCount; i++) if (keys[i] != (bool)(lastKeyMatrix[i])) {arr[j*2+0] = i; arr[j*2+1] = keys[i]; j++; lastKeyMatrix[i]=keys[i];}}
   arr[j*2+0] = 255;
   arr[j*2+1] = 255;
   recEvent(GLRECEVENT_GLKEYMATRIX,arr,keysChanged*2+2);
