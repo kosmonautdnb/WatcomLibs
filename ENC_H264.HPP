@@ -607,14 +607,14 @@ typedef int int_u;
 
 // bit-stream
 #if __BYTE_ORDER == __BIG_ENDIAN
-#   define SWAP32(x) (uint32_t)(x)
+#   define SWAP32_(x) (uint32_t)(x)
 #else
 #ifdef _MSC_VER
-#   define SWAP32(x) _byteswap_ulong(x)
+#   define SWAP32_(x) _byteswap_ulong(x)
 #elif defined(__GNUC__) || defined(__clang__)
-#   define SWAP32(x) __builtin_bswap32(x)
+#   define SWAP32_(x) __builtin_bswap32(x)
 #else
-#   define SWAP32(x) (uint32_t)((((x) >> 24) & 0xFF) | (((x) >> 8) & 0xFF00) | (((x) << 8) & 0xFF0000) | ((x & 0xFF) << 24))
+#   define SWAP32_(x) (uint32_t)((((x) >> 24) & 0xFF) | (((x) >> 8) & 0xFF00) | (((x) << 8) & 0xFF0000) | ((x & 0xFF) << 24))
 #endif
 #endif
 
@@ -624,7 +624,7 @@ typedef int int_u;
 if ((shift -= n) < 0)       \
 {                           \
     cache |= val >> -shift; \
-    *buf++ = SWAP32(cache); \
+    *buf++ = SWAP32_(cache); \
     shift += 32;            \
     cache = 0;              \
 }                           \
@@ -1280,7 +1280,7 @@ static void h264e_bs_put_bits_sse2(bs_t *bs, unsigned n, unsigned val)
     {
         assert(-bs->shift < 32);
         bs->cache |= val >> -bs->shift;
-        *bs->buf++ = SWAP32(bs->cache);
+        *bs->buf++ = SWAP32_(bs->cache);
         bs->shift = 32 + bs->shift;
         bs->cache = 0;
     }
@@ -1289,7 +1289,7 @@ static void h264e_bs_put_bits_sse2(bs_t *bs, unsigned n, unsigned val)
 
 static void h264e_bs_flush_sse2(bs_t *bs)
 {
-    *bs->buf = SWAP32(bs->cache);
+    *bs->buf = SWAP32_(bs->cache);
 }
 
 static unsigned h264e_bs_get_pos_bits_sse2(const bs_t *bs)
@@ -7373,7 +7373,7 @@ static void h264e_bs_put_bits(bs_t *bs, unsigned n, unsigned val)
     {
         assert(-bs->shift < 32);
         bs->cache |= val >> -bs->shift;
-        *bs->buf++ = SWAP32(bs->cache);
+        *bs->buf++ = SWAP32_(bs->cache);
         bs->shift = 32 + bs->shift;
         bs->cache = 0;
     }
@@ -7382,7 +7382,7 @@ static void h264e_bs_put_bits(bs_t *bs, unsigned n, unsigned val)
 
 static void h264e_bs_flush(bs_t *bs)
 {
-    *bs->buf = SWAP32(bs->cache);
+    *bs->buf = SWAP32_(bs->cache);
 }
 
 static unsigned h264e_bs_get_pos_bits(const bs_t *bs)
@@ -11152,7 +11152,7 @@ static int enc_alloc_scratch(h264e_enc_t *enc, const H264E_create_param_t *par, 
 
     ALLOC(unsigned char*,enc->nnz, nmbx*8 + 8);
     ALLOC(point_t *,enc->mv_pred, (nmbx*4 + 8)*sizeof(point_t));
-    ALLOC(int*,enc->i4x4mode, nmbx*4 + 4);
+    ALLOC(int32_t*,enc->i4x4mode, nmbx*4 + 4);
     ALLOC(unsigned char*,enc->df.df_qp, nmbx);
     ALLOC(signed char*,enc->df.mb_type, nmbx);
     ALLOC(unsigned char*,enc->df.df_nzflag, nmbx);

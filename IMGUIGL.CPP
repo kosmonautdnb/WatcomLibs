@@ -559,7 +559,7 @@ void InitImGui(int w, int h)
   
   io.IniSavingRate = -1; // disable ini saving, because we are on usb sticks which may wear out
   ImGuiStyle &s = ImGui::GetStyle();
-  s.WindowRounding = 5.f * 0;
+  s.WindowRounding = 5.f * 0; // rounding disables FASTIMGUIGL optimizations for larger parts of the windows
   s.FramePadding = ImVec2(2,2);
   s.ItemSpacing = ImVec2(3,3);
   s.WindowPadding = ImVec2(3,3);
