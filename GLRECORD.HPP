@@ -4,9 +4,16 @@
 // ------------
 
 // main function, you only need to place just this before your gl functions (but after glVesa/glVGA/glDirect) and check the generated file for instructions on how to use this.
+// best directly before the mainloop since there is a glSetTime(0) involved.
 void useGLRecordWithDescFile(const char *fileName);
 
+// use this to serialize the keyboard state if you are using the keyboard matrix
+void glKeyMatrix(bool *keys, int keyCount);
+
+ // direct next key.. can be used to clear the keyboard buffer without generating events for that. Or just to query real keys to stop playback etc..
+unsigned short glNextKeyx();
 // ------------
+
 
 #define MAXGLRECORDFILENAMELENGTH 1024
 

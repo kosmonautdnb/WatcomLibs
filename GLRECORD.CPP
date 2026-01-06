@@ -23,7 +23,7 @@
 char glRecordDescFileName[MAXGLRECORDFILENAMELENGTH] = {"record.dsc"};
 char glRecordFileName[MAXGLRECORDFILENAMELENGTH] = {"r:/snapshot.rec"}; // please use a ramdisc here
 char glRecordH264FileName[MAXGLRECORDFILENAMELENGTH] = {"r:/h264.264"};
-char glRecordMP4FileName[MAXGLRECORDFILENAMELENGTH] = {"r:/video.mp4"};
+char glRecordMP4FileName[MAXGLRECORDFILENAMELENGTH] = {"c:/video.mp4"};
 static double glRecordFrameRate = 25.0;
 
 //--------------------------
@@ -736,6 +736,7 @@ GLvoid gl2SpecialKeys(GLboolean *shiftKey, GLboolean *ctrlKey, GLboolean *altKey
   GLvoid gl2SetTime(GLdouble seconds) {
     if (glHasTSC) {
       glTscStartValue = glReadTscDouble()-seconds;
+      return;
     }
     printf("Recording error 2.\n");
     exit(0);
@@ -754,7 +755,8 @@ typedef enum GLRECEVENT {
   GLRECEVENT_GLMOUSEBUTTONS = 4,
   GLRECEVENT_GLSPECIALKEYS = 5,
   GLRECEVENT_GLREFRESH = 6,
-  GLRECEVENT_GLDONE = 7
+  GLRECEVENT_GLDONE = 7,
+  GLRECEVENT_GLKEYMATRIX = 8
 } GLRECEVENT;
 
 // ----------------------------------------
@@ -875,7 +877,6 @@ static GLdouble playSeconds() {
 
 static GLvoid playSetTime(GLdouble seconds) {
   playEvent(GLRECEVENT_GLSETTIME,&seconds,sizeof(GLdouble));
-  glSetTime(seconds);
 }
 
 static GLushort playNextKey() {
@@ -1010,12 +1011,49 @@ void setGLRecordH264FileName(const char *fileName) {
   sprintf(glRecordH264FileName,"%s",fileName);
 }
 
+unsigned short glNextKeyx() {
+  return gl2NextKey();
+}
+
+#define MAXNUMBEROFKEYS 256 // usually just 128
+unsigned char lastKeyMatrix[MAXNUMBEROFKEYS];
+
+GLvoid glKeyMatrixRecord(bool *keys, int keyCount) {
+  if (keyCount > MAXNUMBEROFKEYS) return;
+  int keysChanged = 0;
+  for (int i = 0; i < keyCount; i++) if (keys[i] != (bool)(lastKeyMatrix[i])) keysChanged++;
+  unsigned char *arr = (unsigned char*)malloc(keysChanged*2+2);
+  int j = 0;
+  for (int i = 0; i < keyCount; i++) if (keys[i] != (bool)(lastKeyMatrix[i])) {arr[j*2+0] = i; arr[j*2+1] = keys[i]; j++; lastKeyMatrix[i]=keys[i];}
+  arr[j*2+0] = 255;
+  arr[j*2+1] = 255;
+  recEvent(GLRECEVENT_GLKEYMATRIX,arr,keysChanged*2+2);
+  free(arr);
+}
+
+GLvoid glKeyMatrixPlay(bool *keys, int keyCount) {
+  if (keyCount > MAXNUMBEROFKEYS) return;
+  playEvent(GLRECEVENT_GLKEYMATRIX,lastKeyMatrix,-1);
+  for (int i = 0; i < MAXNUMBEROFKEYS; i++) {
+    if (lastKeyMatrix[i*2+0] == 255 && lastKeyMatrix[i*2+1] == 255) break;
+    keys[lastKeyMatrix[i*2+0]] = lastKeyMatrix[i*2+1] ? true : false;
+  }
+}
+
+typedef GLvoid (*GLKeyMatrixCallback)(bool *keys, int keyCount);
+GLKeyMatrixCallback glKeyMatrixCallback = NULL;
+
+void glKeyMatrix(bool *keys, int keyCount) {
+  if (glKeyMatrixCallback != NULL) glKeyMatrixCallback(keys, keyCount);
+}
+
 void setGLRecordMode(int glRecordMode) {
 
   gl2WatcomPrecisionTimer(GL_TRUE); // in WatcomC this "waits" around a second.
   glSetTime(0);
   stopPlayBack();
   stopH264Recording();
+  memset(lastKeyMatrix,0,sizeof(lastKeyMatrix));
 
   switch(glRecordMode) {
   case GLRECORD_OFF: {
@@ -1027,6 +1065,7 @@ void setGLRecordMode(int glRecordMode) {
     glSetSpecialKeysCallback(NULL);
     glSetRefreshNotification(NULL);
     glSetDoneNotification(NULL);
+    glKeyMatrixCallback = NULL;
   } break;
   case GLRECORD_RECORDING: {
     startRecording(glRecordFileName);
@@ -1038,6 +1077,7 @@ void setGLRecordMode(int glRecordMode) {
     glSetSpecialKeysCallback(recSpecialKeys);
     glSetRefreshNotification(recRefresh);
     glSetDoneNotification(recDone);
+    glKeyMatrixCallback = glKeyMatrixRecord;
   } break;
   case GLRECORD_PLAYBACK: {
     loadEvents(glRecordFileName);
@@ -1049,6 +1089,7 @@ void setGLRecordMode(int glRecordMode) {
     glSetSpecialKeysCallback(playSpecialKeys);
     glSetRefreshNotification(playRefresh);
     glSetDoneNotification(playDone);
+    glKeyMatrixCallback = glKeyMatrixPlay;
   } break;
   case GLRECORD_RENDERH264: {
     loadEvents(glRecordFileName);
@@ -1061,6 +1102,9 @@ void setGLRecordMode(int glRecordMode) {
     glSetSpecialKeysCallback(playSpecialKeys);
     glSetRefreshNotification(renderRefresh);
     glSetDoneNotification(renderDone);
+    glKeyMatrixCallback = glKeyMatrixPlay;
   } break;
   }
+
+  glSetTime(0);
 }
