@@ -154,6 +154,7 @@ public:
 
 static H264Writer *h264Writer = NULL;
 static FILE *h264File = NULL;
+static int currentH264FrameWritten = 0;
 
 void muxh264(const char *h264FileName, const char *mp4FileName);
 
@@ -169,6 +170,7 @@ static void startH264Recording(const char *fileName) {
   stopH264Recording();
   h264Writer = new H264Writer(glFrameBufferWidth, glFrameBufferHeight);
   h264File = fopen(fileName,"wb");
+  currentH264FrameWritten = 0;
 }
 
 static uint8_t *preload(const char *path, ssize_t *data_size)
@@ -797,7 +799,7 @@ static GLvoid loadEvents(const char *fileName) {
 //  glDone(); printf("%d\n",recordingLength); exit(0);
 }
 
-static GLvoid playEvent(unsigned char eventId, void *data, unsigned char dataLength) {
+static double playEvent(unsigned char eventId, void *data, unsigned char dataLength) {
   while(recordingPos < recordingLength) {
     unsigned char *r = &recording[recordingPos];
     unsigned char *rStart = r;
@@ -809,12 +811,13 @@ static GLvoid playEvent(unsigned char eventId, void *data, unsigned char dataLen
       recordingPos += r - rStart;
       if (eDataLength != 0) 
         memcpy(data,eData,eDataLength);
-      break;
+      return eTimeStamp;
     } else {
       //glDone(); printf("Playback Error.. received event:%d expected event:%d\n",eEventId,eventId); exit(0);
       break; // not so good..
     }
   }
+  return -1;
 }
 
 // ----------------------------------------
@@ -916,9 +919,13 @@ static GLvoid playDone() {
 // ----------------------------------------
 
 static GLvoid renderRefresh() {
-  playEvent(GLRECEVENT_GLREFRESH,NULL,0);
+  double timeStamp = playEvent(GLRECEVENT_GLREFRESH,NULL,0);
+  int frameNr = timeStamp * glRecordFrameRate;
   if (h264Writer != NULL) {
-    h264Writer->rgbaToFile(glFrameBuffer0, h264File);
+    while(frameNr > currentH264FrameWritten) {
+      h264Writer->rgbaToFile(glFrameBuffer0, h264File);
+      currentH264FrameWritten++;
+    }
   }
 }
 
@@ -984,7 +991,7 @@ void useGLRecordWithDescFile(const char *fileName) {
   fprintf(out,"# 1 = RECORDING IN THE BACKGROUND.\n");
   fprintf(out,"# 2 = PLAYBACK OF RECORDING.\n");
   fprintf(out,"# 3 = H264/MP4 RENDERING OF THE RECORDING.\n");
-  fprintf(out,"# second line of this file is the recording filename.\n");
+  fprintf(out,"# second line of this file is the recording filename (use a ramdisk for that).\n");
   fprintf(out,"# third line of this file is the h264 filename to write.\n");
   fprintf(out,"# fourth line of this file is the mp4 filename to convert the h264 to.\n");
   fprintf(out,"#---------------------------------\n");

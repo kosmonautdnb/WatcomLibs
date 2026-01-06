@@ -29,6 +29,10 @@ typedef unsigned int DWORD;
 typedef unsigned int UINT;
 #endif
 
+#if defined(__WATCOMC__) && (__WATCOMC__ < 1300)
+typedef int ssize_t;
+#endif
+
 #define INT8_MAX (0x7f)
 #define INT8_MIN (-0x80)
 #define INT16_MAX (0x7fff)
