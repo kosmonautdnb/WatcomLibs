@@ -79,6 +79,7 @@ ImGui DOS Demo:
 - ENC_H264.HPP - an h264 encoder (with .cpp example). MINIH264. https://github.com/lieff/minih264 (ffmpeg -i your_file.h264 -vcodec copy output.mkv) or use minimp4.cpp
 - FILEDLG.HPP - a DOS file dialog window written for IMGUI  
 - GENANN.HPP - a simple neural net. https://github.com/codeplea/genann
+- GLRECORD.HPP - lets you record the whole OpenGL state per frame and render it to a H264 MP4.
 - GTFLOG.CPP - just a temporary / very simple logger for CGLTF file structure.
 - IMAGE.HPP - Image loading/saving/resizing PNG,JPG,BMP,TGA,GIF,PSD and others  
 - JSONREAD.HPP - a json reader https://github.com/rafagafe/tiny-json  
