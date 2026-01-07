@@ -30,6 +30,9 @@ ImGui DOS Demo:
 - IMGUIDMO.BAT (WatcomC++)
 - IMDJGPP.BAT (DJGPP)
 
+Here is a video of Dear ImGui at work on FreeDOS:  
+https://www.youtube.com/watch?v=eVba98jsNVs  
+
 #### &emsp;ImGui howto:
   
 &emsp;#include "gl.h"  
