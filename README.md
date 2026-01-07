@@ -58,7 +58,7 @@ ImGui DOS Demo:
 
 **try IMGUIDMO.BAT for WatcomC** and **IMDJGPP.BAT for DJGPP**
 
-Here is a video of Dear ImGui at work on FreeDOS:  
+Here is a Youtube video of Dear ImGui at work on FreeDOS:  
 https://www.youtube.com/watch?v=eVba98jsNVs  
 
 ## Some basic types
