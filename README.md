@@ -15,7 +15,7 @@ https://github.com/kosmonautdnb/WatcomGL
 
 ## ImGui v1.43 included and working
 The original ImGui repository:  
-https://github.com/ocornut/imgui (not needed here)  
+https://github.com/ocornut/imgui (not required here)  
 
 - GL.H  (WatcomGL)
 - GLIMPL.CPP (WatcomGL)
