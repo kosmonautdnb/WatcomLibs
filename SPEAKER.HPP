@@ -1,7 +1,7 @@
 #ifndef __SPEAKER_HPP__
 #define __SPEAKER_HPP__
 
-//-- simple beep interface speaker_***
+//-- simple beep interface for the pc speaker
 void speaker_tone_freq(double hz);
 void speaker_tone_on();
 void speaker_tone_off();
