@@ -1,6 +1,13 @@
 #ifndef __SPEAKER_HPP__
 #define __SPEAKER_HPP__
 
+//-- simple beep interface speaker_***
+void speaker_tone_freq(double hz);
+void speaker_tone_on();
+void speaker_tone_off();
+
+//-- sample interface maybe not usable due to timer irq freq reprogramming that destroys some bios/dos timings
+
 // samples are played at 18643.4375 Hz (timerirq)
 // may alter the DOS file clock by some milliseconds (don't know why it's only at init/deinit) not the RealTimeClock of DOS.
 // my windows shows sometimes that the harddrive must be repaired maybe due to this interrupt change here. 

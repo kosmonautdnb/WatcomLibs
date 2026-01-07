@@ -14,6 +14,42 @@
 #endif // __DJGPP__
 
 #ifdef __WATCOMC__
+#pragma aux speakerCLI = "cli";
+#pragma aux speakerSTI = "sti";
+#endif // __WATCOMC__
+
+#ifdef __DJGPP__
+void speakerCLI() {
+  __asm__ __volatile__("cli");
+}
+void speakerSTI() {
+  __asm__ __volatile__("sti");
+}
+#endif // __WATCOMC__
+
+void speaker_tone_freq(double hz) {
+  outp(0x43,0xb6); // set speaker timer 2 to square wave
+  int a = (int)(1193180 / hz);
+  speakerCLI();
+  outp(0x42,a & 255);
+  outp(0x42,(a>>8) & 255);
+  speakerSTI();
+}
+
+void speaker_tone_on() {
+  unsigned char p61 = inp(0x61);
+  p61 |= 0x03; // bit 0 = timer 2 output to speaker, bit 1 = speaker data on
+  outp(0x61,p61);
+}
+
+void speaker_tone_off() {
+  unsigned char p61 = inp(0x61);
+  p61 &= 255 - 0x03; // bit 0 = timer 2 output to speaker, bit 1 = speaker data on
+  outp(0x61,p61);
+}
+
+
+#ifdef __WATCOMC__
 #define HARDWARE_TIMER_FREQUENCY 1193180 // 1193180 / 65536  = 18.2 (found in the internet that it's more like 1193181.66666666 instead of 1193180)
 #define TIMER_MULTIPLICATOR 1024 // 1193180 * 1024 / 65536
 double speakerFrequency = (double)HARDWARE_TIMER_FREQUENCY/65536.0*TIMER_MULTIPLICATOR;
@@ -162,16 +198,20 @@ void enableSamplePlayback() {
   _dos_setvect(0x08,timerIrqHandler);
 
   outp(0x43,0x36);
+  speakerCLI();
   outp(0x40,here & 255);
   outp(0x40,(here>>8) & 255);
+  speakerSTI();
 }
 
 void disableSamplePlayback() {
 
   initSample();
   outp(0x43,0x36);
+  speakerCLI();
   outp(0x40,0);
   outp(0x40,0);
+  speakerSTI();
   _dos_setvect(0x08,oldTimerIrqHandler);
 }
 
