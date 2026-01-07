@@ -18,7 +18,7 @@ The original ImGui repository:
 https://github.com/ocornut/imgui (not needed here)  
 
 - GL.H  (WatcomGL)
-- GLIMPL.CPP  
+- GLIMPL.CPP (WatcomGL)
 - IMCONFIG.H  
 - IMGUI.CPP  
 - IMGUI.H  
