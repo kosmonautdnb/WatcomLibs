@@ -1040,7 +1040,7 @@ void useGLRecordWithDescFile(const char *fileName) {
   fprintf(out,"# 0 = NO RECORDING\n");
   fprintf(out,"# 1 = RECORDING IN THE BACKGROUND.\n");
   fprintf(out,"# 2 = PLAYBACK OF RECORDING.\n");
-  fprintf(out,"# 3 = H264/MP4 RENDERING OF THE RECORDING.\n");
+  fprintf(out,"# 3 = H264/MP4 RENDERING OF THE RECORDING (use <end> key to break).\n");
   fprintf(out,"# second line of this file is the recording filename (use a ramdisk for that).\n");
   fprintf(out,"# third line of this file is the h264 filename to write.\n");
   fprintf(out,"# fourth line of this file is the mp4 filename to convert the h264 to.\n");
@@ -1070,7 +1070,7 @@ unsigned short glNextKeyx() {
 }
 
 #define MAXNUMBEROFKEYS 256 // usually just 128
-unsigned char lastKeyMatrix[MAXNUMBEROFKEYS];
+unsigned char lastKeyMatrix[MAXNUMBEROFKEYS+2];
 
 GLvoid glKeyMatrixRecord(bool *keys, int keyCount) {
   if (keyCount > MAXNUMBEROFKEYS) return;

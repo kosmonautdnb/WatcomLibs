@@ -584,13 +584,16 @@ static void ImGuiKeyBoardInput() {
 
   for (int i = 0; i < 512; i++)
     ImGui::GetIO().KeysDown[i]=false;
-  int c = translate(currentKey);
 
-  if (c<256) {
-    ImGui::GetIO().AddInputCharacter(c);
-    ImGui::GetIO().KeysDown[c]=true;
-  } else  
-    ImGui::GetIO().KeysDown[c]=true;
+  if (currentKey != 0) {
+    int c = translate(currentKey);
+  
+    if (c<256) {
+      ImGui::GetIO().AddInputCharacter(c);
+      ImGui::GetIO().KeysDown[c]=true;
+    } else  
+      ImGui::GetIO().KeysDown[c]=true;
+  }
 
   ImGui::GetIO().KeyShift = currentKeyShift;
   ImGui::GetIO().KeyCtrl = currentKeyCtrl;

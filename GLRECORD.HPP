@@ -26,7 +26,7 @@ typedef enum GLRECORDMODE {
   GLRECORD_RENDERH264 = 3
 } GLRECORDMODE;
 
-void overideGLRecordVideoResolution(int width, int height);
+void overideGLRecordVideoResolution(int width, int height); // before useGLRecordWithDescFile()
 void setGLRecordRenderFrameRate(double frameRate);
 void setGLRecordFileName(const char *fileName);
 void setGLRecordH264FileName(const char *fileName);
