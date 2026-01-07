@@ -14,8 +14,11 @@ https://github.com/kosmonautdnb/WatcomGL
 - GLIMPL.cpp - complete OpenGL implementation  
 
 ## ImGui v1.43 included and working
-(needs WatcomGL)  
-https://github.com/ocornut/imgui (not needed)
+The original ImGui repository:  
+https://github.com/ocornut/imgui (not needed)  
+
+- GL.H  (WatcomGL)
+- GLIMPL.CPP  
 - IMCONFIG.H  
 - IMGUI.CPP  
 - IMGUI.H  
@@ -29,9 +32,6 @@ ImGui DOS Demo:
 - IMGUIDMO.CPP
 - IMGUIDMO.BAT (WatcomC++)
 - IMDJGPP.BAT (DJGPP)
-
-Here is a video of Dear ImGui at work on FreeDOS:  
-https://www.youtube.com/watch?v=eVba98jsNVs  
 
 #### &emsp;ImGui howto:
   
@@ -57,6 +57,9 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 &emsp;}  
 
 **try IMGUIDMO.BAT for WatcomC** and **IMDJGPP.BAT for DJGPP**
+
+Here is a video of Dear ImGui at work on FreeDOS:  
+https://www.youtube.com/watch?v=eVba98jsNVs  
 
 ## Some basic types
 - ARRAY.HPP - a bit like std::vector  
