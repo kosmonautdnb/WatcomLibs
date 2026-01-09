@@ -15,7 +15,7 @@
 
 #define FASTIMGUIGL // define that for non polygonal drawing (rectangles) (ImGui just supports GL_NEAREST sampling for (QUAD)textures if enabled)
 #define DISABLECTRLCBREAK // program doesn't close on ctrl c
-#define SHIFTCURSORFORMOUSEWHEEL // enables SHIFT+UP/SHIFT+DOWN as mouse scrollwheel "keys"
+//#define SHIFTCURSORFORMOUSEWHEEL // enables SHIFT+UP/SHIFT+DOWN as mouse scrollwheel "keys"
 
 extern int glFrameBufferWidth;
 extern int glFrameBufferHeight;
@@ -540,15 +540,14 @@ void InitImGui(int w, int h)
   io.KeyMap[ImGuiKey_Backspace] = translate(GL_VK_BACKSPACE);
   io.KeyMap[ImGuiKey_Enter] = translate(GL_VK_ENTER);
   io.KeyMap[ImGuiKey_Escape] = translate(GL_VK_ESCAPE);
+  io.KeyMap[ImGuiKey_PageUp] = translate(GL_VK_PAGEUP);
+  io.KeyMap[ImGuiKey_PageDown] = translate(GL_VK_PAGEDOWN);
   io.KeyMap[ImGuiKey_A] = translate(GL_VK_A_CTRL);
   io.KeyMap[ImGuiKey_Z] = translate(GL_VK_Z_CTRL);
   io.KeyMap[ImGuiKey_Y] = translate(GL_VK_Y_CTRL);
   io.KeyMap[ImGuiKey_C] = translate(GL_VK_C_CTRL);
   io.KeyMap[ImGuiKey_V] = translate(GL_VK_V_CTRL);
   io.KeyMap[ImGuiKey_X] = translate(GL_VK_X_CTRL);
-  //io.KeyMap[ImGuiKey_A] = GL_VK_A_CTRL;
-  //io.KeyMap[ImGuiKey_Y] = GL_VK_Y_CTRL;
-  //io.KeyMap[ImGuiKey_Z] = GL_VK_Z_CTRL;
   
   io.RenderDrawListsFn = ImImpl_RenderDrawLists;
   io.SetClipboardTextFn = ImImpl_SetClipboardTextFn;
