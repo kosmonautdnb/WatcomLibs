@@ -1335,7 +1335,7 @@ void ImInfoField() {
   ImGui::TextColored(SelectedColumnCol,"Instructions:");
   ImGui::Text("Mouse left to select.");
   ImGui::Text("Mouse right for play position.");
-  ImGui::Text("Shift to select.");
+  ImGui::Text("Shift to select. A for fast mode.");
   ImGui::Text("Ctrl+C to copy. Ctrl+V to paste.");
   ImGui::Text("Cursor keys to move.");
   ImGui::Text("PageUp+PageDown to move fast.");
@@ -1500,6 +1500,16 @@ String fileDialog(bool loadInsteadOfSave, String *fileName = NULL) {
   return ret;
 }
 
+bool lSwitch = true;
+#define L(__v__) if (lSwitch) {__v__}
+#define NL(__v__) if (!lSwitch) {__v__}
+
+void ImLeaveFastModeButton() {
+  if (ImGui::Button("Leave fast mode")) {
+    lSwitch = true;
+  }
+}
+
 /**
 * The main function.
 */
@@ -1534,6 +1544,8 @@ int main(int argc, const char **argv) {
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     
     ImGuiNewFrame();
+    int currentKey = ImKey();
+    if (currentKey == 'a' && !ImGui::GetIO().WantCaptureKeyboard) lSwitch = !lSwitch;
 
     if (exportFile) {player_mute++;String fileName = fileDialog(false,&exportFileName); export_(fileName.c_str()); exportFile = false;player_mute--;}
     if (saveFile) {player_mute++;String fileName = fileDialog(false,&saveFileName); save(fileName.c_str()); saveFile = false;player_mute--;}
@@ -1542,12 +1554,12 @@ int main(int argc, const char **argv) {
     ImGui::SetNextWindowPos(ImVec2(0,0));
     ImGui::SetNextWindowSize(ImVec2(glFrameBufferWidth,glFrameBufferHeight));
     ImGui::Begin("Speaker Tracker v1.0 by Puls4r",0,ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoCollapse);
-    ImBPMField(); ImSameLine(); ImHorSeparator(); ImSameLine(); ImSongNameField(); ImSameLine(); ImHorSeparator(); ImSameLine(); ImAuthorField(); ImSameLine(); ImHorSeparator(); ImSameLine(); ImTimeString();
+    L(ImBPMField(); ImSameLine(); ImHorSeparator(); ImSameLine(); ImSongNameField(); ImSameLine(); ImHorSeparator(); ImSameLine(); ImAuthorField(); ImSameLine(); ImHorSeparator(); ImSameLine();) ImTimeString();
     ImSeparator();
-    ImPlayButton(); ImSameLine(); ImHorSeparator(); ImSameLine(); ImSongLength();ImSameLine(); ImHorSeparator(); ImSameLine(); ImPatternLength(); ImSameLine(); ImHorSeparator(); ImSameLine(); ImSaveButton(); ImSameLine(); ImLoadButton();  ImSameLine(); ImExportButton(); ImSameLine(); ImExitButton();
+    ImPlayButton(); NL(ImSameLine(); ImLeaveFastModeButton();); L(ImSameLine(); ImHorSeparator(); ImSameLine(); ImSongLength();ImSameLine(); ImHorSeparator(); ImSameLine(); ImPatternLength(); ImSameLine(); ImHorSeparator(); ImSameLine(); ImSaveButton(); ImSameLine(); ImLoadButton();  ImSameLine(); ImExportButton(); ImSameLine(); ImExitButton();)
     ImSeparator();
-    ImPatternEditField(); ImSameLine(); ImTrackEditField(); ImSameLine(); ImInfoField();
-    ImInstrumentField();
+    L(ImPatternEditField(); ImSameLine();) ImTrackEditField(); L(ImSameLine(); ImInfoField();)
+    L(ImInstrumentField();)
     ImGui::End();
 
     ImGui::Render();
