@@ -954,7 +954,7 @@ void ImLoadButton() {
   }
 }
 
-void export(const char *fileName) {
+void export_(const char *fileName) {
   PlayData *p = &player_currentData;
   FILE *out = fopen(fileName,"w");
   fprintf(out,"// SPEAKER TRACKER FILE\n");
@@ -1535,7 +1535,7 @@ int main(int argc, const char **argv) {
     
     ImGuiNewFrame();
 
-    if (exportFile) {player_mute++;String fileName = fileDialog(false,&exportFileName); export(fileName.c_str()); exportFile = false;player_mute--;}
+    if (exportFile) {player_mute++;String fileName = fileDialog(false,&exportFileName); export_(fileName.c_str()); exportFile = false;player_mute--;}
     if (saveFile) {player_mute++;String fileName = fileDialog(false,&saveFileName); save(fileName.c_str()); saveFile = false;player_mute--;}
     if (loadFile) {player_mute++;String fileName = fileDialog(true,&loadFileName); load(fileName.c_str()); loadFile = false;player_mute--;}
 
