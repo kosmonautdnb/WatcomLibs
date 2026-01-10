@@ -73,6 +73,9 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - TYPES.HPP - a bit like "stdint"   
 - VECTOR.HPP - some 3d vector stuff (w is handled differently than xyz)  
 
+## Some useful applications
+- APP_SPKT.CPP - a very rudimentary pc beeper tracker, not reprogramming the timerfrequency and just one voice at a time. Currently only WatcomC. Very simple export format.
+
 ## Some useful classes
 - CHARSET.HPP - a tiny font to be rendered per pixel
 - CGLTF - a gltf loader https://github.com/jkuhlmann/cgltf
