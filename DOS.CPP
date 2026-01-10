@@ -311,6 +311,18 @@ void dosRemoveFile(const String &fileName) {
 void dosRenameFile(const String &oldFileName, const String &newFileName) {
   rename(dosFileName(oldFileName).c_str(), dosFileName(newFileName).c_str());
 }
+#else
+void dosCreateFolder(const String &folderName) {
+}
+
+void dosDeleteFolder(const String &folderName) {
+}
+
+void dosRemoveFile(const String &fileName) {
+}
+
+void dosRenameFile(const String &oldFileName, const String &newFileName) {
+}
 #endif
 
 String unixFileName(const String &filePath) {

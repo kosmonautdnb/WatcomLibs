@@ -40,6 +40,7 @@
 #include "DOS.HPP"
 #include "SPEAKER.HPP"
 #include "FILEDLG.HPP"
+#include "GLEGA.HPP"
 
 #ifdef __WATCOMC__
 #include <i86.h>
@@ -1352,6 +1353,22 @@ void ImInfoField() {
   ImGui::PopStyleVar();
 }
 
+void ImInfoField2() {
+  ImGui::PushItemWidth(60);
+  if (ImGui::InputInt("Octave",&currentOctave)) {
+  }
+  checkCurrentOctave();
+  ImGui::SameLine();
+  int b = getPlayTrackPos();
+  ImGui::InputInt("Sng Pos", &b);
+  setPlayTrackPos(b);
+  ImGui::SameLine();
+  bool a = player_patternLoop;
+  ImGui::Checkbox("Loop pattern", &a);
+  player_patternLoop = a;
+  ImGui::PopItemWidth();
+}
+
 void clearSong() {
   player_isPlaying = false;
   BPM = correctBPM(160.f);
@@ -1516,21 +1533,27 @@ void ImLeaveFastModeButton() {
 int main(int argc, const char **argv) {
 
   glWatcomPrecisionTimer(GL_TRUE);
-  installTimerIrqHandler();
 
-  const bool pureVGA = false;
-  if (pureVGA) {
-    glVGA();
+  const bool alwaysEga = true;
+  if (argc != 1 || alwaysEga) {
+    glEga(XRES,YRES);
   } else {
-    if (!glVesa(XRES,YRES,16)) { // 16 bit is a lot faster than 32 bit on NVidia cards
-      printf("No Vesa %dx%dx16 found.\n", XRES, YRES);
-      if (!glVGA())
-      {
-        printf("No VGA device found.\n");
-        exit(0);
+    const bool pureVGA = false;
+    if (pureVGA) {
+      glVGA();
+    } else {
+      if (!glVesa(XRES,YRES,16)) { // 16 bit is a lot faster than 32 bit on NVidia cards
+        printf("No Vesa %dx%dx16 found.\n", XRES, YRES);
+        if (!glVGA())
+        {
+          printf("No VGA device found.\n");
+          exit(0);
+        }
       }
     }
   }
+
+  installTimerIrqHandler();
 
   InitImGui(glFrameBufferWidth, glFrameBufferHeight);
 
@@ -1545,7 +1568,9 @@ int main(int argc, const char **argv) {
     
     ImGuiNewFrame();
     int currentKey = ImKey();
-    if (currentKey == 'a' && !ImGui::GetIO().WantCaptureKeyboard) lSwitch = !lSwitch;
+    bool esc = ImKeyPressed(ImGuiKey_Escape);
+    if ((currentKey == 'a' || (esc && !lSwitch)) && !ImGui::GetIO().WantCaptureKeyboard) {lSwitch = !lSwitch; ImGui::Render(); continue;}
+
 
     if (exportFile) {player_mute++;String fileName = fileDialog(false,&exportFileName); export_(fileName.c_str()); exportFile = false;player_mute--;}
     if (saveFile) {player_mute++;String fileName = fileDialog(false,&saveFileName); save(fileName.c_str()); saveFile = false;player_mute--;}
@@ -1558,7 +1583,7 @@ int main(int argc, const char **argv) {
     ImSeparator();
     ImPlayButton(); NL(ImSameLine(); ImLeaveFastModeButton();); L(ImSameLine(); ImHorSeparator(); ImSameLine(); ImSongLength();ImSameLine(); ImHorSeparator(); ImSameLine(); ImPatternLength(); ImSameLine(); ImHorSeparator(); ImSameLine(); ImSaveButton(); ImSameLine(); ImLoadButton();  ImSameLine(); ImExportButton(); ImSameLine(); ImExitButton();)
     ImSeparator();
-    L(ImPatternEditField(); ImSameLine();) ImTrackEditField(); L(ImSameLine(); ImInfoField();)
+    L(ImPatternEditField(); ImSameLine();) ImTrackEditField(); L(ImSameLine(); ImInfoField();) NL(ImSameLine(); ImInfoField2(););
     L(ImInstrumentField();)
     ImGui::End();
 
