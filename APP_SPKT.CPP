@@ -80,6 +80,7 @@ volatile int player_patternPos = 0;
 volatile int player_fullPos = 0;
 volatile int player_timerTicks = 0;
 volatile int player_ticker = 0;
+volatile int player_mute = 0;
 bool player_requestSongUpdate = false;
 volatile int scrollTo = -1;
 
@@ -137,6 +138,11 @@ void speaker_tone_direct(int freq) {
 
 
 static void timerIrqHandler() {
+  if (player_mute != 0) {
+    speaker_tone_off2();
+    timerIrqTicks++;
+    return;
+  }
   if (shouldBeep>0) {
     if (shouldBeepFrequency >0) {
       speaker_tone_freq2(shouldBeepFrequency);
@@ -245,6 +251,7 @@ void installTimerIrqHandler() {
   LOCK_VARIABLE(player_timerTicks);
   LOCK_VARIABLE(player_ticker);
   LOCK_VARIABLE(scrollTo);
+  LOCK_VARIABLE(player_mute);
 }
 #endif //__DJGPP__
 
@@ -1114,6 +1121,7 @@ void checkCurrentOctave() {
 }
 
 void handleTrackEditKeys(bool justBasicKeys) {
+  if (justBasicKeys) return;
   bool shiftPressed = ImGui::GetIO().KeyShift; // no other way to access shift?
   if (ImKeyPressed(ImGuiKey_DownArrow)) {
     advanceSelection(-1,0,1);
@@ -1375,6 +1383,7 @@ void clearSong() {
   player_speakerVal = 0;
   //player_timerTicks = 0;
   player_ticker = 0;
+  //player_mute = 0;
   memset(copyPasteBuffer,0,sizeof(copyPasteBuffer));
   copyPasteSideStart = 0;
   copyPasteSideEnd = 0;
@@ -1526,9 +1535,9 @@ int main(int argc, const char **argv) {
     
     ImGuiNewFrame();
 
-    if (exportFile) {String fileName = fileDialog(false,&exportFileName); export(fileName.c_str()); exportFile = false;}
-    if (saveFile) {String fileName = fileDialog(false,&saveFileName); save(fileName.c_str()); saveFile = false;}
-    if (loadFile) {String fileName = fileDialog(true,&loadFileName); load(fileName.c_str()); loadFile = false;}
+    if (exportFile) {player_mute++;String fileName = fileDialog(false,&exportFileName); export(fileName.c_str()); exportFile = false;player_mute--;}
+    if (saveFile) {player_mute++;String fileName = fileDialog(false,&saveFileName); save(fileName.c_str()); saveFile = false;player_mute--;}
+    if (loadFile) {player_mute++;String fileName = fileDialog(true,&loadFileName); load(fileName.c_str()); loadFile = false;player_mute--;}
 
     ImGui::SetNextWindowPos(ImVec2(0,0));
     ImGui::SetNextWindowSize(ImVec2(glFrameBufferWidth,glFrameBufferHeight));
