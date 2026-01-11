@@ -149,6 +149,10 @@ static unsigned short _dosGetFileTime(const String &filePath) {
 }
 
 static unsigned int _dosGetFileSize(const String &filePath) {
+#ifdef __DJGPP__
+  struct stat buf;
+  if (stat(filePath.c_str(), &buf) == 0) return buf.st_size;
+#endif // __DJGPP__
   FILE *in = fopen(filePath.c_str(),"rb");
   if (in == NULL) return 0;
   fseek(in,0,SEEK_END);
@@ -226,7 +230,7 @@ Array<File> dosGetFiles(const String &filePath) {
       r.name = toFileName(filePath,direntp->d_name);
       r.size = _dosGetFileSize(r.name.full);
       r.date = toFileTime(_dosGetFileDate(r.name.full),_dosGetFileTime(r.name.full));
-      r.attributes = direntp->d_type; // wrong
+      r.attributes = direntp->d_type == DT_DIR ? DOS_ATTR_SUBDIR : 0;
       ret.push_back(r);
     } while(1==1);
     closedir( dirp );

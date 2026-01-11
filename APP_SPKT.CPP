@@ -68,11 +68,13 @@
 #define MAXTICKS 5
 #define MINCENTS (-12*CENTS*10)
 #define MAXCENTS (12*CENTS*10)
+#define VK_INSERT (82+256)
 
 volatile int shouldBeep = 0;
 volatile double shouldBeepFrequency = 0;
 volatile int timerIrqTicks = 0;
 volatile bool player_isPlaying = false;
+volatile bool player_isEditMode = true;
 volatile bool player_initial = false;
 volatile bool player_scroll = false;
 volatile bool player_patternLoop = false;
@@ -243,6 +245,7 @@ void installTimerIrqHandler() {
   LOCK_VARIABLE(timerIrqTicks);
   LOCK_VARIABLE(player_currentData);
   LOCK_VARIABLE(player_isPlaying);
+  LOCK_VARIABLE(player_isEditMode);
   LOCK_VARIABLE(player_initial);
   LOCK_VARIABLE(player_scroll);
   LOCK_VARIABLE(player_patternLoop);
@@ -464,10 +467,52 @@ void moveSelectionX(int colAdd) {
   }          
 }
 
+void deleteOnePatternRow() {
+  int pattern = selectionStartPattern;
+  if (pattern<0) return;
+  if (pattern>=MAXPATTERNS) return;
+
+  selectionStartPos--;
+  if (selectionStartPos<0) selectionStartPos = 0;
+  selectionEndPos--;
+  if (selectionEndPos<selectionStartPos+1) selectionEndPos=selectionStartPos+1;
+
+  int pos = selectionStartPos;
+  if (pos < 0) return;
+  if (pos >= PATTERNLENGTH) return;
+  for (int i = pos; i < PATTERNLENGTH; i++) {
+    PATTERN replaceEntry;
+    if (i < PATTERNLENGTH-1) 
+      replaceEntry = pat[pattern][i+1];
+    else
+      memset(&replaceEntry,0,sizeof(replaceEntry));
+    pat[pattern][i] = replaceEntry;
+  }
+
+  scrollTo = selectionStartPos;
+}
+
+void insertOnePatternRow() {
+  int pattern = selectionStartPattern;
+  if (pattern<0) return;
+  if (pattern>=MAXPATTERNS) return;
+  int pos = selectionStartPos;
+  if (pos < 0) return;
+  if (pos >= PATTERNLENGTH) return;
+  for (int i = PATTERNLENGTH-1; i >= pos ; i--) {
+    PATTERN replaceEntry;
+    if (i != pos) 
+      replaceEntry = pat[pattern][i-1];
+    else
+      memset(&replaceEntry,0,sizeof(replaceEntry));
+    pat[pattern][i] = replaceEntry;
+  }
+}
+
 void advanceSelection(int selectionMode, int sideAdd, int posAdd) {
   bool shiftPressed = ImGui::GetIO().KeyShift; // no other way to access shift?
 
-  if (!shiftPressed) {
+  if (!shiftPressed || selectionMode == 1) {
     if (sideAdd != 0) {
       selectionStartSide += sideAdd;
       if (selectionStartSide > 2) {selectionStartSide = 0; moveSelectionX(1);}
@@ -480,11 +525,8 @@ void advanceSelection(int selectionMode, int sideAdd, int posAdd) {
       if (selectionStartPos < 0) {selectionStartPos = 0;}
       scrollTo = selectionStartPos;
     }
-  
-    if (selectionMode < 0) {
-      selectionEndSide = selectionStartSide + 1;
-      selectionEndPos = selectionStartPos + 1;
-    }
+    selectionEndSide = selectionStartSide + 1;
+    selectionEndPos = selectionStartPos + 1;
   } else {
     if (sideAdd != 0) {
       selectionEndSide += sideAdd;
@@ -689,6 +731,14 @@ int getNoteValueForKey(int key, int octave, int cents) {
 
 bool ImKeyPressed(int key) {
   return ImGui::IsKeyPressed(ImGui::GetKeyIndex(key));
+}
+
+int mouseClickOff = 0;
+bool ImIsMouseClicked(int button) {
+  mouseClickOff--;
+  if (mouseClickOff>100 || mouseClickOff<0) mouseClickOff = 0;
+  if (mouseClickOff != 0) return false;
+  return ImGui::IsMouseClicked(button);
 }
 
 int ImKey() {
@@ -1027,7 +1077,7 @@ void ImPatternEditField() {
   int columnWidth = 30;
   int numbersWidth = 16+16;
   int scrollWidth = 16;
-  bool mouseRight = ImGui::IsMouseClicked(1);
+  bool mouseRight = ImIsMouseClicked(1);
   int width = numbersWidth+columnWidth*CHANNELS+scrollWidth;
   int height = WINDOWHEIGHT/2;
   ImVec2 mp = ImGui::GetMousePos();
@@ -1108,6 +1158,10 @@ void ImInstrumentField() {
       if (instruments[currentInstrument].cents[i]<MINCENTS) instruments[currentInstrument].cents[i] = MINCENTS;
       if (instruments[currentInstrument].cents[i]>MAXCENTS) instruments[currentInstrument].cents[i] = MAXCENTS;
       ImGui::PopItemWidth();
+      if (instruments[currentInstrument].cents[i]<=MINCENTS) {
+        ImGui::SameLine();
+        ImGui::Text("OFF");
+      }
     } else {
       ImGui::Text(" %c%c  ---",i == instruments[currentInstrument].loopStart ? 'l':' ', i == instruments[currentInstrument].loopEnd ? 'e':' ');
     }
@@ -1125,6 +1179,26 @@ void ImInstrumentField() {
 void checkCurrentOctave() {
   if (currentOctave < 0) currentOctave = 0;
   if (currentOctave > 9) currentOctave = 9;
+}
+
+void noteInput(bool writeData) {
+  int key = ImKey();
+  bool shiftPressed = ImGui::GetIO().KeyShift; // no other way to access shift?
+  int note = getNoteValueForKey(key, currentOctave, currentCents);
+  if (note >= 0 && writeData) {
+    setPatternValueWithInstrument(note,currentInstrument,selectionStartPattern,selectionStartPos);
+    advanceSelection(-1,0,1);
+    if (oneShotNotes) {
+      if (getPatternValue(selectionStartPattern,selectionStartPos,0) == 0)
+        setPatternValueWithInstrument(1,currentInstrument,selectionStartPattern,selectionStartPos);
+    }
+    player_requestSongUpdate = true;
+  }
+  if (!shiftPressed) {
+    if (key == '+') currentOctave++;
+    if (key == '-') currentOctave--;
+  }
+  checkCurrentOctave();
 }
 
 void handleTrackEditKeys(bool justBasicKeys) {
@@ -1150,20 +1224,11 @@ void handleTrackEditKeys(bool justBasicKeys) {
   }
   if (!justBasicKeys) {
     int key = ImKey();
-    int note = getNoteValueForKey(key, currentOctave, currentCents);
-    if (note >= 0) {
-      setPatternValueWithInstrument(note,currentInstrument,selectionStartPattern,selectionStartPos);
-      advanceSelection(-1,0,1);
-      if (oneShotNotes) {
-        if (getPatternValue(selectionStartPattern,selectionStartPos,0) == 0)
-          setPatternValueWithInstrument(1,currentInstrument,selectionStartPattern,selectionStartPos);
-      }
-      player_requestSongUpdate = true;
-    }
-    if (!shiftPressed) {
-      if (key == '+') currentOctave++;
-      if (key == '-') currentOctave--;
-    } else {
+    if (ImKeyPressed(ImGuiKey_Backspace)) deleteOnePatternRow();
+    if (ImGui::IsKeyPressed(VK_INSERT)) insertOnePatternRow();
+
+    noteInput(true);
+    if (shiftPressed) {
       int value = getPatternValue(selectionStartPattern,selectionStartPos,0);
       if ((key == '+' || key == '-') && getOctave(value) >= 0) {
         if (key == '+') {currentOctave = getOctave(value)+1;}
@@ -1182,13 +1247,19 @@ void handleTrackEditKeys(bool justBasicKeys) {
   }
 }
 
+void ImTestModeField() {
+  ImGui::Text("Play/Testmode");
+  if (!ImGui::GetIO().WantCaptureKeyboard) noteInput(false);
+}
+
 void ImTrackEditField() {
+  if (!player_isEditMode) {ImTestModeField(); return;}
   int columnWidth = 50+16;
   int numbersWidth = 24+8;
   int scrollWidth = 16;
   ImVec2 mp = ImGui::GetMousePos();
-  bool mouseLeft = ImGui::IsMouseClicked(0);
-  bool mouseRight = ImGui::IsMouseClicked(1);
+  bool mouseLeft = ImIsMouseClicked(0);
+  bool mouseRight = ImIsMouseClicked(1);
   int width = numbersWidth+columnWidth*CHANNELS+scrollWidth;
   int height = WINDOWHEIGHT;
   ImGui::PushStyleVar(ImGuiStyleVar_ChildWindowRounding, 0.0f);
@@ -1199,6 +1270,7 @@ void ImTrackEditField() {
   noEditField = noEditField || isMultiLineSelection();
   bool shiftPressed = ImGui::GetIO().KeyShift; // no other way to access shift?
   noEditField = noEditField || shiftPressed;
+
   for (int col = 0; col < CHANNELS; col++) {
     ImGui::SetColumnOffset(-1,col * columnWidth + (col == 0 ? 0 : numbersWidth));
     int pattern = getCurrentPatternForColumn(col);
@@ -1267,6 +1339,7 @@ void ImTrackEditField() {
   }
   ImGui::EndChild();
   ImGui::PopStyleVar();
+  if (ImKeyPressed(ImGuiKey_Tab)) advanceSelection(1,ImGui::GetIO().KeyShift?-1:1,0);
   handleTrackEditKeys(ImGui::GetIO().WantCaptureKeyboard);
 }
 
@@ -1303,9 +1376,10 @@ void ImExitButton() {
     escapeOn = false;
   }
   if (ImGui::BeginPopupModal("Exit##EXITMODAL",0,ImGuiWindowFlags_AlwaysAutoResize)) {
+    mouseClickOff = 10;
     ImGui::Text("Do you really want to exit?\n\n");
     ImGui::Separator();
-    if (ImGui::Button("Exit##EXITEXITBUTTON") || ImKeyPressed(ImGuiKey_Enter)) { ImGui::CloseCurrentPopup(); quit = true;}
+    if (ImGui::Button("Exit##EXITEXITBUTTON") || ImKeyPressed(ImGuiKey_Enter)) { quit = true; ImGui::CloseCurrentPopup(); }
     ImGui::SameLine();
     if (ImGui::Button("Cancel##EXITCANCELBUTTON") || (escapeOn && ImKeyPressed(ImGuiKey_Escape))) { ImGui::CloseCurrentPopup(); }
     ImGui::EndPopup();
@@ -1329,6 +1403,10 @@ void ImInfoField() {
   int b = getPlayTrackPos();
   ImGui::InputInt("Sng Pos", &b);
   setPlayTrackPos(b);
+  ImGui::SameLine();
+  bool c = player_isEditMode;
+  ImGui::Checkbox("Edit",&c);
+  player_isEditMode = c;
   a = player_patternLoop;
   ImGui::Checkbox("Loop pattern", &a); ImGui::SameLine(); ImGui::Checkbox("One shot notes", &oneShotNotes);
   player_patternLoop = a;
@@ -1344,7 +1422,7 @@ void ImInfoField() {
   ImGui::Text("Mouse right for play position.");
   ImGui::Text("Shift to select. A for fast mode.");
   ImGui::Text("Ctrl+C to copy. Ctrl+V to paste.");
-  ImGui::Text("Cursor keys to move.");
+  ImGui::Text("Cursor keys to move. Tab+ShiftTab.");
   ImGui::Text("PageUp+PageDown to move fast.");
   ImGui::Text("+/- to change octave.");
   ImGui::Text("Shift +/- to change note octave.");
@@ -1379,6 +1457,7 @@ void ImInfoField2() {
 
 void clearSong() {
   player_isPlaying = false;
+  player_isEditMode = true;
   BPM = correctBPM(160.f);
   SONGLENGTH = 1;
   PATTERNLENGTH = 32;
@@ -1438,48 +1517,56 @@ void generatePlayData(PlayData *d) {
   memset(insPos,0,sizeof(insPos));
   for (int sng = 0; sng < SONGLENGTH; sng++) {
     for (int pos = 0; pos < PATTERNLENGTH; pos++) {
-      for (int ch = 0; ch < CHANNELS; ch++) {
-        int pattern = patterns[ch][sng];
-        int v = getPatternValue(pattern,pos,0);
-        if (v < 2) {
-          if (v == 1) cts[ch] = 0;
-        } else {
-          v -= 2;
-          int cents =  v % CENTS;
-          int note = (v / CENTS) % 12;
-          int octave = v / CENTS / 12;
-          if (octave < 0) octave = 0;
-          if (octave > 9) octave = 9;
-          cts[ch] = (note+(octave+1)*12)*CENTS+cents;
+      for (int i = 0; i < d->timerTicks; i++) {
+        if (i == 0) {
+          {for (int ch = 0; ch < CHANNELS; ch++) {
+            int pattern = patterns[ch][sng];
+            int v = getPatternValue(pattern,pos,0);
+            if (v < 2) {
+              if (v == 1) cts[ch] = 0;
+            } else {
+              v -= 2;
+              int cents =  v % CENTS;
+              int note = (v / CENTS) % 12;
+              int octave = v / CENTS / 12;
+              if (octave < 0) octave = 0;
+              if (octave > 9) octave = 9;
+              cts[ch] = (note+(octave+1)*12)*CENTS+cents;
+            }
+            int i2 = getPatternValue(pattern,pos,1);
+            if (i2 > 0) {ins[ch]=i2-1;insPos[ch]=0;}
+          }}
         }
-        int i = getPatternValue(pattern,pos,1);
-        if (i > 0) {ins[ch]=i-1;insPos[ch]=0;}
-      }
-      double v = 0;
-      int rch = -1;
-      {for (int ch = CHANNELS-1; ch >= 0; ch--) {
-        if (cts[ch] != 0) {
-          v = cts[ch];
-          rch = ch;
-          break;
-        }
-      }}
-      for (int i =0; i < d->timerTicks; i++) {
+
+        double v = 0;
+        {for (int ch = CHANNELS-1; ch >= 0; ch--) {
+          if (cts[ch] != 0) {
+            double insCents = ch<0?0:instruments[ins[ch]].cents[insPos[ch]];
+            v = cts[ch]+insCents;
+            if (v < 0) {
+              if (insCents <= MINCENTS) 
+                v = 0;
+              else
+                v = 1;
+            }
+            if (v != 0) break;
+          }
+        }}
+  
         int k = 0;
         if (v != 0) {
-          double insCents = rch<0?0:instruments[ins[rch]].cents[insPos[rch]];
-          double freq = NOTE_C4*pow(2.0,1.0/(12.0*CENTS)*(v-1*12*CENTS-4*12*CENTS+insCents));
+          double freq = NOTE_C4*pow(2.0,1.0/(12.0*CENTS)*(v-1*12*CENTS-4*12*CENTS));
           if (freq < 1) freq = 1;
           k = (int)(1193180 / freq);
         }
         dst->freq = k;
         dst++;
-        for (int ch = 0; ch < CHANNELS; ch++) {
+        {for (int ch = 0; ch < CHANNELS; ch++) {
           insPos[ch]++;
           if (insPos[ch] == instruments[ins[ch]].loopEnd) insPos[ch]=instruments[ins[ch]].loopStart;
           if (insPos[ch] < 0) insPos[ch] = 0;
           if (insPos[ch] >= MAXINSTRUMENTLENGTH) insPos[ch] = MAXINSTRUMENTLENGTH-1;
-        }
+        }}
       }
     }
   }
@@ -1540,10 +1627,9 @@ void ImLeaveFastModeButton() {
 */
 int main(int argc, const char **argv) {
 
-  glWatcomPrecisionTimer(GL_TRUE);
+  //glWatcomPrecisionTimer(GL_TRUE);
 
-  const bool alwaysEga = true;
-  if (argc != 1 || alwaysEga) {
+  if (argc == 1) {
     glEga(XRES,YRES);
   } else {
     const bool pureVGA = false;
@@ -1581,7 +1667,7 @@ int main(int argc, const char **argv) {
     if (currentKey == '=') selectColumn(0);
     if (currentKey == '!') selectColumn(1);
     if (currentKey == '\"') selectColumn(2);
-
+    if (currentKey == ' ' && ImGui::GetIO().KeyShift) {player_isEditMode = !player_isEditMode; ImGui::Render(); continue;}
 
     if (exportFile) {player_mute++;String fileName = fileDialog(false,&exportFileName); if (!fileName.empty()) export_(fileName.c_str()); exportFile = false;player_mute--;}
     if (saveFile) {player_mute++;String fileName = fileDialog(false,&saveFileName); if (!fileName.empty()) save(fileName.c_str()); saveFile = false;player_mute--;}
