@@ -84,7 +84,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - DELAUNTR.HPP - 2D Delaunator derived from https://github.com/delfrrr/delaunator-cpp.git
 - DELAUTST.CPP - 2D Delaunay triangulation test program. (Delaunator)
 - DELAUTST.BAT - Builds 2D Delaunay triangulation test. (Delaunator)
-- DOS.HPP - easy access to DOS functionality, comes with long file name support
+- DOS.HPP - easy access to DOS functionality, comes with long file name support for WatcomC/OpenWatcom, DJGPP already has that.
 - ENC_H264.HPP - an h264 encoder (with .cpp example). MINIH264. https://github.com/lieff/minih264 (ffmpeg -i your_file.h264 -vcodec copy output.mkv) or use minimp4.cpp
 - FILEDLG.HPP - a DOS file dialog window written for IMGUI  
 - GENANN.HPP - a simple neural net. https://github.com/codeplea/genann
