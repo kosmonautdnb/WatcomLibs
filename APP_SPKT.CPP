@@ -296,7 +296,7 @@ ImVec4 DescColumnCol(0.5,0.5,0.5,1);
 ImVec4 PlayColumnCol(1.0,0,0,1);
 ImVec4 WhiteColumnCol(1.0,1.0,1.0,1);
 ImVec4 SelectedColumnCol(0.0,0.5,1.0,1);
-ImVec4 InvalidCol(0.1,0.1,0.1,1);
+ImVec4 InvalidCol(0.2,0.2,0.2,1);
 
 int selectionStartPattern = -1;
 int selectionStartPos = -1;
@@ -428,6 +428,12 @@ void setSelection(int pattern, int pos, int side) {
     selectionEndPos = pos+1;
     selectionEndSide = side+1;
   }
+}
+
+void selectColumn(int column) {
+  selectionStartPattern = getCurrentPatternForColumn(column);
+  selectionStartSide = 0;
+  selectionEndSide = 1;
 }
 
 bool isSelected(int pattern, int pos, int side) {
@@ -1343,7 +1349,7 @@ void ImInfoField() {
   ImGui::Text("+/- to change octave.");
   ImGui::Text("Shift +/- to change note octave.");
   ImGui::Text("O toggle play with restart.");
-  ImGui::Text("P to toggle play.");
+  ImGui::Text("P toggle play. Shift+0,1,2 Prio.");
   ImGui::Text("0 play from cursor.");
   ImGui::Text("QWERTZU/QWERTYU/XCVBNM, for major.");
   ImGui::Text("23567/DFHJK for minor.");
@@ -1355,17 +1361,19 @@ void ImInfoField() {
 
 void ImInfoField2() {
   ImGui::PushItemWidth(60);
-  if (ImGui::InputInt("Octave",&currentOctave)) {
+  if (ImGui::InputInt("Oct",&currentOctave)) {
   }
   checkCurrentOctave();
   ImGui::SameLine();
   int b = getPlayTrackPos();
-  ImGui::InputInt("Sng Pos", &b);
+  ImGui::InputInt("SPos", &b);
   setPlayTrackPos(b);
   ImGui::SameLine();
   bool a = player_patternLoop;
-  ImGui::Checkbox("Loop pattern", &a);
+  ImGui::Checkbox("LoopP", &a);
   player_patternLoop = a;
+  ImGui::SameLine();
+  ImGui::InputInt("Instr",&currentInstrument);
   ImGui::PopItemWidth();
 }
 
@@ -1570,11 +1578,14 @@ int main(int argc, const char **argv) {
     int currentKey = ImKey();
     bool esc = ImKeyPressed(ImGuiKey_Escape);
     if ((currentKey == 'a' || (esc && !lSwitch)) && !ImGui::GetIO().WantCaptureKeyboard) {lSwitch = !lSwitch; ImGui::Render(); continue;}
+    if (currentKey == '=') selectColumn(0);
+    if (currentKey == '!') selectColumn(1);
+    if (currentKey == '\"') selectColumn(2);
 
 
-    if (exportFile) {player_mute++;String fileName = fileDialog(false,&exportFileName); export_(fileName.c_str()); exportFile = false;player_mute--;}
-    if (saveFile) {player_mute++;String fileName = fileDialog(false,&saveFileName); save(fileName.c_str()); saveFile = false;player_mute--;}
-    if (loadFile) {player_mute++;String fileName = fileDialog(true,&loadFileName); load(fileName.c_str()); loadFile = false;player_mute--;}
+    if (exportFile) {player_mute++;String fileName = fileDialog(false,&exportFileName); if (!fileName.empty()) export_(fileName.c_str()); exportFile = false;player_mute--;}
+    if (saveFile) {player_mute++;String fileName = fileDialog(false,&saveFileName); if (!fileName.empty()) save(fileName.c_str()); saveFile = false;player_mute--;}
+    if (loadFile) {player_mute++;String fileName = fileDialog(true,&loadFileName); if (!fileName.empty()) load(fileName.c_str()); loadFile = false;player_mute--;}
 
     ImGui::SetNextWindowPos(ImVec2(0,0));
     ImGui::SetNextWindowSize(ImVec2(glFrameBufferWidth,glFrameBufferHeight));
