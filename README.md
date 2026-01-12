@@ -76,6 +76,8 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 ## Some useful applications
 **Use APPDJGPP.BAT to build the APPs with DJGPP and APPWAT.BAT to build the APPs with WatcomC/OpenWatcom.**
 - APP_SPKT.CPP - a very rudimentary pc beeper tracker, not reprogramming the timerfrequency and just one voice at a time. Very simple export format. (**too slow for DosBOX**)
+- APP_KEYS.CPP - outputs the Keyboard Scancodes of the input key.
+- APP_VID.CPP - tests some of the WatcomGL video modies.
 
 ## Some useful classes
 - CHARSET.HPP - a tiny font to be rendered per pixel
