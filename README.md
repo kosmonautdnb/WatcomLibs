@@ -74,7 +74,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - VECTOR.HPP - some 3d vector stuff (w is handled differently than xyz)  
 
 ## Some useful applications
-**You need to link several other cpp files to these apps.**
+**Use APPDJGPP.BAT to build the APPs with DJGPP and APPWAT.BAT to build the APPs with WatcomC/OpenWatcom.**
 - APP_SPKT.CPP - a very rudimentary pc beeper tracker, not reprogramming the timerfrequency and just one voice at a time. Very simple export format. (**too slow for DosBOX**)
 
 ## Some useful classes
