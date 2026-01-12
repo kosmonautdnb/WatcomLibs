@@ -1441,7 +1441,13 @@ void ImInfoField() {
   if (noteDur > 500) noteDur = 500;
   ImGui::SameLine();
   ImGui::Text("Play time:%0.2fs", getPlayTime(player_trackPos,player_patternPos));
-  ImGui::Text("Song play position:%d", player_trackPos);
+  ImGui::Text("Song play position:%d  ", player_trackPos);
+  ImGui::SameLine();
+  if (ImGui::Button("Full stop")) {
+    player_isPlaying = false;
+    shouldBeep = 0;
+    speaker_tone_off2();
+  }
   ImGui::Text("Pattern play position:%d", player_patternPos);
   ImGui::Text("Timer ticks:%d Timer freq:%0.2fHz", player_timerTicks, timerFrequency);
   ImCopyPatternField();
@@ -1686,7 +1692,6 @@ int main(int argc, const char **argv) {
       }
     }
   }
-
   installTimerIrqHandler();
 
   InitImGui(glFrameBufferWidth, glFrameBufferHeight);
@@ -1697,7 +1702,7 @@ int main(int argc, const char **argv) {
   clearSong();
 
   while(!quit) {
-    glClearColor(0.6,0.8,1.0,0);
+    glClearColor(0.6,0.8,1.0,1);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     
     ImGuiNewFrame();
@@ -1709,9 +1714,9 @@ int main(int argc, const char **argv) {
     if (currentKey == '\"') selectColumn(2);
     if (currentKey == ' ' && ImGui::GetIO().KeyShift) {player_isEditMode = !player_isEditMode; ImGui::Render(); continue;}
 
-    if (exportFile) {player_mute++;String fileName = fileDialog(false,&exportFileName); if (!fileName.empty()) export_(fileName.c_str()); exportFile = false;player_mute--;}
-    if (saveFile) {player_mute++;String fileName = fileDialog(false,&saveFileName); if (!fileName.empty()) save(fileName.c_str()); saveFile = false;player_mute--;}
-    if (loadFile) {player_mute++;String fileName = fileDialog(true,&loadFileName); if (!fileName.empty()) load(fileName.c_str()); loadFile = false;player_mute--;}
+    if (exportFile) {player_mute++;String fileName = fileDialog(false,&exportFileName); if (!fileName.empty()) export_(fileName.c_str()); exportFile = false;player_mute--; ImGui::Render(); continue;}
+    if (saveFile) {player_mute++;String fileName = fileDialog(false,&saveFileName); if (!fileName.empty()) save(fileName.c_str()); saveFile = false;player_mute--; ImGui::Render(); continue;}
+    if (loadFile) {player_mute++;String fileName = fileDialog(true,&loadFileName); if (!fileName.empty()) load(fileName.c_str()); loadFile = false;player_mute--; ImGui::Render(); continue;}
 
     ImGui::SetNextWindowPos(ImVec2(0,0));
     ImGui::SetNextWindowSize(ImVec2(glFrameBufferWidth,glFrameBufferHeight));

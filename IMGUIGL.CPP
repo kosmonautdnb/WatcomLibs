@@ -569,6 +569,8 @@ void InitImGui(int w, int h)
   s.Colors[ImGuiCol_Button] = ImVec4(0xff/255.f*0.45f,0,0x40/255.f*0.2f,1.f);
   s.Colors[ImGuiCol_Text] = ImVec4(1,1,1,1);
   s.Colors[ImGuiCol_FrameBg] = ImVec4(0.3,0.3,0.3,1);
+  s.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.8,0.8,0.8,1);
+  s.Colors[ImGuiCol_CheckMark] = ImVec4(0.0,1.0,1.0,1);
 }
 
 static void ImGuiKeyBoardInput() {
