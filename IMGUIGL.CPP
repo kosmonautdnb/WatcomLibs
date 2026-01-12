@@ -290,7 +290,7 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
         *write++ = color;
       }
     }
-    if (noTexture && (t0->isTransparentColor)) {
+    /*if (noTexture && (t0->isTransparentColor)) {
       const int a = (color>>24) & 255;
       for (int x = 0; x < lx; x++) {
         const unsigned int rgba = *write;
@@ -299,7 +299,7 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
         const int b = (((((color>>16) & 255) - ((rgba>>16) & 255))*a)>>8)+((rgba>>16) & 255);
         *write++ = r|(g<<8)|(b<<16)|0xff000000;
       }
-    }
+    }*/
     if (!noTexture) {
       int txp = (int)(tx*4096.0);
       int txpa = (int)(txa*4096.0);
@@ -568,6 +568,7 @@ void InitImGui(int w, int h)
   s.Colors[ImGuiCol_CloseButton] = ImVec4(0xff/255.f*0.15f,0,0x40/255.f*0.0f,1.f);
   s.Colors[ImGuiCol_Button] = ImVec4(0xff/255.f*0.45f,0,0x40/255.f*0.2f,1.f);
   s.Colors[ImGuiCol_Text] = ImVec4(1,1,1,1);
+  s.Colors[ImGuiCol_FrameBg] = ImVec4(0.3,0.3,0.3,1);
 }
 
 static void ImGuiKeyBoardInput() {

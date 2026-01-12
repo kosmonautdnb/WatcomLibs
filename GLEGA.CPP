@@ -196,6 +196,8 @@ static GLvoid glRefreshEga() {
 static GLvoid glDoneEga() {
   if (glIsEga) {
     setBiosGraphicsMode(glEgaGraphicsModeToRestore);
+    glSetRefreshNotification(NULL);
+    glSetDoneNotification(NULL);
     glIsEga = false;
     if (glFrameBuffer0 != NULL) {
       glFree(glFrameBuffer0); glFrameBuffer0 = NULL; glFrameBuffer = NULL;
@@ -215,7 +217,7 @@ static GLvoid glDoneEga() {
   }
 }
 
-bool glEga(int xRes, int yRes) {
+bool glEGA(int xRes, int yRes) {
   glIsEga = false;
   int mode = -1;
   if (xRes == 320 && yRes == 200) mode = 0x0d;

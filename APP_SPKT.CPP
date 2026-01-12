@@ -1670,7 +1670,7 @@ int main(int argc, const char **argv) {
   //glWatcomPrecisionTimer(GL_TRUE);
 
   if (argc == 1) {
-    glEga(XRES,YRES);
+    glEGA(XRES,YRES);
   } else {
     const bool pureVGA = false;
     if (pureVGA) {

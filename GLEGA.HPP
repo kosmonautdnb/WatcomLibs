@@ -3,6 +3,6 @@
 
 extern bool glIsEga;
 
-bool glEga(int xRes, int yRes);
+bool glEGA(int xRes, int yRes);
 
 #endif //__GL_EGA_HPP__
