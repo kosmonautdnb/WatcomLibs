@@ -78,6 +78,7 @@ volatile bool player_isEditMode = true;
 volatile bool player_initial = false;
 volatile bool player_scroll = false;
 volatile bool player_patternLoop = false;
+volatile int player_editInstrumentPos = 0;
 volatile int player_trackPos = 0;
 volatile int player_patternPos = 0;
 volatile int player_fullPos = 0;
@@ -94,6 +95,12 @@ typedef struct PlayNote {
 #define PLAYERMAXSONGLENGTHRAW (MAXSONGLENGTH*MAXPATTERNLENGTH)
 #define PLAYERMAXSONGLENGTH (MAXSONGLENGTH*MAXPATTERNLENGTH*MAXTICKS)
 
+typedef struct INSTRUMENT {
+  int loopStart;
+  int loopEnd;
+  int cents[MAXINSTRUMENTLENGTH];
+} INSTRUMENT;
+
 typedef struct PlayData {
   int timerTicks;
   int songLength;
@@ -101,6 +108,8 @@ typedef struct PlayData {
   int loopStart;
   int loopEnd;
   PlayNote song[PLAYERMAXSONGLENGTH];
+  INSTRUMENT editInstrument;
+  double editInstrumentCents;
 } PlayData;
 
 PlayData player_currentData;
@@ -120,6 +129,7 @@ void speaker_tone_off2() {
 }
 
 void speaker_tone_freq2(double hz) {
+  if (hz == 0) return;
   int a = (int)(1193180 / hz);
   if (a != player_speakerVal) {
     outp(0x43,0xb6);
@@ -147,9 +157,22 @@ static void timerIrqHandler() {
     return;
   }
   if (shouldBeep>0) {
-    if (shouldBeepFrequency >0) {
-      speaker_tone_freq2(shouldBeepFrequency);
-      shouldBeepFrequency = 0;
+    if (player_editInstrumentPos < 0) player_editInstrumentPos = 0;
+    if (player_editInstrumentPos >= MAXINSTRUMENTLENGTH) player_editInstrumentPos = MAXINSTRUMENTLENGTH-1;
+    double centAdd = player_currentData.editInstrument.cents[player_editInstrumentPos];
+    player_editInstrumentPos++;
+    if (player_editInstrumentPos >= player_currentData.editInstrument.loopEnd) {
+      player_editInstrumentPos = player_currentData.editInstrument.loopStart;
+    }
+    if (centAdd < MINCENTS) centAdd = MINCENTS;
+    if (centAdd > MAXCENTS) centAdd = MAXCENTS;
+    double cents = player_currentData.editInstrumentCents;
+    if (centAdd <= MINCENTS) {
+      speaker_tone_off2();     
+    } else {
+      int centsHere = (int)(cents + centAdd);
+      double freq = NOTE_C4*pow(2.0,1.0/(12.0*CENTS)*centsHere);
+      speaker_tone_freq2(freq);
       speaker_tone_on2();
     }
     shouldBeep--;
@@ -256,11 +279,11 @@ void installTimerIrqHandler() {
   LOCK_VARIABLE(player_ticker);
   LOCK_VARIABLE(scrollTo);
   LOCK_VARIABLE(player_mute);
+  LOCK_VARIABLE(player_editInstrumentPos);
 }
 #endif //__DJGPP__
 
 float BPM = 160.f;
-#define BEEPTICKS 3
 
 int SONGLENGTH = 1;
 int PATTERNLENGTH = 32;
@@ -273,12 +296,6 @@ typedef struct PATTERN {
 } PATTERN;
 
 PATTERN pat[MAXPATTERNS][MAXPATTERNLENGTH];
-
-typedef struct INSTRUMENT {
-  int loopStart;
-  int loopEnd;
-  int cents[MAXINSTRUMENTLENGTH];
-} INSTRUMENT;
 
 INSTRUMENT instruments[MAXINSTRUMENTS];
 
@@ -328,6 +345,8 @@ bool saveFile = false;
 String exportFileName = "song.raw";
 String saveFileName = "song.spk";
 String loadFileName = "song.spk";
+
+int setShouldBeep = 0;
 
 int bpmToTimerTicks(double bpm) {
   if (bpm <= 1) return -1;
@@ -680,6 +699,8 @@ void setPatElem(PATTERN *d, PATTERN *s, int side) {
   if (side == 2) copyCents(&d->note,&s->note);
 }
 
+double playCents = 0;
+int noteDur = 3; 
 int tone(int note, int cents, int octave) {
   if (note < 0) note = 0;
   if (note > 11) note = 11;
@@ -688,8 +709,11 @@ int tone(int note, int cents, int octave) {
   if (octave < 0) octave = 0;
   if (octave > 9) octave = 9;
 
-  shouldBeep = BEEPTICKS;
-  shouldBeepFrequency = NOTE_C4*pow(2.0,1.0/(12.0*CENTS)*((note+(octave-4)*12)*CENTS+cents));
+  setShouldBeep = noteDur;
+  playCents = ((note+(octave-4)*12)*CENTS+cents);
+  shouldBeepFrequency = NOTE_C4*pow(2.0,1.0/(12.0*CENTS)*playCents);
+  player_editInstrumentPos = 0;
+  player_requestSongUpdate = true;
 
   return note * CENTS + octave * CENTS * 12 + 2;
 }
@@ -771,7 +795,7 @@ void ImBPMField() {
 }
 
 void ImSongNameField() {
-  ImGui::PushItemWidth(8*SONGNAMELENGTH);
+  ImGui::PushItemWidth(7*SONGNAMELENGTH+2);
   ImGui::PushStyleColor(ImGuiCol_Text,ImVec4(1,1,0.75,1));  
   if (ImGui::InputText("Song",songName,SONGNAMELENGTH)) {
   }
@@ -780,7 +804,7 @@ void ImSongNameField() {
 }
 
 void ImAuthorField() {
-  ImGui::PushItemWidth(8*AUTHORNAMELENGTH);
+  ImGui::PushItemWidth(7*AUTHORNAMELENGTH+2);
   ImGui::PushStyleColor(ImGuiCol_Text,ImVec4(1,1,0.75,1));  
   if (ImGui::InputText("Author",authorName,AUTHORNAMELENGTH)) {
   }
@@ -1410,7 +1434,13 @@ void ImInfoField() {
   a = player_patternLoop;
   ImGui::Checkbox("Loop pattern", &a); ImGui::SameLine(); ImGui::Checkbox("One shot notes", &oneShotNotes);
   player_patternLoop = a;
-  ImGui::Text("Song play time:%0.2fs", getPlayTime(player_trackPos,player_patternPos));
+  ImGui::Text("Key time");
+  ImGui::SameLine();
+  ImGui::InputInt("##NOTEDUR", &noteDur);
+  if (noteDur < 1) noteDur = 1;
+  if (noteDur > 500) noteDur = 500;
+  ImGui::SameLine();
+  ImGui::Text("Play time:%0.2fs", getPlayTime(player_trackPos,player_patternPos));
   ImGui::Text("Song play position:%d", player_trackPos);
   ImGui::Text("Pattern play position:%d", player_patternPos);
   ImGui::Text("Timer ticks:%d Timer freq:%0.2fHz", player_timerTicks, timerFrequency);
@@ -1485,6 +1515,7 @@ void clearSong() {
   player_requestSongUpdate = true; // initial
   player_speakerOn = false;
   player_speakerVal = 0;
+  player_editInstrumentPos = 0;
   //player_timerTicks = 0;
   player_ticker = 0;
   //player_mute = 0;
@@ -1500,6 +1531,9 @@ void clearSong() {
   exportFile = false;
   loadFile = false;
   saveFile = false;
+  playCents = 0;
+  setShouldBeep = 0;
+  noteDur = 3;
 }
 
 void generatePlayData(PlayData *d) {
@@ -1508,6 +1542,8 @@ void generatePlayData(PlayData *d) {
   d->patternLength = PATTERNLENGTH;
   d->loopStart = loopBegin;
   d->loopEnd = loopEnd;
+  memcpy(&d->editInstrument, &instruments[currentInstrument], sizeof(INSTRUMENT));
+  d->editInstrumentCents = playCents;
   PlayNote *dst = d->song;
   double cts[CHANNELS];
   memset(cts,0,sizeof(cts));
@@ -1587,6 +1623,10 @@ void requestSongUpdate() {
       while(ticks == timerIrqTicks) {;} // wait after the irq, we should have enough time after it to copy the data
       memcpy(&player_currentData,&player_nextData,sizeof(player_currentData));
     }
+  }
+  if (setShouldBeep != 0) {
+    shouldBeep = setShouldBeep+1;
+    setShouldBeep = 0;
   }
 }
 
