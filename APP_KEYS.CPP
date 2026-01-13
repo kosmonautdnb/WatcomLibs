@@ -38,14 +38,29 @@
 #include <dos.h>
 #endif // __DJGPP__
 
+#ifdef __WATCOMC__
+GLuint int16_1(); // we need the zero flag it's not well exposed by the watcom api sorry that's why some asm here
+#pragma aux int16_1="mov ah,0x01""int 0x16""jz do""mov eax,0""jmp dont""do:""mov eax,1""dont:" value[eax] modify[eax ebx ecx edx]
+#endif
+#ifdef __DJGPP__
+GLuint int16_1() {
+  GLuint ret;
+  __asm__ __volatile__("\tmovb $1,%%ah\n""\tint $0x16\n""\tjz 1f\n""\tmovl $0,%%eax\n""\tjmp 2f\n""1:\n""\tmovl $1,%%eax\n""2:\n" : "=a" (ret));
+  return ret;
+}
+#endif
+
 int main(int argc, char *argv[]) {
   int key = 0;
   printf("Press a key:\n");
   while(1) {
     key = glNextKey();
+    GLboolean shift,ctrl,alt;
+    glSpecialKeys(&shift,&ctrl,&alt);
+    if (shift != 0x00) printf("shift;");
+    if (ctrl != 0x00) printf("ctrl;");
+    if (alt != 0x00) printf("alt;");
     if (key != 0) break;
-    for (volatile int i = 0; i < 100000; i++) {key+=rand()&255;}
-    if (key == 100000) break;
   }
   printf("WatcomGL keycode:%d ($%04x)\n", key, key);
 
