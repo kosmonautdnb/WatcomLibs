@@ -3,6 +3,7 @@
   --
   This is a simple demo app that may be used as a tracker for the PC-Speaker (the beeper).
   It outputs one channel / frequency at a time and doesn't reprogram the timers speed, since that may be problematic with DOS if not done 100% propper.
+  It's just fastcoded and not clean to look at...
   --
 */
 /*
@@ -56,6 +57,7 @@
 #define XRES 640
 #define YRES 480
 #define WINDOWHEIGHT 410
+#define ALSOUSEADLIB
 
 #define NOTE_C4 261.63
 #define CHANNELS 3
@@ -86,6 +88,7 @@ volatile int player_timerTicks = 0;
 volatile int player_ticker = 0;
 volatile int player_mute = 0;
 volatile bool player_useAdlib = false;
+volatile double player_hzAdlib = 0;
 bool player_requestSongUpdate = false;
 volatile int scrollTo = -1;
 
@@ -119,23 +122,143 @@ PlayData player_nextData;
 volatile bool player_speakerOn = false;
 volatile int player_speakerVal = 0;
 
+//>>>>------ ADLIB
+
+#define ADLIBPORT 0x388
+#define ADLIBDATAPORT (ADLIBPORT+1)
+
+void selectAdlibReg(unsigned char reg) {
+#ifdef ALSOUSEADLIB
+  outp(ADLIBPORT,reg);
+  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT); // wait 12 clock cycles
+#endif // ALSOUSEADLIB
+}
+
+void writeAdlibData(unsigned char data) {
+#ifdef ALSOUSEADLIB
+  outp(ADLIBDATAPORT,data);
+  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);
+  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);
+  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);
+  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);
+  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);
+  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);
+  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT); // wait 84 clock cycles
+#endif // ALSOUSEADLIB
+}
+
+void clearAdlib() {
+  selectAdlibReg(1);
+  writeAdlibData(0x20); // common initialization step
+  for (int i = 0xf5; i >= 1; i--)
+  {
+    selectAdlibReg(i);
+    writeAdlibData(0);
+  }
+  selectAdlibReg(1);
+  writeAdlibData(0x20);
+}
+
+void adlib_tone_freq2(double hz, bool keyOn) {
+  player_hzAdlib = hz;
+  // fnum[0-1023]=hz*pow(2,20-block)/49716;
+  unsigned int block = 0;
+  unsigned int fnum = 0;
+  bool found = false;
+  for (block = 7; block>=0; block--) {
+    fnum = (int)(hz*pow(2,20-block)/49716.0);
+    if ((fnum>=0)&&(fnum<=1023)) {
+      found = true;
+      break;
+    }
+  }
+  if (found) {
+    selectAdlibReg(0xa0); // Operator 0, Channel 0 // lower frequency bits
+    writeAdlibData(fnum & 0xff);
+    selectAdlibReg(0xb0); // Operator 0, Channel 0 // higher frequency bits (+block + keyon)
+    int on = keyOn ? 1 : 0;
+    writeAdlibData((fnum>>8)|(block<<2)|(on<<5));
+  }
+}
+
+void adlib_tone_on() {
+  adlib_tone_freq2(player_hzAdlib, true);
+  selectAdlibReg(0x40); // Operator 0, Channel 0 // Volume
+  writeAdlibData(63); // 0 is loudest, 63 is almost off
+}
+
+void adlib_tone_off() {
+  adlib_tone_freq2(player_hzAdlib, false);
+  selectAdlibReg(0x40); // Operator 0, Channel 0 // Volume
+  writeAdlibData(31); // 0 is loudest, 63 is almost off
+}
+
+void startAdlibSpeakerMode() {
+  // modulator
+  selectAdlibReg(0x20); // Operator 0, Channel 0 // Modulator/Carrier Register
+  writeAdlibData(1); // multiple 1 is standard here
+  selectAdlibReg(0x40); // Operator 0, Channel 0 // Volume
+  writeAdlibData(63); // 0 is loudest, 63 is almost off
+  int attack = 0x0f;
+  int decay = 0x0f;
+  int sustain = 0;
+  int release = 0x0f;
+  selectAdlibReg(0x60);
+  writeAdlibData((attack<<4)|(decay & 0x0f));
+  selectAdlibReg(0x80);
+  writeAdlibData((sustain<<4)|(release & 0x0f));
+  selectAdlibReg(0xe0); // Operator 0, Channel 0 // Waveform Register, this needs bit 5 in register 1 to take effect, else simple sine
+  writeAdlibData(0); // 0 = sine wave
+  // carrier
+  selectAdlibReg(0x23); // Operator 0, Channel 0 // Modulator/Carrier Register
+  writeAdlibData(1); // multiple 1 is standard here
+  selectAdlibReg(0x43); // Operator 0, Channel 0 // Modulator/Carrier Register
+  writeAdlibData(0); // full volume
+  selectAdlibReg(0x63);
+  writeAdlibData((attack<<4)|(decay & 0x0f));
+  selectAdlibReg(0x83);
+  writeAdlibData((sustain<<4)|(release & 0x0f));
+  // only missing frequency here
+  // github.com/IS4Code/pcsconv
+}
+
+//<<<<------ ADLIB
+
+
+void tone_on() {
+  if (player_useAdlib) {
+    adlib_tone_on();
+    speaker_tone_off();
+  } else {
+    speaker_tone_on();
+    adlib_tone_off();
+  }
+}
+
+void tone_off() {
+  adlib_tone_off();
+  speaker_tone_off();
+}
+
 void speaker_tone_on2() {
-  if (!player_speakerOn) speaker_tone_on();
-  player_speakerOn = true;
+  if (!player_speakerOn) {player_speakerOn = true; tone_on();}
 }
 
 void speaker_tone_off2() {
-  if (player_speakerOn) speaker_tone_off();
-  player_speakerOn = false;
+  if (player_speakerOn) {player_speakerOn = false; tone_off();}
 }
 
 void speaker_tone_freq2(double hz) {
   if (hz == 0) return;
   int a = (int)(1193180 / hz);
   if (a != player_speakerVal) {
-    outp(0x43,0xb6);
-    outp(0x42,a & 255);
-    outp(0x42,(a>>8) & 255);
+    if (player_useAdlib) {
+      adlib_tone_freq2(hz, false);
+    } else {
+      outp(0x43,0xb6);
+      outp(0x42,a & 255);
+      outp(0x42,(a>>8) & 255);
+    }
   }
   player_speakerVal = a;
 }
@@ -226,6 +349,8 @@ void fullStop() {
   player_isPlaying = false;
   shouldBeep = 0;
   speaker_tone_off2();
+  speaker_tone_off();
+  adlib_tone_off();
 }
 
 #ifdef __WATCOMC__
@@ -289,6 +414,7 @@ void installTimerIrqHandler() {
   LOCK_VARIABLE(player_mute);
   LOCK_VARIABLE(player_editInstrumentPos);
   LOCK_VARIABLE(player_useAdlib);
+  LOCK_VARIABLE(player_hzAdlib);
 }
 #endif //__DJGPP__
 
@@ -1452,10 +1578,13 @@ void ImInfoField() {
   if (ImGui::Button("Full stop")) {
     fullStop();
   }
+#ifdef ALSOUSEADLIB
   ImGui::SameLine();
-  if (ImGui::Button("Use Adlib")) {
+  if (player_useAdlib ? ImGui::Button("Use Beeper##BUTTONADLIB") : ImGui::Button("Use Adlib##BUTTONADLIB")) {
+    fullStop();
     player_useAdlib = !player_useAdlib;
   }
+#endif //ALSOUSEADLIB
   ImGui::Text("Timer ticks:%d Timer freq:%0.2fHz", player_timerTicks, timerFrequency);
   ImCopyPatternField();
   ImGui::PopItemWidth();
@@ -1532,6 +1661,9 @@ void clearSong() {
   //player_timerTicks = 0;
   player_ticker = 0;
   //player_mute = 0;
+  player_useAdlib = false;
+  player_hzAdlib = 0;
+
   memset(copyPasteBuffer,0,sizeof(copyPasteBuffer));
   copyPasteSideStart = 0;
   copyPasteSideEnd = 0;
@@ -1700,6 +1832,8 @@ int main(int argc, const char **argv) {
     }
   }
   installTimerIrqHandler();
+  clearAdlib();
+  startAdlibSpeakerMode();
 
   InitImGui(glFrameBufferWidth, glFrameBufferHeight);
 
@@ -1721,9 +1855,9 @@ int main(int argc, const char **argv) {
     if (currentKey == '\"') selectColumn(2);
     if (currentKey == ' ' && ImGui::GetIO().KeyShift) {player_isEditMode = !player_isEditMode; ImGui::Render(); continue;}
 
-    if (exportFile) {player_mute++;String fileName = fileDialog(false,&exportFileName); if (!fileName.empty()) export_(fileName.c_str()); exportFile = false;player_mute--; ImGui::Render(); continue;}
-    if (saveFile) {player_mute++;String fileName = fileDialog(false,&saveFileName); if (!fileName.empty()) save(fileName.c_str()); saveFile = false;player_mute--; ImGui::Render(); continue;}
-    if (loadFile) {player_mute++;String fileName = fileDialog(true,&loadFileName); if (!fileName.empty()) load(fileName.c_str()); loadFile = false;player_mute--; ImGui::Render(); continue;}
+    if (exportFile) {fullStop();player_mute++;String fileName = fileDialog(false,&exportFileName); if (!fileName.empty()) export_(fileName.c_str()); exportFile = false;player_mute--; ImGui::Render(); continue;}
+    if (saveFile) {fullStop();player_mute++;String fileName = fileDialog(false,&saveFileName); if (!fileName.empty()) save(fileName.c_str()); saveFile = false;player_mute--; ImGui::Render(); continue;}
+    if (loadFile) {fullStop();player_mute++;String fileName = fileDialog(true,&loadFileName); if (!fileName.empty()) load(fileName.c_str()); loadFile = false;player_mute--; ImGui::Render(); continue;}
 
     ImGui::SetNextWindowPos(ImVec2(0,0));
     ImGui::SetNextWindowSize(ImVec2(glFrameBufferWidth,glFrameBufferHeight));
@@ -1745,5 +1879,6 @@ int main(int argc, const char **argv) {
   glDone();
   uninstallTimerIrqHandler();
   speaker_tone_off2();
+  clearAdlib();
   return 0;
 }
