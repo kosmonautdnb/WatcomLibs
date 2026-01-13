@@ -290,7 +290,7 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
         *write++ = color;
       }
     }
-    /*if (noTexture && (t0->isTransparentColor)) {
+    if (noTexture && (t0->isTransparentColor)) {
       const int a = (color>>24) & 255;
       for (int x = 0; x < lx; x++) {
         const unsigned int rgba = *write;
@@ -299,7 +299,7 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
         const int b = (((((color>>16) & 255) - ((rgba>>16) & 255))*a)>>8)+((rgba>>16) & 255);
         *write++ = r|(g<<8)|(b<<16)|0xff000000;
       }
-    }*/
+    }
     if (!noTexture) {
       int txp = (int)(tx*4096.0);
       int txpa = (int)(txa*4096.0);

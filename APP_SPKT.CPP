@@ -85,6 +85,7 @@ volatile int player_fullPos = 0;
 volatile int player_timerTicks = 0;
 volatile int player_ticker = 0;
 volatile int player_mute = 0;
+volatile bool player_useAdlib = false;
 bool player_requestSongUpdate = false;
 volatile int scrollTo = -1;
 
@@ -140,13 +141,14 @@ void speaker_tone_freq2(double hz) {
 }
 
 void speaker_tone_direct(int freq) {
-  int a = freq;
-  if (a != player_speakerVal) {
-    outp(0x43,0xb6);
-    outp(0x42,a & 255);
-    outp(0x42,(a>>8) & 255);
-  }
-  player_speakerVal = a;
+  if (freq!=0) speaker_tone_freq2((double)1193180/freq);
+//  int a = freq;
+//  if (a != player_speakerVal) {
+//    outp(0x43,0xb6);
+//    outp(0x42,a & 255);
+//    outp(0x42,(a>>8) & 255);
+//  }
+//  player_speakerVal = a;
 }
 
 
@@ -220,6 +222,12 @@ static void timerIrqHandler() {
   timerIrqTicks++;
 }
 
+void fullStop() {
+  player_isPlaying = false;
+  shouldBeep = 0;
+  speaker_tone_off2();
+}
+
 #ifdef __WATCOMC__
 void uninstallTimerIrqHandler();
 typedef void (__interrupt __far* TimerIrqHandler)();
@@ -280,6 +288,7 @@ void installTimerIrqHandler() {
   LOCK_VARIABLE(scrollTo);
   LOCK_VARIABLE(player_mute);
   LOCK_VARIABLE(player_editInstrumentPos);
+  LOCK_VARIABLE(player_useAdlib);
 }
 #endif //__DJGPP__
 
@@ -1439,16 +1448,14 @@ void ImInfoField() {
   ImGui::InputInt("##NOTEDUR", &noteDur);
   if (noteDur < 1) noteDur = 1;
   if (noteDur > 500) noteDur = 500;
-  ImGui::SameLine();
-  ImGui::Text("Play time:%0.2fs", getPlayTime(player_trackPos,player_patternPos));
-  ImGui::Text("Song play position:%d  ", player_trackPos);
-  ImGui::SameLine();
+  ImGui::Text("Play time:%0.2fs,%d,%d", getPlayTime(player_trackPos,player_patternPos),player_trackPos,player_patternPos);
   if (ImGui::Button("Full stop")) {
-    player_isPlaying = false;
-    shouldBeep = 0;
-    speaker_tone_off2();
+    fullStop();
   }
-  ImGui::Text("Pattern play position:%d", player_patternPos);
+  ImGui::SameLine();
+  if (ImGui::Button("Use Adlib")) {
+    player_useAdlib = !player_useAdlib;
+  }
   ImGui::Text("Timer ticks:%d Timer freq:%0.2fHz", player_timerTicks, timerFrequency);
   ImCopyPatternField();
   ImGui::PopItemWidth();
