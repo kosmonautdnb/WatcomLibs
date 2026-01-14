@@ -122,7 +122,7 @@ PlayData player_nextData;
 volatile bool player_speakerOn = false;
 volatile int player_speakerVal = 0;
 
-//>>>>------ ADLIB
+// >>>>------ ADLIB
 
 #define ADLIBPORT 0x388
 #define ADLIBDATAPORT (ADLIBPORT+1)
@@ -147,82 +147,74 @@ void writeAdlibData(unsigned char data) {
 #endif // ALSOUSEADLIB
 }
 
+void adlib(unsigned char reg, unsigned char value) {selectAdlibReg(reg);writeAdlibData(value);}
+
 void clearAdlib() {
-  selectAdlibReg(1);
-  writeAdlibData(0x20); // common initialization step
+  adlib(1,0x20); // common initialization step
   for (int i = 0xf5; i >= 1; i--)
-  {
-    selectAdlibReg(i);
-    writeAdlibData(0);
-  }
-  selectAdlibReg(1);
-  writeAdlibData(0x20);
+    adlib(i,0);
+  adlib(1,0x20); // common initialization step
 }
 
 void adlib_tone_freq2(double hz, bool keyOn) {
-  player_hzAdlib = hz;
-  // fnum[0-1023]=hz*pow(2,20-block)/49716;
-  unsigned int block = 0;
-  unsigned int fnum = 0;
-  bool found = false;
-  for (block = 7; block>=0; block--) {
-    fnum = (int)(hz*pow(2,20-block)/49716.0);
-    if ((fnum>=0)&&(fnum<=1023)) {
-      found = true;
-      break;
+  if (player_useAdlib) {
+    player_hzAdlib = hz;
+    // fnum[0-1023]=hz*pow(2,20-block)/49716;
+    unsigned int block = 0;
+    unsigned int fnum = 0;
+    bool found = false;
+    for (block = 7; block>=0; block--) {
+      fnum = (int)(hz*pow(2,20-block)/49716.0);
+      if ((fnum>=0)&&(fnum<=1023)) {
+        found = true;
+        break;
+      }
     }
-  }
-  if (found) {
-    selectAdlibReg(0xa0); // Operator 0, Channel 0 // lower frequency bits
-    writeAdlibData(fnum & 0xff);
-    selectAdlibReg(0xb0); // Operator 0, Channel 0 // higher frequency bits (+block + keyon)
-    int on = keyOn ? 1 : 0;
-    writeAdlibData((fnum>>8)|(block<<2)|(on<<5));
+    if (found) {
+      int on = keyOn ? 1 : 0;
+      adlib(0xa0,fnum & 0xff); // Operator 0, Channel 0 // lower frequency bits
+      adlib(0xb0,(fnum>>8)|(block<<2)|(on<<5)); // Operator 0, Channel 0 // higher frequency bits (+block + keyon)
+    }
   }
 }
 
 void adlib_tone_on() {
-  adlib_tone_freq2(player_hzAdlib, true);
-  selectAdlibReg(0x40); // Operator 0, Channel 0 // Volume
-  writeAdlibData(63); // 0 is loudest, 63 is almost off
+  if (player_useAdlib) {
+    adlib_tone_freq2(player_hzAdlib, true);
+    adlib(0x40,31); // Operator 0, Channel 0 // Volume 0 is loudest, 63 is almost off
+    adlib(0x43,0); // Operator 0, Channel 0 // Volume 0 is loudest, 63 is almost off
+  }
 }
 
 void adlib_tone_off() {
-  adlib_tone_freq2(player_hzAdlib, false);
-  selectAdlibReg(0x40); // Operator 0, Channel 0 // Volume
-  writeAdlibData(31); // 0 is loudest, 63 is almost off
+  // adlib_tone_off is always called (no player_useAdlib here)
+  double k = player_hzAdlib;
+  adlib_tone_freq2(0, false);
+  player_hzAdlib = k;
+  adlib(0x40,63); // Operator 0, Channel 0 // Volume 0 is loudest, 63 is almost off
+  adlib(0x43,63); // Operator 0, Channel 0 // Volume 0 is loudest, 63 is almost off
 }
 
 void startAdlibSpeakerMode() {
-  // modulator
-  selectAdlibReg(0x20); // Operator 0, Channel 0 // Modulator/Carrier Register
-  writeAdlibData(1); // multiple 1 is standard here
-  selectAdlibReg(0x40); // Operator 0, Channel 0 // Volume
-  writeAdlibData(63); // 0 is loudest, 63 is almost off
   int attack = 0x0f;
-  int decay = 0x0f;
-  int sustain = 0;
-  int release = 0x0f;
-  selectAdlibReg(0x60);
-  writeAdlibData((attack<<4)|(decay & 0x0f));
-  selectAdlibReg(0x80);
-  writeAdlibData((sustain<<4)|(release & 0x0f));
-  selectAdlibReg(0xe0); // Operator 0, Channel 0 // Waveform Register, this needs bit 5 in register 1 to take effect, else simple sine
-  writeAdlibData(0); // 0 = sine wave
-  // carrier
-  selectAdlibReg(0x23); // Operator 0, Channel 0 // Modulator/Carrier Register
-  writeAdlibData(1); // multiple 1 is standard here
-  selectAdlibReg(0x43); // Operator 0, Channel 0 // Modulator/Carrier Register
-  writeAdlibData(0); // full volume
-  selectAdlibReg(0x63);
-  writeAdlibData((attack<<4)|(decay & 0x0f));
-  selectAdlibReg(0x83);
-  writeAdlibData((sustain<<4)|(release & 0x0f));
-  // only missing frequency here
+  int decay = 0x00;
+  int sustain = 0x0f;
+  int release = 0x00;
   // github.com/IS4Code/pcsconv
+  // modulator
+  adlib(0x20,1); // Operator 0, Channel 0 // Modulator/Carrier Register multiple 1 is standard here
+  adlib(0x40,0); // Operator 0, Channel 0 // Volume 0 is loudest, 63 is almost off
+  adlib(0x60,(attack<<4)|(decay & 0x0f));
+  adlib(0x80,(sustain<<4)|(release & 0x0f));
+  adlib(0xe0,0); // Operator 0, Channel 0 // Waveform Register, this needs bit 5 in register 1 to take effect, else simple sine 0 = sine wave
+  // carrier
+  adlib(0x23,1); // Operator 0, Channel 0 // Modulator/Carrier Register multiple 1 is standard here
+  adlib(0x43,0); // Operator 0, Channel 0 // Volume 0 is loudest, 63 is almost off
+  adlib(0x63,(attack<<4)|(decay & 0x0f));
+  adlib(0x83,(sustain<<4)|(release & 0x0f));
 }
 
-//<<<<------ ADLIB
+// <<<<------ ADLIB
 
 
 void tone_on() {
@@ -1582,7 +1574,12 @@ void ImInfoField() {
   ImGui::SameLine();
   if (player_useAdlib ? ImGui::Button("Use Beeper##BUTTONADLIB") : ImGui::Button("Use Adlib##BUTTONADLIB")) {
     fullStop();
+    clearAdlib();
     player_useAdlib = !player_useAdlib;
+    if (player_useAdlib) {
+      clearAdlib();
+      startAdlibSpeakerMode();
+    }
   }
 #endif //ALSOUSEADLIB
   ImGui::Text("Timer ticks:%d Timer freq:%0.2fHz", player_timerTicks, timerFrequency);
@@ -1832,8 +1829,6 @@ int main(int argc, const char **argv) {
     }
   }
   installTimerIrqHandler();
-  clearAdlib();
-  startAdlibSpeakerMode();
 
   InitImGui(glFrameBufferWidth, glFrameBufferHeight);
 
