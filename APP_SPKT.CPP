@@ -124,26 +124,21 @@ volatile int player_speakerVal = 0;
 
 // >>>>------ ADLIB
 
+#define WAITPORT 0xEC // maybe this is wrong timingwise, but SBEMU crashed when using the ADLIBPORT to wait.
 #define ADLIBPORT 0x388
 #define ADLIBDATAPORT (ADLIBPORT+1)
 
 void selectAdlibReg(unsigned char reg) {
 #ifdef ALSOUSEADLIB
   outp(ADLIBPORT,reg);
-  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT); // wait 12 clock cycles
+  for (int i = 0; i < 6; i++) inp(WAITPORT);  // wait 12 clock cycles
 #endif // ALSOUSEADLIB
 }
 
 void writeAdlibData(unsigned char data) {
 #ifdef ALSOUSEADLIB
   outp(ADLIBDATAPORT,data);
-  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);
-  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);
-  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);
-  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);
-  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);
-  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);
-  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT);  inp(ADLIBPORT); // wait 84 clock cycles
+  for (int i = 0; i < 6*7; i++) inp(WAITPORT);  // wait 84 clock cycles
 #endif // ALSOUSEADLIB
 }
 
@@ -160,11 +155,11 @@ void adlib_tone_freq2(double hz, bool keyOn) {
   if (player_useAdlib) {
     player_hzAdlib = hz;
     // fnum[0-1023]=hz*pow(2,20-block)/49716;
-    unsigned int block = 0;
+    int block = 0;
     unsigned int fnum = 0;
     bool found = false;
     for (block = 7; block>=0; block--) {
-      fnum = (int)(hz*pow(2,20-block)/49716.0);
+      fnum = (int)(hz*(1<<(20-block))/49716.0);
       if ((fnum>=0)&&(fnum<=1023)) {
         found = true;
         break;
