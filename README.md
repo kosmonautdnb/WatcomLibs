@@ -140,11 +140,11 @@ DEVICE=C:\_DOS_\BIN\JEMM386.exe  /SB /MAX=262144
 
 /MAX=262144 means 256MB may be available.
 
-/M0 helps in running with DPMI hosts like HDPMI32I
-
 pmwsetup.exe to patch your PMODE/W program (V64 and A64 are maximum and mean 256 MB memory accessible):
 
 pmwsetup.exe /M0 /B0 /A64 /V64 /P1024 myprg.exe
+
+/M0 helps in running with DPMI hosts like HDPMI32I
 
 Here a pmodew.lnk file:
 
