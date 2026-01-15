@@ -13,7 +13,7 @@ gpp -c -O3 -oe.obj glega.cpp
 gpp -o APP_KEYS.EXE gl.obj keys.obj
 gpp -o APP_VID.EXE gl.obj e.obj vid.obj
 gpp -o APP_SPKT.EXE gl.obj i1.obj i2.obj o.obj s.obj sp.obj d.obj f.obj e.obj spk.obj
-gpp.exe -o app_sppl.exe app_sppl.c
+gpp.exe -o APP_SPPL.EXE app_sppl.c
 @echo off
 del keys.obj
 del spk.obj
