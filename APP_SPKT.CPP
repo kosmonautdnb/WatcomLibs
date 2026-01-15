@@ -124,7 +124,7 @@ volatile int player_speakerVal = 0;
 
 // >>>>------ ADLIB
 
-#define WAITPORT 0xEC // maybe this is wrong timingwise, but SBEMU crashed when using the ADLIBPORT to wait.
+#define WAITPORT 0x388
 #define ADLIBPORT 0x388
 #define ADLIBDATAPORT (ADLIBPORT+1)
 
@@ -159,7 +159,9 @@ void adlib_tone_freq2(double hz, bool keyOn) {
     unsigned int fnum = 0;
     bool found = false;
     for (block = 7; block>=0; block--) {
-      fnum = (int)(hz*(1<<(20-block))/49716.0);
+      fnum = (int)(hz*(1<<(20-block))/49715.90277); // 3579545.0/72.0 = MasterClockFrequency/72 = 49715.90277
+      // frequency = fnum * 2^block * (master_clock/72) / 2^20
+      // fnum = frequency * 2^20 / (2^block * (master_clock/72))
       if ((fnum>=0)&&(fnum<=1023)) {
         found = true;
         break;
@@ -357,7 +359,7 @@ void installTimerIrqHandler() {
 }
 void uninstallTimerIrqHandler() {
   if (oldTimerIrqHandler != NULL) {
-    _dos_setvect(0x09,oldTimerIrqHandler);
+    _dos_setvect(0x08,oldTimerIrqHandler);
     oldTimerIrqHandler = NULL;
   }
 }
@@ -1292,6 +1294,7 @@ void ImInstrumentField() {
   if (currentInstrument < 0) currentInstrument = 0;
   if (currentInstrument >= MAXINSTRUMENTS) currentInstrument = MAXINSTRUMENTS - 1;
   ImGui::Separator();
+  ImGui::Text("Detune in cents.");
   for (int i = 0; i < MAXINSTRUMENTLENGTH+1; i++) {
     ImVec2 cp1 = ImGui::GetCursorScreenPos();
     if (i < MAXINSTRUMENTLENGTH) {
