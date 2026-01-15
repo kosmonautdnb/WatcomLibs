@@ -1170,23 +1170,28 @@ void export_(const char *fileName) {
   fprintf(out,"// unsigned short song[]={\n");
   fprintf(out,"//   #include \"song.exp\"\n");
   fprintf(out,"// };\n\n");
-  fprintf(out,"%d, // timer ticks per note\n", p->timerTicks);
-  fprintf(out,"%d, // song length (count of consecutive patterns)\n", p->songLength);
-  fprintf(out,"%d, // pattern length in notes\n", p->patternLength);
-  fprintf(out,"(%d) & 0xffff, // loop start in notes\n", p->loopStart);
-  fprintf(out,"(%d) & 0xffff, // loop end in notes\n", p->loopEnd);
+  fprintf(out,"// -- timer ticks per note\n");
+  fprintf(out,"%d,\n", p->timerTicks & 0xffff);
+  fprintf(out,"// -- song length (count of consecutive patterns)\n");
+  fprintf(out,"%d,\n",p->songLength & 0xffff);
+  fprintf(out,"// -- pattern length in notes\n");
+  fprintf(out,"%d,\n", p->patternLength & 0xffff);
+  fprintf(out,"// -- loop start in notes\n");
+  fprintf(out,"%d,\n", p->loopStart & 0xffff);
+  fprintf(out,"// loop end in notes\n");
+  fprintf(out,"%d,\n", p->loopEnd & 0xffff);
   fprintf(out,"// Here follows the song data as timerTicks*songLength*patternLength\n");
-  fprintf(out,"// unsigned shorts to be set to the PIT timer2 lo/hi. 0 means tone off, all other values are with tone on.\n");
+  fprintf(out,"// unsigned shorts to be set to the PIT timer2 lo/hi. 0 means tone off, all other values (are two bytes (lo/hi)) with tone on.\n");
   int k = p->timerTicks*p->songLength*p->patternLength;
   for (int i = 0; i < k; i += 16) {
     for (int j = 0; j < 16 && (i+j)<k; j++) {
       if (((i + j) % (p->timerTicks*p->patternLength))==0) fprintf(out,"\n// Song position %d\n",(i+j)/(p->timerTicks*p->patternLength));
-      fprintf(out,"0x%04x,",p->song[i+j].freq & 0xffff);
+      fprintf(out,"%d,",p->song[i+j].freq & 0xffff);
     }
     fprintf(out,"\n");
   }
-  fprintf(out,"\n// End marker.\n");
-  fprintf(out,"0xffff\n");
+  fprintf(out,"\n// End marker. 0xffff\n");
+  fprintf(out,"65535,\n");
   fprintf(out,"// ..\n");
   fclose(out);
 }
@@ -1585,8 +1590,7 @@ void ImInfoField() {
   ImGui::PopItemWidth();
   ImGui::Separator();
   ImGui::TextColored(SelectedColumnCol,"Instructions:");
-  ImGui::Text("Mouse left to select.");
-  ImGui::Text("Mouse right for play position.");
+  ImGui::Text("Mouse left=select, right=play pos.");
   ImGui::Text("Shift to select. A for fast mode.");
   ImGui::Text("Ctrl+C to copy. Ctrl+V to paste.");
   ImGui::Text("Cursor keys to move. Tab+ShiftTab.");
