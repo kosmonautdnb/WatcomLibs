@@ -10,6 +10,7 @@ wcl386.exe /c /mf -fosp.obj speaker.cpp
 wcl386.exe /c /mf -fod.obj dos.cpp
 wcl386.exe /c /mf -fof.obj filedlg.cpp
 wcl386.exe /c /mf -foe.obj glega.cpp
+wcl.exe app_sppl.c
 wlink @appkeys.lnk OPTION QUIET OPTION STack = 65536 NAME app_keys.exe
 wlink @appvid.lnk OPTION QUIET OPTION STack = 65536 NAME app_vid.exe
 wlink @appspkt.lnk OPTION QUIET OPTION STack = 65536 NAME app_spkt.exe
@@ -26,3 +27,4 @@ del sp.obj
 del d.obj
 del f.obj
 del e.obj
+del app_sppl.obj
