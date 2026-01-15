@@ -76,7 +76,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 ## Some useful applications
 **Use APPDJGPP.BAT to build the APPs with DJGPP and APPWAT.BAT to build the APPs with WatcomC/OpenWatcom.**
 - APP_SPKT.CPP - a very rudimentary pc beeper tracker, not reprogramming the timerfrequency and just one voice at a time. Very simple export format. (**too slow for DosBOX**)
-- APP_SPPL.C - a simple C program, a simple replayer for tunes exported by Speaker Tracker. (WatcomC in real mode around 28Kb).
+- APP_SPPL.C - a simple C program, a simple replayer for tunes exported by Speaker Tracker. (WatcomC in real mode around 24Kb).
 - APP_KEYS.CPP - outputs the Keyboard Scancodes of the input key.
 - APP_VID.CPP - tests some of the WatcomGL video modies.
 
