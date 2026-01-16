@@ -671,20 +671,26 @@ GLboolean gl2WatcomPrecisionTimer(GLboolean enable) {
 }
 
 
+#ifdef __WATCOMC__
+GLuint int16_1__(); // we need the zero flag it's not well exposed by the watcom api sorry that's why some asm here
+#pragma aux int16_1__="mov ah,0x01""int 0x16""jz do""mov eax,0""jmp dont""do:""mov eax,1""dont:" value[eax] modify[eax ebx ecx edx]
+#endif
+#ifdef __DJGPP__
+GLuint int16_1__() {
+  GLuint ret;
+  __asm__ __volatile__("\tmovb $1,%%ah\n""\tint $0x16\n""\tjz 1f\n""\tmovl $0,%%eax\n""\tjmp 2f\n""1:\n""\tmovl $1,%%eax\n""2:\n" : "=a" (ret));
+  return ret;
+}
+#endif
+
 GLushort gl2NextKey() {
+  if (int16_1__()) return 0;
   union REGS regs;
   memset(&regs,0,sizeof(regs));
-  regs.w.ax = 0x0600;
-  regs.w.dx = 0xff;
-  int386(0x21, &regs, &regs);
-  glKey = regs.w.ax & 0xff;
-  if (glKey == 0) {
-    memset(&regs,0,sizeof(regs));
-    regs.w.ax = 0x0600;
-    regs.w.dx = 0xff;
-    int386(0x21, &regs, &regs);
-    glKey += (regs.w.ax & 0xff)<<8;
-  }
+  regs.w.ax = 0x0000;
+  int386(0x16, &regs, &regs);
+  glKey = regs.w.ax;
+  if ((glKey & 0xff) != 0x00) glKey &= 0xff;
   return (GLushort)glKey;
 }
 
@@ -727,13 +733,11 @@ GLushort gl2MouseButtons() {
 }
 
 GLvoid gl2SpecialKeys(GLboolean *shiftKey, GLboolean *ctrlKey, GLboolean *altKey) {
-#ifdef __WATCOMC__
-  uint8_t keyState = *((uint8_t *)0x417);
-#endif // __WATCOMC__
-#ifdef __DJGPP__
-  uint8_t keyState;
-  dosmemget(0x417,1,&keyState);
-#endif // __DJGPP__
+  union REGS regs;
+  memset(&regs,0,sizeof(regs));
+  regs.w.ax = 0x0200;
+  int386(0x16, &regs, &regs);
+  uint8_t keyState = (uint8_t)(regs.w.ax & 0xff);
   *shiftKey = ((keyState & 0x03) != 0) ? GL_TRUE : GL_FALSE;
   *ctrlKey = ((keyState & 0x04) != 0) ? GL_TRUE : GL_FALSE;
   *altKey = ((keyState & 0x08) != 0) ? GL_TRUE : GL_FALSE;
