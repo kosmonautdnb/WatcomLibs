@@ -87,6 +87,11 @@ void speaker_tone_off2() {
   if (speaker_on) {speaker_on = 0; speaker_tone_off();}
 }
 
+void speaker_freq_direct2(int a) {
+  static int lastFreq = 0;
+  if (a != lastFreq) {lastFreq = a; speaker_freq_direct(a);}
+}
+
 static void timerIrqHandler() {
   unsigned short a;
   if (finished) 
@@ -97,11 +102,11 @@ static void timerIrqHandler() {
     if (a == 0) 
       speaker_tone_off2();
     else {
-      speaker_freq_direct(a);
+      speaker_freq_direct2(a);
       speaker_tone_on2();
     }
     playPos++;
-    if (playPos == LOOPEND*PATTERNLENGTH) playPos = LOOPSTART*PATTERNLENGTH;
+    if (playPos == LOOPEND*PATTERNLENGTH*TIMERTICKS) playPos = LOOPSTART*PATTERNLENGTH*TIMERTICKS;
     if (playPos >= PATTERNDATALENGTH) {
       speaker_tone_off2(); 
       finished = 1;
@@ -259,6 +264,7 @@ int main(int argc, char *argv[]) {
   }
   if (!loadSong(argv[1])) {
     printf("Speaker Tracker Player error: file<%s> some problem with the song data.\n",argv[1]);
+    freeSong();
     exit(0);
   }
   playMusicTillKeypressOrSongEnd();
