@@ -1176,9 +1176,9 @@ void export_(const char *fileName) {
   fprintf(out,"%d,\n",p->songLength & 0xffff);
   fprintf(out,"// -- pattern length in notes\n");
   fprintf(out,"%d,\n", p->patternLength & 0xffff);
-  fprintf(out,"// -- loop start in notes\n");
+  fprintf(out,"// -- loop start in patterns\n");
   fprintf(out,"%d,\n", p->loopStart & 0xffff);
-  fprintf(out,"// loop end in notes\n");
+  fprintf(out,"// -- loop end in patterns\n");
   fprintf(out,"%d,\n", p->loopEnd & 0xffff);
   fprintf(out,"// Here follows the song data as timerTicks*songLength*patternLength\n");
   fprintf(out,"// unsigned shorts to be set to the PIT timer2 lo/hi. 0 means tone off, all other values (are two bytes (lo/hi)) with tone on.\n");
