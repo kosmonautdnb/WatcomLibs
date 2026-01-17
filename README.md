@@ -108,7 +108,8 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - PARSON.HPP - another json reader/writer https://github.com/kgabis/parson
 - PLMPEG.HPP - MPEG1 (Video/Sound) Replay Single Header library https://github.com/phoboslab/pl_mpeg  
 - PSDIMAGE.HPP - simple psd loader featuring layers  (PSD image loader by DrPetter)  
-- QUATERNN.HPP - a simple Quaternion class, mainly for interpolated rotations.  
+- QUATERNN.HPP - a simple Quaternion class, mainly for interpolated rotations.
+- RANS.HPP - public domain Range Asymetrix Numeral System Compressor/Decompressor by Ryg. https://github.com/rygorous/ryg_rans
 - SMPLOBJL.HPP - a basic/tiny wavefront .OBJ/.MTL mesh loader  
 - SPEAKER.HPP - speaker sample playback, and current time lookup with finer granularity  
 - SPRITE.HPP - a sprite (and 3D sphereParticle/ball) renderer compatible with OpenGL  
