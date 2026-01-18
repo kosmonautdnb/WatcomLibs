@@ -108,7 +108,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - OPENGLFX.HPP - Some post processing OpenGL effects like antialiasing(FXAA(https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/ )), toon shader, motion blur
 - PARSON.HPP - another json reader/writer https://github.com/kgabis/parson
 - PLMPEG.HPP - MPEG1 (Video/Sound) Replay Single Header library https://github.com/phoboslab/pl_mpeg  
-- PSDIMAGE.HPP - simple psd loader featuring layers  (PSD image loader by DrPetter)  
+- PSDIMAGE.HPP - simple PhotoShop PSD loader featuring layers  (PSD image loader by DrPetter)  
 - QUATERNN.HPP - a simple Quaternion class, mainly for interpolated rotations.
 - RANS.HPP - public domain Range Asymmetric Numeral System Compressor/Decompressor(Something like Huffman) by Ryg. https://github.com/rygorous/ryg_rans (may be patented by wrong persons)
 - SMATH.HPP - Some string math functions. Maybe not usable at all..
