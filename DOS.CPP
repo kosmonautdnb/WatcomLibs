@@ -406,7 +406,7 @@ String getName(const String &fileName) {
   int64_t k = 0;
   if (k0 < k1) k0 = k1;
   if (k0>0) k = k0+1;
-  return fileName.substr(k,fileName.findLast("."));
+  return fileName.old_substr(k,fileName.findLast("."));
 }
 
 String getExtension(const String &fileName) {

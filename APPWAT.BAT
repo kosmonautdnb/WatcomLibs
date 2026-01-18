@@ -11,9 +11,9 @@ wcl386.exe /c /mf -fod.obj dos.cpp
 wcl386.exe /c /mf -fof.obj filedlg.cpp
 wcl386.exe /c /mf -foe.obj glega.cpp
 wcl.exe APP_SPPL.C
-wlink @appkeys.lnk OPTION QUIET OPTION STack = 65536 NAME app_keys.exe
-wlink @appvid.lnk OPTION QUIET OPTION STack = 65536 NAME app_vid.exe
-wlink @appspkt.lnk OPTION QUIET OPTION STack = 65536 NAME app_spkt.exe
+wlink @appkeys.lnk OPTION QUIET OPTION STack = 65536 NAME APP_KEYS.EXE
+wlink @appvid.lnk OPTION QUIET OPTION STack = 65536 NAME APP_VID.EXE
+wlink @appspkt.lnk OPTION QUIET OPTION STack = 65536 NAME APP_SPKT.EXE
 @echo off
 del keys.obj
 del spk.obj

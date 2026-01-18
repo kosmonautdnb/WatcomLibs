@@ -326,7 +326,7 @@ public:
     return r;
   }
   
-  String substr(int32_t firstIndex, int32_t lastIndex) const {
+  String old_substr(int32_t firstIndex, int32_t lastIndex) const {
     if (lastIndex == -1) return substr(firstIndex);
     if (firstIndex == -1) return "";
     if (firstIndex >= length()) return String(*this);
@@ -334,6 +334,12 @@ public:
     r.resize(lastIndex-firstIndex);
     memcpy(&(r[0]),&((*this)[firstIndex]),r.length());
     return r;
+  }
+
+  String substr(int32_t firstIndex, int32_t count) const {
+    // more like std::string.substr() now, sorry. (old function now in old_substr())
+    if (count < 0) return substr(firstIndex);
+    return old_substr(firstIndex, firstIndex+count);
   }
   
   int32_t findLast(const String &v) const {
