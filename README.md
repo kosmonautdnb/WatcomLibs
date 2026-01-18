@@ -110,6 +110,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - PSDIMAGE.HPP - simple psd loader featuring layers  (PSD image loader by DrPetter)  
 - QUATERNN.HPP - a simple Quaternion class, mainly for interpolated rotations.
 - RANS.HPP - public domain Range Asymmetric Numeral System Compressor/Decompressor(Something like Huffman) by Ryg. https://github.com/rygorous/ryg_rans (may be patented by wrong persons)
+- SMATH.HPP - Some string math functions. Maybe not usable at all..
 - SMPLOBJL.HPP - a basic/tiny wavefront .OBJ/.MTL mesh loader  
 - SPEAKER.HPP - speaker sample playback, and current time lookup with finer granularity  
 - SPRITE.HPP - a sprite (and 3D sphereParticle/ball) renderer compatible with OpenGL  
