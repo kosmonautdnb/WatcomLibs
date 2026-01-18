@@ -1078,6 +1078,7 @@ void load(const char *fileName) {
     GETINT(_PATTERNLENGTH,"PATTERNLENGTH");
     GETINT(_LOOPSTART,"LOOPSTART");
     GETINT(_LOOPEND,"LOOPEND");
+    IFREGION("SONG") {break;}
   }
   fclose(in);
 
