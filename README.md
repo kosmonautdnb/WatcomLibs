@@ -80,6 +80,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - DEMOSNG1.SPK - a Speaker Tracker Demo Tune by 5tarbuck.
 - APP_KEYS.CPP - outputs the Keyboard Scancodes of the input key.
 - APP_VID.CPP - tests some of the WatcomGL video modies.
+- APP_PHYS.CPP - tiny app to test the 2D physics library "Physac", use the mouse and mouse buttons.
 
 
 ## Some useful classes
@@ -107,6 +108,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - MPEG1.HPP - mpeg1 wrapper for PLMPEG.hpp
 - OPENGLFX.HPP - Some post processing OpenGL effects like antialiasing(FXAA(https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/ )), toon shader, motion blur
 - PARSON.HPP - another json reader/writer https://github.com/kgabis/parson
+- PHYSAC - a tiny, yet powerful, 2D physics library (demo in app_phys.cpp) https://github.com/victorfisac/Physac
 - PLMPEG.HPP - MPEG1 (Video/Sound) Replay Single Header library https://github.com/phoboslab/pl_mpeg  
 - PSDIMAGE.HPP - simple PhotoShop PSD loader featuring layers  (PSD image loader by DrPetter)  
 - QUATERNN.HPP - a simple Quaternion class, mainly for interpolated rotations.
