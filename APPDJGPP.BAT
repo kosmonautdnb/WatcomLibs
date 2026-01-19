@@ -10,10 +10,12 @@ gpp -c -O3 -osp.obj speaker.cpp
 gpp -c -O3 -od.obj dos.cpp
 gpp -c -O3 -of.obj filedlg.cpp
 gpp -c -O3 -oe.obj glega.cpp
+gpp -c -O3 -op.obj app_phys.cpp
 gpp -o APP_KEYS.EXE gl.obj keys.obj
 gpp -o APP_VID.EXE gl.obj e.obj vid.obj
 gpp -o APP_SPKT.EXE gl.obj i1.obj i2.obj o.obj s.obj sp.obj d.obj f.obj e.obj spk.obj
-gpp.exe -o APP_SPPL.EXE app_sppl.c
+gpp -o APP_SPPL.EXE app_sppl.c
+gpp -o APP_PHYS.EXE gl.obj p.obj
 @echo off
 del keys.obj
 del spk.obj
@@ -27,3 +29,4 @@ del sp.obj
 del d.obj
 del f.obj
 del e.obj
+del p.obj
