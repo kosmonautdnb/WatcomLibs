@@ -319,7 +319,7 @@ public:
   
   String substr(int32_t firstIndex) const {
     if (firstIndex == -1) return "";
-    if (firstIndex >= length()) return String(*this);
+    if (firstIndex >= length()) return "";// String(*this);
     String r;
     r.resize(length()-firstIndex);
     memcpy(&(r[0]),&((*this)[firstIndex]),r.length());
@@ -362,6 +362,22 @@ public:
     int32_t l1 = length();
     int32_t l2 = v.length();
     for (int32_t i = 0; i <= l1-l2; i++) {
+      bool found = true;
+      for (int32_t j = 0; j < l2; j++) {
+        if ((*this)[i+j]!=v[j]) {
+          found = false;
+          break;
+        }
+      }
+      if (found) return i;
+    }
+    return -1;
+  }
+
+  int32_t findFirst(int32_t p, const String &v) const {
+    int32_t l1 = length();
+    int32_t l2 = v.length();
+    for (int32_t i = p; i <= l1-l2; i++) {
       bool found = true;
       for (int32_t j = 0; j < l2; j++) {
         if ((*this)[i+j]!=v[j]) {
