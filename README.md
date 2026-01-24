@@ -115,6 +115,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - RANS.HPP - public domain Range Asymmetric Numeral System Compressor/Decompressor(Something like Huffman) by Ryg. https://github.com/rygorous/ryg_rans (may be patented by wrong persons)
 - SMATH.HPP - Some string math functions. Maybe not usable at all..
 - SMPLOBJL.HPP - a basic/tiny wavefront .OBJ/.MTL mesh loader  
+- SNDBLSTR.HPP - Simple Sound Blaster 2.0 sample playback. Mainly done for testing SBEMU.
 - SPEAKER.HPP - speaker sample playback, and current time lookup with finer granularity  
 - SPRITE.HPP - a sprite (and 3D sphereParticle/ball) renderer compatible with OpenGL  
 - SPRTEOBJ - a billboard "class" to render an object 3D/rotated to a billboard and blit the billboard onto the scene.
