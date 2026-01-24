@@ -3,6 +3,7 @@
 // See ImGui::ShowTestWindow() for sample code.
 // Read 'Programmer guide' in .cpp for notes on how to setup ImGui in your codebase.
 // Get latest version at https://github.com/ocornut/imgui
+// Texts longer than 3072 letters (1024*3) may impose crash risks with this current version.
 #ifndef __IMGUI_H__
 #define __IMGUI_H__
 #pragma once
