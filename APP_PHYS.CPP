@@ -75,7 +75,7 @@ int main()
   glWatcomPrecisionTimer(GL_TRUE); // better to have a more precise timer here in WatcomC
   
   if (!glVesa(screenWidth,screenHeight,32)) glVGA();
-  
+ 
   // Initialize physics and default physics bodies
   InitPhysics();
   

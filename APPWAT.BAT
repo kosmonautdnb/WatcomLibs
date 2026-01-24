@@ -1,6 +1,8 @@
 wcl386.exe /c /mf -fospk.obj app_spkt.cpp
 wcl386.exe /c /mf -fokeys.obj app_keys.cpp
 wcl386.exe /c /mf -fovid.obj app_vid.cpp
+wcl386.exe /c /mf -fomp3.obj app_mp3.cpp
+wcl386.exe /c /mf -fosb.obj sndblstr.cpp
 wcl386.exe /c /mf -fogl.obj glimpl.cpp
 wcl386.exe /c /mf -foi1.obj imgui.cpp
 wcl386.exe /c /mf -foi2.obj imguigl.cpp
@@ -16,10 +18,13 @@ wlink @appkeys.lnk OPTION QUIET OPTION STack = 65536 NAME APP_KEYS.EXE
 wlink @appvid.lnk OPTION QUIET OPTION STack = 65536 NAME APP_VID.EXE
 wlink @appspkt.lnk OPTION QUIET OPTION STack = 65536 NAME APP_SPKT.EXE
 wlink FILE GL.OBJ FILE APP_PHYS.OBJ OPTION QUIET OPTION STack = 65536 NAME APP_PHYS.EXE
+wlink FILE SB.OBJ FILE MP3.OBJ OPTION QUIET OPTION STack = 65536 NAME APP_MP3.EXE
 @echo off
 del keys.obj
 del spk.obj
 del vid.obj
+del mp3.obj
+del sb.obj
 del gl.obj
 del i1.obj
 del i2.obj

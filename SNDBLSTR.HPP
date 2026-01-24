@@ -5,6 +5,7 @@
 // This was just to have Sample Playback with the Sound Blaster emulation of SBEMU.EXE here, and it works..
 // So to say it's a minimal example of sample playback with SBEMU.
 // Currently not for DJGPP..
+// And currently missing all cli/sti, however maybe that is not a bigger problem.
 //------------
 #ifndef __SNDBLSTR_HPP__
 #define __SNDBLSTR_HPP__
@@ -21,6 +22,8 @@ extern unsigned short SBL_Port; // default 0x220
 extern unsigned short SBL_Irq; // default 7 (values only 0..7)
 extern unsigned short SBL_SampleRate; // defaul 22050 (the Sound Blaster changes the frequency from this to a more "suitable" one)
 extern unsigned short SBL_Dma; // default 1
+
+unsigned short SBL_SampleRateCorrected(unsigned short sampleRate); // The Sound Blaster standard doesn't support all thinkable frequencies
 
 // ---------
 

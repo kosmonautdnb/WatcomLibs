@@ -1,8 +1,18 @@
 #include "SNDBLSTR.HPP"
+#ifdef __WATCOMC__
 #include <i86.h>
+#endif // __WATCOMC__
+#ifdef __DJGPP__
+#include <dpmi.h>
+#include <go32.h>
+#endif // __DJGPP__
 #include <dos.h>
 #include <conio.h>
 #include <stdio.h>
+
+#ifdef __DJGPP__
+DJGPP is crashing in this part currently..
+#endif
 
 // ------------
 
@@ -127,13 +137,11 @@ unsigned char SBL_InterruptController2Mask = 0x00;
 unsigned char SBL_InitialVolume = 0x00;
 const int SBL_Interrupts[]  = {-1,-1,0xA,0xB,-1,0xD,-1,0xF,-1,-1,0x72,0x73,0x74,-1,-1,0x77};
 unsigned short SBL_Interrupt = 0;
-typedef void (__interrupt __far* SBL_InterruptHandler)();
-SBL_InterruptHandler SBL_OldInterruptVector = NULL;
 
 // ------------
 
 #define SBL_ServiceInterrupt_length 4095
-void __interrupt __far SBL_ServiceInterrupt() {
+void SBL_InterruptPart() {
   if (SBL_IsPlaying) {
     SBL_PortionPlaying++;
     if (SBL_Callback != NULL) {
@@ -143,9 +151,27 @@ void __interrupt __far SBL_ServiceInterrupt() {
     }
   }
   inp(SBL_Port + SBL_DATA_STATE);
+}
+
+#ifdef __WATCOMC__
+typedef void (__interrupt __far* SBL_InterruptHandler)();
+SBL_InterruptHandler SBL_OldInterruptVector = NULL;
+void __interrupt __far SBL_ServiceInterrupt() {
+  SBL_InterruptPart();
   if (SBL_Irq > 7) outp(0xA0,0x20);
   outp(0x20,0x20);
 }
+#endif // __WATCOMC__
+
+#ifdef __DJGPP__
+static _go32_dpmi_seginfo SBL_old_handler;
+static _go32_dpmi_seginfo SBL_new_handler;
+void SBL_ServiceInterrupt() {
+  SBL_InterruptPart();
+  if (SBL_Irq > 7) outp(0xA0,0x20);
+  outp(0x20,0x20);
+}
+#endif // __DJGPP
 
 // ------------
 
@@ -153,7 +179,7 @@ void SBL_Wait() {for (int i = 0; i < 100; i++) inp(0x80);}
 
 void SBL_WritePort(unsigned short reg, unsigned char val) { outp(SBL_Port+reg,val);}
 
-unsigned char SBL_ReadPort(unsigned short reg) { return inp(SBL_Port+reg); }
+unsigned char SBL_ReadPort(unsigned short reg) { return (unsigned char)inp((unsigned short)SBL_Port+reg); }
 
 void SBL_WriteMixer(unsigned char index, unsigned char data) {SBL_WritePort(SBL_MIXER_INDEX,index);  SBL_WritePort(SBL_MIXER_DATA,data);}
 
@@ -161,14 +187,16 @@ unsigned char SBL_ReadMixer(unsigned char index) { SBL_WritePort(SBL_MIXER_INDEX
 
 void SBL_WriteDSP(unsigned char value) {while(SBL_ReadPort(SBL_DSP_DATA_AND_COMMAND_AND_STATUS) & 128) {;} SBL_WritePort(SBL_DSP_DATA_AND_COMMAND_AND_STATUS,value);}
 
+#ifdef __WATCOMC__
+
 bool SBL_LockMemory(void *address, unsigned int byteSize) {
   union REGS Regs;
   unsigned int linear = (unsigned int)address;
   Regs.w.ax = 0x600;
-  Regs.w.bx = linear >> 16;
-  Regs.w.cx = linear & 0xFFFF;
-  Regs.w.si = byteSize >> 16;
-  Regs.w.di = byteSize & 0xFFFF;
+  Regs.w.bx = (unsigned short)(linear >> 16);
+  Regs.w.cx = (unsigned short)(linear & 0xFFFF);
+  Regs.w.si = (unsigned short)(byteSize >> 16);
+  Regs.w.di = (unsigned short)(byteSize & 0xFFFF);
   int386(0x31, &Regs, &Regs);
   if (Regs.w.cflag)
     return false;
@@ -179,15 +207,32 @@ bool SBL_UnlockMemory(void *address, unsigned int byteSize) {
   union REGS Regs;
   unsigned int linear = (unsigned int)address;
   Regs.w.ax = 0x601;
-  Regs.w.bx = (linear >> 16);
-  Regs.w.cx = (linear & 0xFFFF);
-  Regs.w.si = (byteSize >> 16);
-  Regs.w.di = (byteSize & 0xFFFF);
+  Regs.w.bx = (unsigned short)(linear >> 16);
+  Regs.w.cx = (unsigned short)(linear & 0xFFFF);
+  Regs.w.si = (unsigned short)(byteSize >> 16);
+  Regs.w.di = (unsigned short)(byteSize & 0xFFFF);
   int386(0x31, &Regs, &Regs);
   if (Regs.w.cflag)
     return false;
   return true;
 }
+
+#endif // __WATCOMC__
+
+#ifdef __DJGPP__
+
+bool SBL_LockMemory(void *address, unsigned int byteSize) {
+  _go32_dpmi_lock_data(address,byteSize);
+  // missing _go32_dpmi_lock_code();
+  return true;
+}
+
+bool SBL_UnlockMemory(void *address, unsigned int byteSize) {
+  // missing
+  return true;
+}
+
+#endif // __DJGPP__
 
 #define SBL_Lock(__var__) SBL_LockMemory(&(__var__),sizeof(__var__))
 
@@ -203,17 +248,17 @@ bool SBL_UnlockMemory(void *address, unsigned int byteSize) {
 
 void SBL_DisableInterrupt() {
   if (SBL_Irq < 8) {
-    unsigned char mask = inp(0x21) & ~(1 << SBL_Irq);
-    mask |= SBL_InterruptController1Mask & (1 << SBL_Irq);
+    unsigned char mask = (unsigned char)(inp(0x21) & ~(1 << SBL_Irq));
+    mask |= (unsigned char)(SBL_InterruptController1Mask & (1 << SBL_Irq));
     outp(0x21, mask);
   }
   else
   {
-    unsigned char mask = inp(0x21) & ~(1 << 2);
-    mask |= SBL_InterruptController1Mask & (1 << 2);
+    unsigned char mask = (unsigned char)(inp(0x21) & ~(1 << 2));
+    mask |= (unsigned char)(SBL_InterruptController1Mask & (1 << 2));
     outp(0x21, mask);
-    mask = inp(0xA1) & ~(1 << (SBL_Irq - 8));
-    mask |= SBL_InterruptController2Mask & (1 << (SBL_Irq - 8));
+    mask = (unsigned char)(inp(0xA1) & ~(1 << (SBL_Irq - 8)));
+    mask |= (unsigned char)(SBL_InterruptController2Mask & (1 << (SBL_Irq - 8)));
     outp(0xA1, mask);
   }
 }
@@ -221,14 +266,14 @@ void SBL_DisableInterrupt() {
 void SBL_EnableInterrupt() {
   if (SBL_Irq < 8)
   {
-    unsigned char mask = inp(0x21) & ~(1 << SBL_Irq);
+    unsigned char mask = (unsigned char)(inp(0x21) & ~(1 << SBL_Irq));
     outp(0x21, mask);
   }
   else
   {
-    unsigned char mask = inp(0xA1) & ~(1 << (SBL_Irq - 8));
+    unsigned char mask = (unsigned char)(inp(0xA1) & ~(1 << (SBL_Irq - 8)));
     outp( 0xA1, mask);
-    mask = inp(0x21) & ~(1 << 2);
+    mask = (unsigned char)(inp(0x21) & ~(1 << 2));
     outp(0x21, mask);
   }
 }
@@ -241,7 +286,7 @@ SBL_POINTER SBL_Malloc(unsigned int size) {
   if (size>0x10000) return SBL_NullPointer();
   union REGS regs;
   regs.w.ax = 0x100;
-  regs.w.bx = (size*2+15)/16;
+  regs.w.bx = (unsigned short)((size*2+15)/16); // size is *2 here
   regs.w.cflag = false;
   int386(0x31, &regs, &regs);
   if (regs.w.cflag) {
@@ -273,7 +318,7 @@ static unsigned short SBL_dma_clear_flipflop[8] = {0x0C,0x0C,0x0C,0x0C,0xD8,0xD8
 static unsigned short SBL_dma_adr[8] = {0x00,0x02,0x04,0x06,0xc0,0xC4,0xC8,0xCC};
 static unsigned short SBL_dma_length[8] = {0x01,0x03,0x05,0x07,0xC2,0xC6,0xCA,0xCE};
 static unsigned short SBL_dma_pagelo[8] = {0x87,0x83,0x81,0x82,0x00,0x8B,0x89,0x8A};
-static unsigned short SBL_dma_pagehi[8] = {0x487,0x483,0x481,0x482,0x00,0x48B,0x489,0x48A};
+//static unsigned short SBL_dma_pagehi[8] = {0x487,0x483,0x481,0x482,0x00,0x48B,0x489,0x48A};
 static unsigned short SBL_dma_write_mode[8] = {0x0B,0x0B,0x0B,0x0B,0xD6,0xD6,0xD6,0xD6};
 
 void SBL_EndDMA() {
@@ -315,10 +360,17 @@ void SBL_SetSampleVolume(unsigned char data) {SBL_WriteMixer(SBL_MIX_DSP_VOLUME_
 void SBL_SetSampleRate(int freq) {
   int tc = 256-(1000000 / freq);
   SBL_WriteDSP(SBL_CMD_SET_SAMPLE_RATE);
-  SBL_WriteDSP(tc);
+  SBL_WriteDSP((unsigned char)tc);
+}
+
+unsigned short SBL_SampleRateCorrected(unsigned short sampleRate) {
+  int tc = 256-(1000000 / sampleRate);
+  return (unsigned short)(1000000/-(tc-256));
 }
 
 void SBL_StopPlayback() {
+  SBL_SetSampleVolume(0x00);
+  SBL_WriteDSP(SBL_CMD_DISABLE_SPEAKER);
   SBL_IsPlaying = 0;
   SBL_Callback = NULL;
   SBL_DisableInterrupt();
@@ -329,11 +381,12 @@ void SBL_StopPlayback() {
 
 void SBL_StartPlayback(SBL_POINTER *dosMemory, unsigned int dosMemorySize, unsigned int div, SBL_FillCallback callback) {
   SBL_StopPlayback();
+  SBL_SetSampleVolume(0xEE);
   if ((dosMemorySize % div)!=0) {
     return;
   }
   SBL_Callback = callback;
-  SBL_WriteMixer(SBL_MIX_FILTER_OUTPUT_AND_STEREO,SBL_ReadMixer(SBL_MIX_FILTER_OUTPUT_AND_STEREO) & (~2)); // SBPro mono
+  SBL_WriteMixer(SBL_MIX_FILTER_OUTPUT_AND_STEREO,(unsigned char)(SBL_ReadMixer(SBL_MIX_FILTER_OUTPUT_AND_STEREO) & (~2))); // SBPro mono
   SBL_StartDMA(dosMemory->ptr, dosMemorySize);
   SBL_SetSampleRate(SBL_SampleRate);
   SBL_WriteDSP(SBL_CMD_ENABLE_SPEAKER);
@@ -344,8 +397,8 @@ void SBL_StartPlayback(SBL_POINTER *dosMemory, unsigned int dosMemorySize, unsig
   SBL_PortionOutput = (unsigned char*)dosMemory->ptr;
   oneSpan--;
   SBL_WriteDSP(SBL_CMD_SET_BLOCKSIZE);
-  SBL_WriteDSP(oneSpan & 255);
-  SBL_WriteDSP((oneSpan>>8) & 255);
+  SBL_WriteDSP((unsigned char)(oneSpan & 255));
+  SBL_WriteDSP((unsigned char)((oneSpan>>8) & 255));
   SBL_IsPlaying = 1;
   SBL_Callback(SBL_PortionOutput,SBL_PortionSize,0);
   if (div > 1)
@@ -355,6 +408,7 @@ void SBL_StartPlayback(SBL_POINTER *dosMemory, unsigned int dosMemorySize, unsig
 
 void SBL_LockInterruptMemory() {
   SBL_LockFunction( SBL_ServiceInterrupt, SBL_ServiceInterrupt_length);
+  SBL_LockFunction( SBL_InterruptPart, SBL_ServiceInterrupt_length);
   SBL_Lock(SBL_Port);
   SBL_Lock(SBL_Irq);
   SBL_Lock(SBL_IsPlaying);
@@ -367,6 +421,7 @@ void SBL_LockInterruptMemory() {
 
 void SBL_UnlockInterruptMemory() {
   SBL_UnlockFunction( SBL_ServiceInterrupt, SBL_ServiceInterrupt_length);
+  SBL_UnlockFunction( SBL_InterruptPart, SBL_ServiceInterrupt_length);
   SBL_Unlock(SBL_Port);
   SBL_Unlock(SBL_Irq);
   SBL_Unlock(SBL_IsPlaying);
@@ -378,17 +433,24 @@ void SBL_UnlockInterruptMemory() {
 }
 
 bool SBL_Init() {
-  SBL_InterruptController1Mask = inp(0x21);
-  SBL_InterruptController2Mask = inp(0xA1);
+  SBL_InterruptController1Mask = (unsigned char)inp(0x21);
+  SBL_InterruptController2Mask = (unsigned char)inp(0xA1);
   if (!SBL_Reset())  return false;
   SBL_InitialVolume = SBL_GetSampleVolume();   
-  SBL_SetSampleVolume(0xEE);
-  SBL_WriteMixer(SBL_MIX_FILTER_OUTPUT_AND_STEREO,SBL_ReadMixer(SBL_MIX_FILTER_OUTPUT_AND_STEREO) & (~2)); // SBPro mono
+  SBL_WriteMixer(SBL_MIX_FILTER_OUTPUT_AND_STEREO,(unsigned char)(SBL_ReadMixer(SBL_MIX_FILTER_OUTPUT_AND_STEREO) & (~2))); // SBPro mono
   SBL_SetSampleRate(SBL_SampleRate);
-  SBL_Interrupt = SBL_Interrupts[SBL_Irq];
+  SBL_Interrupt = (unsigned short)SBL_Interrupts[SBL_Irq]; // attention here maybe -1
   SBL_LockInterruptMemory();
+#ifdef __WATCOMC__
   SBL_OldInterruptVector = _dos_getvect(SBL_Interrupt);
   _dos_setvect(SBL_Interrupt, SBL_ServiceInterrupt);
+#endif // __WATCOMC__
+#ifdef __DJGPP__
+  _go32_dpmi_get_protected_mode_interrupt_vector(SBL_Interrupt,&SBL_old_handler); 
+  SBL_new_handler.pm_offset = (unsigned long)SBL_ServiceInterrupt;
+  SBL_new_handler.pm_selector = _go32_my_cs();
+  _go32_dpmi_set_protected_mode_interrupt_vector(SBL_Interrupt,&SBL_new_handler);
+#endif // __DJGPP__
   return true;
 }
 
@@ -396,14 +458,21 @@ void SBL_Done() {
   SBL_StopPlayback();
   SBL_SetSampleVolume(SBL_InitialVolume);
   SBL_Reset();
+#ifdef __WATCOMC__
   _dos_setvect(SBL_Interrupt, SBL_OldInterruptVector);
+#endif // __WATCOMC__
+#ifdef __DJGPP__
+/*
+  _go32_dpmi_set_protected_mode_interrupt_vector(SBL_Interrupt,&SBL_old_handler);
+*/
+#endif // __DJGPP__
   SBL_UnlockInterruptMemory();
 }
 
 // ------------
 
 void SBL_TestCallback(unsigned char *buffer, unsigned int bufferSize, unsigned int playPos) {
-  for (int i = 0; i < bufferSize; i++) {
+  for (unsigned int i = 0; i < bufferSize; i++) {
     buffer[i]=(playPos/100) & 1 ? 96 : 16;
     playPos++;
   }
