@@ -81,6 +81,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - APP_KEYS.CPP - outputs the Keyboard Scancodes of the input key.
 - APP_VID.CPP - tests some of the WatcomGL video modies.
 - APP_PHYS.CPP - tiny app to test the 2D physics library "Physac", use the mouse and mouse buttons.
+- APP_MP3.CPP - Let's you play MP3 files via the Sound Blaster Interface (SBEMU tested, works). Only for WatcomC/OpenWatcom currently.
 
 
 ## Some useful classes
