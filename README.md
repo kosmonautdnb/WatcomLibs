@@ -81,7 +81,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - APP_KEYS.CPP - outputs the Keyboard Scancodes of the input key.
 - APP_VID.CPP - tests some of the WatcomGL video modies.
 - APP_PHYS.CPP - tiny app to test the 2D physics library "Physac", use the mouse and mouse buttons.
-- APP_MP3.CPP - Let's you play MP3 files via the Sound Blaster Interface (SBEMU tested, works). Only for WatcomC/OpenWatcom currently.
+- APP_MP3.CPP - Let's you play MP3 files via the Sound Blaster Interface (SBEMU tested, works).
 
 
 ## Some useful classes
@@ -116,7 +116,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - RANS.HPP - public domain Range Asymmetric Numeral System Compressor/Decompressor(Something like Huffman) by Ryg. https://github.com/rygorous/ryg_rans (may be patented by wrong persons)
 - SMATH.HPP - Some string math functions. Maybe not usable at all..
 - SMPLOBJL.HPP - a basic/tiny wavefront .OBJ/.MTL mesh loader  
-- SNDBLSTR.HPP - Simple Sound Blaster 2.0 sample playback. Mainly done for testing SBEMU. (no DJGPP version currently.)
+- SNDBLSTR.HPP - Simple Sound Blaster 2.0 sample playback. Mainly done for testing SBEMU.
 - SPEAKER.HPP - speaker sample playback, and current time lookup with finer granularity  
 - SPRITE.HPP - a sprite (and 3D sphereParticle/ball) renderer compatible with OpenGL  
 - SPRTEOBJ - a billboard "class" to render an object 3D/rotated to a billboard and blit the billboard onto the scene.
