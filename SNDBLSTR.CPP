@@ -463,9 +463,7 @@ void SBL_Done() {
   _dos_setvect(SBL_Interrupt, SBL_OldInterruptVector);
 #endif // __WATCOMC__
 #ifdef __DJGPP__
-/*
   _go32_dpmi_set_protected_mode_interrupt_vector(SBL_Interrupt,&SBL_old_handler);
-*/
 #endif // __DJGPP__
   SBL_UnlockInterruptMemory();
 }
