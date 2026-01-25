@@ -1,4 +1,4 @@
-# WatcomLibs
+es# WatcomLibs
 Some useful libraries converted to WatcomC++.
 All the libraries had to be slightly adapted due to the "different" WatcomC++ mechanics.
 
@@ -118,7 +118,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - SMPLOBJL.HPP - a basic/tiny wavefront .OBJ/.MTL mesh loader  
 - SNDBLSTR.HPP - Simple Sound Blaster 2.0 sample playback. Mainly done for testing SBEMU.
 - SPEAKER.HPP - speaker sample playback, and current time lookup with finer granularity  
-- SPRITE.HPP - a sprite (and 3D sphereParticle/ball) renderer compatible with OpenGL  
+- SPRITE.HPP - a sprite (and 3D sphereParticle/ball) renderer compatible with WatcomGL  
 - SPRTEOBJ - a billboard "class" to render an object 3D/rotated to a billboard and blit the billboard onto the scene.
 - STBIMAGE.HPP - loader for different image formats. Like PNG,JPG,BMP,TGA,GIF,PSD. Wrapped in image.hpp  https://github.com/nothings/obbg/tree/master/stb  
 - STBIMGRS.HPP - a image rescale library (many filters)  https://github.com/nothings/obbg/tree/master/stb  
