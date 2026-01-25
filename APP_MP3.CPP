@@ -2,6 +2,7 @@
 #define MINIMP3_IMPLEMENTATION
 #include "MINIMP3.HPP"
 #include <stdio.h>
+#include <conio.h>
 
 short samples[MINIMP3_MAX_SAMPLES_PER_FRAME];
 
@@ -14,22 +15,10 @@ volatile int endPos = 0;
 void mp3DecodeCallback(unsigned char *buffer, unsigned int bufferLength, unsigned int playPos) {
   for (int i = 0; i < bufferLength; i++) {
     if (endPos != 0 && destPos>=endPos) {buffer[i]=0; continue;}
-    buffer[i] = ringBuffer[destPos % RINGBUFFERSIZE];
+    SBL_WriteSample8(buffer, i, ringBuffer[destPos % RINGBUFFERSIZE]);
     destPos++;
   }
 }
-
-#ifdef __WATCOMC__
-unsigned int int16_1();
-#pragma aux int16_1="mov ah,0x01""int 0x16""jz do""mov eax,0""jmp dont""do:""mov eax,1""dont:" value[eax] modify[eax ebx ecx edx]
-#endif
-#ifdef __DJGPP__
-unsigned int int16_1() {
-  unsigned int ret;
-  __asm__ __volatile__("\tmovb $1,%%ah\n""\tint $0x16\n""\tjz 1f\n""\tmovl $0,%%eax\n""\tjmp 2f\n""1:\n""\tmovl $1,%%eax\n""2:\n" : "=a" (ret));
-  return ret;
-}
-#endif
 
 int main(int argc, const char *argv[]) {
 
@@ -82,7 +71,7 @@ int main(int argc, const char *argv[]) {
   printf("Sound Blaster Frequency: %d\n",soundBlasterHz);
 
   printf("Press a key to stop playback.\n");
-  while(int16_1()) {
+  while(!kbhit()) {
     int sampleCount = mp3dec_decode_frame(&decoder, mp3, mp3_bytes, samples, &info);
     if (sampleCount==0&&info.frame_bytes==0) endPos = sourcePos;
     if (info.hz != mp3Hz) {mp3Hz = info.hz; mp3Channels = info.channels; printf("MP3 Frequency: %d\n",mp3Hz); printf("MP3 Channels: %d\n",mp3Channels);}

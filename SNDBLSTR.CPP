@@ -10,9 +10,9 @@
 #include <conio.h>
 #include <stdio.h>
 
-#ifdef __DJGPP__
-DJGPP is crashing in this part currently..
-#endif
+// ------------
+
+#define __UNUSED(__x__) (void)(__x__)
 
 // ------------
 
@@ -127,7 +127,6 @@ unsigned int SBL_PortionCount = 0;
 unsigned int SBL_PortionSize = 0;
 unsigned int SBL_PortionPlaying = 0;
 unsigned char *SBL_PortionOutput = NULL;
-typedef void (*SBL_FillCallback)(unsigned char *buffer, unsigned int bufferLength, unsigned int playPos);
 SBL_FillCallback SBL_Callback = NULL;
 
 // ------------
@@ -228,6 +227,8 @@ bool SBL_LockMemory(void *address, unsigned int byteSize) {
 }
 
 bool SBL_UnlockMemory(void *address, unsigned int byteSize) {
+  __UNUSED(address);
+  __UNUSED(byteSize);
   // missing
   return true;
 }
@@ -449,7 +450,7 @@ bool SBL_Init() {
   _go32_dpmi_get_protected_mode_interrupt_vector(SBL_Interrupt,&SBL_old_handler); 
   SBL_new_handler.pm_offset = (unsigned long)SBL_ServiceInterrupt;
   SBL_new_handler.pm_selector = _go32_my_cs();
-  _go32_dpmi_set_protected_mode_interrupt_vector(SBL_Interrupt,&SBL_new_handler);
+  _go32_dpmi_chain_protected_mode_interrupt_vector(SBL_Interrupt,&SBL_new_handler);
 #endif // __DJGPP__
   return true;
 }
@@ -473,7 +474,7 @@ void SBL_Done() {
 
 void SBL_TestCallback(unsigned char *buffer, unsigned int bufferSize, unsigned int playPos) {
   for (unsigned int i = 0; i < bufferSize; i++) {
-    buffer[i]=(playPos/100) & 1 ? 96 : 16;
+    SBL_WriteSample8(buffer,i,(playPos/100) & 1 ? 96 : 16);
     playPos++;
   }
 }

@@ -52,6 +52,15 @@ bool SBL_Free(const SBL_POINTER *mem);
 bool SBL_LockMemory(void *address, unsigned int byteSize);
 bool SBL_UnlockMemory(void *address, unsigned int byteSize);
 
+#ifdef __WATCOMC__
+#define SBL_WriteSample8(__8bitptr__,__index__,__8bitvalue__) {((unsigned char*)__8bitptr__)[__index__] = (unsigned char)(__8bitvalue__);}
+#endif // __WATCOMC__
+
+#ifdef __DJGPP__
+#include <sys/farptr.h>
+#define SBL_WriteSample8(__8bitptr__,__index__,__8bitvalue__) {unsigned char source = (unsigned char)__8bitvalue__; dosmemput(&source,1,(unsigned int)(__8bitptr__)+__index__);}
+#endif // __DJGPP__
+
 // ---------
 
 #endif //__SNDBLSTR_HPP__
