@@ -137,6 +137,8 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 
 ### WatcomC with 256 MB of memory instead of the 32 MB with Dos4gw
 
+**WatcomC also features 256MB with DOS4GW when used with SBEMUs HDPMI32i DPMI host.**
+
 Maybe use PMODE/W (you can utilize around 256MB of memory this way)
 
 PMODE/W is public domain since many years.
