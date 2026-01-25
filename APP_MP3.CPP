@@ -61,7 +61,19 @@ int main(int argc, const char *argv[]) {
   unsigned char *mp3 = fileData;
   int mp3_bytes = fileSize;
 
-  SBL_Init();
+  if (!SBL_Init()) {
+    printf("Sound Blaster not found!\n");
+    printf("Maybe the IRQ/DMA/ADDRESS settings are wrong,\n");
+    printf("Or you just don't have a Sound Blaster Card installed.\n");
+    printf("The App is tested with SBEMU, a Sound Blaster emulation\n");
+    printf("for many modern Sound Cards.\n");
+    printf("The App is just a testcase for SBEMU.EXE maybe it doesn't\n");
+    printf("work with real Sound Blasters at all..\n");
+    printf("SBEMU can be found here: https://github.com/crazii/SBEMU\n");
+    const char *a = "//";
+    free(fileData);
+    exit(0);
+  }
   SBL_POINTER p = SBL_Malloc(BUFFERSIZE);
   SBL_StartPlayback( &p, BUFFERSIZE,2,mp3DecodeCallback);
 
