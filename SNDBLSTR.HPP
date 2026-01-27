@@ -58,7 +58,7 @@ bool SBL_UnlockMemory(void *address, unsigned int byteSize);
 
 #ifdef __DJGPP__
 #include <sys/farptr.h>
-#define SBL_WriteSample8(__8bitptr__,__index__,__8bitvalue__) {unsigned char source = (unsigned char)__8bitvalue__; dosmemput(&source,1,(unsigned int)(__8bitptr__)+__index__);}
+#define SBL_WriteSample8(__8bitptr__,__index__,__8bitvalue__) {unsigned char source = (unsigned char)(__8bitvalue__); dosmemput(&source,1,(unsigned int)(__8bitptr__)+__index__);}
 #endif // __DJGPP__
 
 // ---------
