@@ -12,13 +12,14 @@ wcl386.exe /c /mf -fosp.obj speaker.cpp
 wcl386.exe /c /mf -fod.obj dos.cpp
 wcl386.exe /c /mf -fof.obj filedlg.cpp
 wcl386.exe /c /mf -foe.obj glega.cpp
+wcl386.exe /c /mf -foc.obj cursor.cpp
 wcl.exe APP_SPPL.C
 wcl386 /c /mf APP_PHYS.CPP
 wlink @appkeys.lnk OPTION QUIET OPTION STack = 65536 NAME APP_KEYS.EXE
 wlink @appvid.lnk OPTION QUIET OPTION STack = 65536 NAME APP_VID.EXE
 wlink @appspkt.lnk OPTION QUIET OPTION STack = 65536 NAME APP_SPKT.EXE
 wlink FILE GL.OBJ FILE APP_PHYS.OBJ OPTION QUIET OPTION STack = 65536 NAME APP_PHYS.EXE
-wlink FILE SB.OBJ FILE MP3.OBJ OPTION QUIET OPTION STack = 65536 NAME APP_MP3.EXE
+wlink FILE SB.OBJ FILE MP3.OBJ FILE C.OBJ OPTION QUIET OPTION STack = 65536 NAME APP_MP3.EXE
 @echo off
 del keys.obj
 del spk.obj
@@ -36,3 +37,4 @@ del f.obj
 del e.obj
 del app_sppl.obj
 del app_phys.obj
+del c.obj

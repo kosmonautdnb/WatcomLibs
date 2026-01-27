@@ -1,4 +1,5 @@
 #include "SNDBLSTR.HPP"
+#include "CURSOR.HPP"
 #define MINIMP3_IMPLEMENTATION
 #include "MINIMP3.HPP"
 #include <stdio.h>
@@ -18,6 +19,19 @@ void mp3DecodeCallback(unsigned char *buffer, unsigned int bufferLength, unsigne
     SBL_WriteSample8(buffer, i, ringBuffer[destPos % RINGBUFFERSIZE]);
     destPos++;
   }
+}
+
+void printPlayPos(int samplePos,int hz) {
+  printf("\n");
+  static unsigned char cx = 255;
+  static unsigned char cy = 255;
+  if (cx == 255) {getBiosCursorPosition(&cx,&cy);cy--;}
+  setBiosCursorPosition(cx,cy);
+  int ms = (samplePos/(hz/1000)) % 1000; // not so precise
+  int s = (samplePos/hz) % 60;
+  int m = (samplePos/hz/60) % 60;
+  int h = (samplePos/hz/60/60);
+  printf("Playtime: %dh %dmin %dsec %dmsec            ",h,m,s,ms);
 }
 
 int main(int argc, const char *argv[]) {
@@ -76,6 +90,7 @@ int main(int argc, const char *argv[]) {
   }
   SBL_POINTER p = SBL_Malloc(BUFFERSIZE);
   SBL_StartPlayback( &p, BUFFERSIZE,2,mp3DecodeCallback);
+  int startPos = destPos;
 
   int soundBlasterHz = SBL_SampleRateCorrected(SBL_SampleRate);
   int mp3Hz = -1;
@@ -100,6 +115,7 @@ int main(int argc, const char *argv[]) {
         sourcePos += rate;
       }
     }
+    printPlayPos(destPos-startPos,soundBlasterHz);
   }
   endPos = 1; // mute
   SBL_Done();
