@@ -82,7 +82,8 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - APP_VID.CPP - tests some of the WatcomGL video modies.
 - APP_PHYS.CPP - tiny app to test the 2D physics library "Physac", use the mouse and mouse buttons.
 - APP_MP3.CPP - Let's you play MP3 files via the Sound Blaster Interface (SBEMU tested, works).
-
+- APP_GLTF.CPP - a 3D model viewer for GLB/GLTF files, also supporting animations and skinning.
+- APP_IMG - a simple image / picture viewer.
 
 ## Some useful classes
 - CHARSET.HPP - a tiny font to be rendered per pixel
