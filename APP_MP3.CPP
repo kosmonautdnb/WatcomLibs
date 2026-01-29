@@ -41,6 +41,7 @@ int main(int argc, const char *argv[]) {
   printf("-------------------\n");
   if (argc != 2) {
     printf("Usage: APP_MP3.EXE <MP3FILE.MP3>\n");
+    printf("in the source folder there should be a test.mp3\n");
     exit(0);
   }
   const char *fileName = argv[1];
