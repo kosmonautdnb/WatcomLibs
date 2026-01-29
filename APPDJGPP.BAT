@@ -15,6 +15,7 @@ gpp -c -O3 -osndblstr.obj sndblstr.cpp
 gpp -c -O3 -oapp_mp3.obj app_mp3.cpp
 gpp -c -O3 -oc.obj cursor.cpp
 gpp -c -O3 -oapp_gltf.obj app_gltf.cpp
+gpp -c -O3 -oapp_img.obj app_img.cpp
 gpp -c -O3 -ocgltfa.obj cgltfa.cpp
 gpp -c -O3 -ovector.obj vector.cpp
 gpp -c -O3 -omatrix.obj matrix.cpp
@@ -29,6 +30,7 @@ gpp -o APP_SPPL.EXE app_sppl.c
 gpp -o APP_PHYS.EXE gl.obj p.obj
 gpp -o APP_MP3.EXE sndblstr.obj app_mp3.obj c.obj
 gpp -o APP_GLTF.EXE app_gltf.obj s.obj o.obj cgltfa.obj vector.obj matrix.obj quaternn.obj image.obj charset.obj keymtrix.obj gl.obj
+gpp -o APP_IMG.EXE app_img.obj charset.obj image.obj gl.obj
 @echo off
 del keys.obj
 del spk.obj
@@ -47,6 +49,7 @@ del sndblstr.obj
 del app_mp3.obj
 del c.obj
 del app_gltf.obj
+del app_img.obj
 del cgltfa.obj
 del vector.obj
 del matrix.obj

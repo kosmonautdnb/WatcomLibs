@@ -4,6 +4,7 @@ wpp386 /mf -fovid.obj app_vid.cpp
 wpp386 /mf -fomp3.obj app_mp3.cpp
 wpp386 /mf app_phys.cpp
 wpp386 /mf /xr app_gltf.cpp
+wpp386 /mf app_img.cpp
 wpp386 /mf /xr -fos.obj string.cpp
 wpp386 /mf /xr cgltfa.cpp
 wpp386 /mf /xr vector.cpp
@@ -29,6 +30,7 @@ wlink @appspkt.lnk OPTION QUIET OPTION STack = 65536 NAME APP_SPKT.EXE
 wlink @appgltf.lnk OPTION QUIET OPTION STack = 65536 NAME APP_GLTF.EXE
 wlink FILE gl.obj FILE app_phys.obj OPTION QUIET OPTION STack = 65536 NAME APP_PHYS.EXE
 wlink FILE sb.obj FILE mp3.obj FILE c.obj OPTION QUIET OPTION STack = 65536 NAME APP_MP3.EXE
+wlink FILE app_img.obj FILE gl.obj FILE image.obj FILE charset.obj OPTION QUIET OPTION STack = 65536 NAME APP_IMG.EXE
 @echo off
 del keys.obj
 del spk.obj
@@ -48,6 +50,7 @@ del c.obj
 del app_sppl.obj
 del app_phys.obj
 del app_gltf.obj
+del app_img.obj
 del cgltfa.obj
 del vector.obj
 del matrix.obj
