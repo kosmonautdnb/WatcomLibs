@@ -52,34 +52,6 @@ void waitSoundBlasterStart() {
 void waitSoundBlasterStart() {;}
 #endif
 
-#include <string.h>
-#ifdef __WATCOMC__
-#include <i86.h>
-#endif //__WATCOMC__
-#ifdef __DJGPP__
-#include <dos.h>
-#endif //__DJGPP__
-
-void getBiosCursorPosition(unsigned char *x, unsigned char *y) {
-  union REGS regs;
-  memset(&regs,0,sizeof(regs));
-  regs.w.ax = 0x0300;
-  regs.h.bh = 0;
-  int386(0x10, &regs, &regs);
-  if (x != NULL) *x = regs.h.dl;
-  if (y != NULL) *y = regs.h.dh;
-}
-
-void setBiosCursorPosition(unsigned char x, unsigned char y) {
-  union REGS regs;
-  memset(&regs,0,sizeof(regs));
-  regs.w.ax = 0x0200;
-  regs.h.bh = 0;
-  regs.h.dl = x;
-  regs.h.dh = y;
-  int386(0x10, &regs, &regs);
-}
-
 int main(int argc, const char *argv[]) {
 
   printf("Mpeg1 movie playback\n");
@@ -96,6 +68,7 @@ int main(int argc, const char *argv[]) {
   glFastTexturing = GL_TRUE; // only faster in Watcom environment, seems to slow down DJGPP
 
   if (!glVesa(640,480,16)) glVGA();
+  glRefresh();
   unsigned int texture = mpeg1_playMovie(fileName);
 
 #ifdef SBEMUSOUNDBLASTERON
@@ -130,7 +103,6 @@ int main(int argc, const char *argv[]) {
       mpeg1_display(texture); // this happens (almost) at sound blaster time 0
     }
     glRefresh();
-    setBiosCursorPosition(0,0);
   }
 
   glDone();
