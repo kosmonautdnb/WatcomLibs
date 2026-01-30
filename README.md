@@ -1,4 +1,4 @@
-es# WatcomLibs
+# WatcomLibs
 Some useful libraries converted to WatcomC++.
 All the libraries had to be slightly adapted due to the "different" WatcomC++ mechanics.
 
