@@ -418,6 +418,7 @@ void SBL_LockInterruptMemory() {
   SBL_Lock(SBL_PortionPlaying);
   SBL_Lock(SBL_PortionOutput);
   SBL_Lock(SBL_Callback);
+  SBL_Lock(SBL_SampleRate);
 }
 
 void SBL_UnlockInterruptMemory() {
@@ -431,7 +432,9 @@ void SBL_UnlockInterruptMemory() {
   SBL_Unlock(SBL_PortionPlaying);
   SBL_Unlock(SBL_PortionOutput);
   SBL_Unlock(SBL_Callback);
+  SBL_Unlock(SBL_SampleRate);
 }
+
 
 bool SBL_Init() {
   SBL_InterruptController1Mask = (unsigned char)inp(0x21);
