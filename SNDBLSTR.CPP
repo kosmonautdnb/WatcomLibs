@@ -117,7 +117,7 @@
 
 unsigned short SBL_Port = 0x220;
 unsigned short SBL_Irq = 7; // has to be below 8 currently
-unsigned short SBL_SampleRate = 22050;
+unsigned short SBL_SampleRate = 22222;
 unsigned short SBL_Dma = 1;
 
 // ------------

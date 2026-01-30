@@ -20,7 +20,7 @@ void soundBlasterTestFunction();
 
 extern unsigned short SBL_Port; // default 0x220
 extern unsigned short SBL_Irq; // default 7 (values only 0..7)
-extern unsigned short SBL_SampleRate; // defaul 22050 (the Sound Blaster changes the frequency from this to a more "suitable" one)
+extern unsigned short SBL_SampleRate; // default 22222 (actually the older Sound Blasters doesn't support 22050 look at SBL_SampleRateCorrected())
 extern unsigned short SBL_Dma; // default 1
 
 unsigned short SBL_SampleRateCorrected(unsigned short sampleRate); // The Sound Blaster standard doesn't support all thinkable frequencies
@@ -57,7 +57,7 @@ bool SBL_UnlockMemory(void *address, unsigned int byteSize);
 #endif // __WATCOMC__
 
 #ifdef __DJGPP__
-#include <sys/farptr.h>
+#include <sys/movedata.h>
 #define SBL_WriteSample8(__8bitptr__,__index__,__8bitvalue__) {unsigned char source = (unsigned char)(__8bitvalue__); dosmemput(&source,1,(unsigned int)(__8bitptr__)+__index__);}
 #endif // __DJGPP__
 

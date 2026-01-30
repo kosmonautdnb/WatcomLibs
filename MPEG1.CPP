@@ -1,6 +1,7 @@
 #include "c:/_OPENGL_/GL.H"
 #define PL_MPEG_IMPLEMENTATION
 #include "c:/_STL_/PLMPEG.HPP"
+#include "MPEG1.HPP"
 
 extern int glFrameBufferWidth;
 extern int glFrameBufferHeight;
@@ -10,7 +11,21 @@ plm_t *plm;
 double plmSeconds;
 double plmAspect;
 void video_cb(plm_t *plm, plm_frame_t *frame, void *user) {plm_frame_to_rgba(frame, (uint8_t *)user, plm_get_width(plm) * sizeof(unsigned int));}
-void audio_cb(plm_t *plm, plm_samples_t *samples, void *user) {}
+
+MPEG1_AUDIOCALLBACK plmAudioCallback;
+int plmSamplerate = 0;
+
+void audio_cb(plm_t *plm, plm_samples_t *samples, void *user) {
+  if (plmAudioCallback != NULL) {
+    plmAudioCallback(samples->interleaved, samples->count, plmSamplerate, samples->time, user);
+  }
+}
+
+void mpeg1_setAudioCallback(MPEG1_AUDIOCALLBACK callback, void *userData) {
+  plmAudioCallback = callback;
+  plm_set_audio_decode_callback(plm, audio_cb, userData);
+}
+
 
 GLuint mpeg1_playMovie(const char *movieName) {
   FILE *file = fopen(movieName,"rb");
@@ -26,8 +41,21 @@ GLuint mpeg1_playMovie(const char *movieName) {
   int w = plm_get_width(plm);
   int h = plm_get_height(plm);
   plmAspect = ((double)w/glFrameBufferWidth) / ((double)h/glFrameBufferHeight);
+
+  plmSamplerate = plmSamplerate = plm_get_samplerate(plm);
+
   unsigned int *frame_buffer = new unsigned int[w * h];
   for (int i = 0; i < w * h; i++) frame_buffer[i] = 0xff000000;
+  GLuint texture;
+  glGenTextures(1,&texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,w,h,0,GL_RGBA,GL_UNSIGNED_BYTE,frame_buffer);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  delete[] frame_buffer;
+  frame_buffer = glGetTexturePointer(texture);
 
   plm_set_video_decode_callback(plm, video_cb, frame_buffer);
   plm_set_audio_decode_callback(plm, audio_cb, NULL);
@@ -37,14 +65,6 @@ GLuint mpeg1_playMovie(const char *movieName) {
   plm_set_audio_stream(plm, 0);
   
   
-  GLuint texture;
-  glGenTextures(1,&texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexturePointer(w, h, frame_buffer);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   plmSeconds = glSeconds();
   return texture;
 }
@@ -81,5 +101,9 @@ void mpeg1_display(unsigned int texture) {
   glPopMatrix();
   glEnable(GL_DEPTH_TEST);
   glDisable(GL_TEXTURE_2D);
+}
+
+double mpeg1_playTime() {
+  return plm_get_time(plm);
 }
 
