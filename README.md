@@ -4,6 +4,8 @@ All the libraries had to be slightly adapted due to the "different" WatcomC++ me
 
 This should primarily serve as a starting point for your WatcomC++ FreeDOS experiments/projects. There aren't many WatcomC++ + FreeDOS sources available online yet. I've tried to gather some new and useful content and promote my DOS OpenGL implementation "WatcomGL".
 
+The "apps" are mostly of inferior quality and should only serve as a starting point for own implementations/experiments.
+
 This repository lives at: https://github.com/kosmonautdnb/WatcomLibs.git  
 
 DOS is case agnostic. Filenames are upper case because it's DOS default.
