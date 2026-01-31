@@ -25,7 +25,9 @@ gpp -c -O3 -oimage.obj image.cpp
 gpp -c -O3 -ocharset.obj charset.cpp
 gpp -c -O3 -okeymtrix.obj keymtrix.cpp
 gpp -c -O3 -omp.obj mpeg1.cpp
-gpp -o APP_KEYS.EXE gl.obj keys.obj
+gpp -c -O3 -ottf.obj truetype.cpp
+gpp -c -O3 -oapp_ttf.obj app_ttf.cpp
+gpp -o APP_KEYS.EXE gl.obj keys.obj keymtrix.obj
 gpp -o APP_VID.EXE gl.obj e.obj vid.obj
 gpp -o APP_SPKT.EXE gl.obj i1.obj i2.obj o.obj s.obj sp.obj d.obj f.obj e.obj spk.obj
 gpp -o APP_SPPL.EXE app_sppl.c
@@ -34,6 +36,7 @@ gpp -o APP_MP3.EXE sndblstr.obj app_mp3.obj c.obj
 gpp -o APP_GLTF.EXE app_gltf.obj s.obj o.obj cgltfa.obj vector.obj matrix.obj quaternn.obj image.obj charset.obj keymtrix.obj gl.obj
 gpp -o APP_IMG.EXE app_img.obj charset.obj image.obj gl.obj
 gpp -o APP_MPG.EXE app_mpg.obj mp.obj gl.obj sndblstr.obj
+gpp -o APP_TTF.EXE app_ttf.obj ttf.obj gl.obj
 @echo off
 del keys.obj
 del spk.obj
@@ -62,3 +65,5 @@ del quaternn.obj
 del image.obj
 del charset.obj
 del keymtrix.obj
+del app_ttf.obj
+del ttf.obj

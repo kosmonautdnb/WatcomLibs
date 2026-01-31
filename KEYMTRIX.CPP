@@ -13,7 +13,7 @@
 #include <go32.h>
 #endif // __DJGPP__
 
-volatile bool keyPressed[0x80] = {0};
+volatile bool keyPressed[KEYMATRIX_KEYCOUNT] = {0};
 
 bool isKeyPressed(int scanCode) {
   return keyPressed[scanCode & 0x7f];

@@ -1,8 +1,10 @@
 #ifndef __KEYMTRIX_HPP__
 #define __KEYMTRIX_HPP__
 
+#define KEYMATRIX_KEYCOUNT 0x80
+
   // scan code pressed table
-extern volatile bool keyPressed[0x80];
+extern volatile bool keyPressed[KEYMATRIX_KEYCOUNT];
 
   // checks if a scan code currently is pressed
 bool isKeyPressed(int scanCode);

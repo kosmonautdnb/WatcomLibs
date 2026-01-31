@@ -259,6 +259,7 @@ int main(int argc, char *argv[]) {
     printf("------------------------------\n");
     printf("Usage: player.exe <song.raw>\n");
     printf("<song.raw> is a songfile exported by Speaker Tracker v1.0\n");
+    printf("The source folder should contain a DEMOSNG1.RAW\n");
     printf("------------------------------\n");
     exit(0);
   }

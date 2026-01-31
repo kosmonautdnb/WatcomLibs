@@ -1,0 +1,46 @@
+// SPEAKER TRACKER FILE
+// A simple one note at a time Speaker Tracker without reprogramming the timer speed.
+// You can find the newest version of Speaker Tracker here: https://github.com/kosmonautdnb/WatcomLibs
+// APP_SPKT.CPP
+
+// use it like:
+// unsigned short song[]={
+//   #include "song.exp"
+// };
+
+// -- timer ticks per note
+1,
+// -- song length (count of consecutive patterns)
+4,
+// -- pattern length in notes
+48,
+// -- loop start in patterns
+0,
+// -- loop end in patterns
+4,
+// Here follows the song data as timerTicks*songLength*patternLength
+// unsigned shorts to be set to the PIT timer2 lo/hi. 0 means tone off, all other values (are two bytes (lo/hi)) with tone on.
+
+// Song position 0
+1809,3619,1809,2031,4062,2031,1809,3619,1809,2280,4560,0,10846,21693,0,10846,
+21693,0,2711,5423,2711,2031,4062,0,10846,21693,0,10846,21693,0,1809,3619,
+1809,2280,4560,0,10846,21693,0,10846,21693,0,2711,5423,0,10846,21693,0,
+
+// Song position 1
+2031,4062,2031,2280,4560,2280,2415,4831,2415,3043,6087,0,13666,27332,0,13666,
+27332,0,2415,4831,2415,2280,4560,0,13666,27332,0,13666,27332,0,2031,4062,
+2031,1809,3619,0,13666,27332,0,13666,27332,0,1521,3043,0,13666,27332,0,
+
+// Song position 2
+1708,3416,1708,1809,3619,1809,2280,4560,2280,2031,4062,0,16251,32503,0,16251,
+32503,0,1521,3043,1521,1708,3416,0,16251,32503,0,16251,32503,0,1809,3619,
+1809,2280,4560,0,16251,32503,0,16251,32503,0,2711,5423,0,16251,32503,0,
+
+// Song position 3
+2031,4062,2031,2280,4560,2280,2415,4831,2415,3043,6087,0,13666,27332,0,13666,
+27332,0,4062,8125,4062,3043,6087,0,12175,24350,0,12175,24350,0,2280,4560,
+2280,2031,4062,0,12175,24350,0,13666,27332,0,2415,4831,0,12175,24350,0,
+
+// End marker. 0xffff
+65535,
+// ..

@@ -27,28 +27,12 @@
 // WatcomGL can be found here: https://github.com/kosmonautdnb/WatcomGL
 // Some additional Libraries for WatcomC can be found here: https://github.com/kosmonautdnb/WatcomLibs
 #include "GL.H"
+#include "KEYMTRIX.HPP"
 #include <stdlib.h>
 #include <stdio.h>
 #include <conio.h>
 #include <string.h>
-#ifdef __WATCOMC__
-#include <i86.h>
-#endif // __WATCOMC__
-#ifdef __DJGPP__
 #include <dos.h>
-#endif // __DJGPP__
-
-#ifdef __WATCOMC__
-GLuint int16_1(); // we need the zero flag it's not well exposed by the watcom api sorry that's why some asm here
-#pragma aux int16_1="mov ah,0x01""int 0x16""jz do""mov eax,0""jmp dont""do:""mov eax,1""dont:" value[eax] modify[eax ebx ecx edx]
-#endif
-#ifdef __DJGPP__
-GLuint int16_1() {
-  GLuint ret;
-  __asm__ __volatile__("\tmovb $1,%%ah\n""\tint $0x16\n""\tjz 1f\n""\tmovl $0,%%eax\n""\tjmp 2f\n""1:\n""\tmovl $1,%%eax\n""2:\n" : "=a" (ret));
-  return ret;
-}
-#endif
 
 int main(int argc, char *argv[]) {
   int key = 0;
@@ -69,7 +53,6 @@ int main(int argc, char *argv[]) {
     if (key & 0x80) break;
   }
 
-  unsigned char followUp[6];
   printf("Press another key:\n");
   while(1) {
     key = (unsigned char)inp(0x60);
@@ -79,7 +62,18 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  while(glNextKey() !=0 ) {;}
+  while(glNextKey()!=0) {;}
 
+  printf("And press another key:\n");
+  installKeyboardHandler();
+  for (int i = 0; i < KEYMATRIX_KEYCOUNT; i++) if (isKeyPressed(i)) {i=0;}
+  key = -1;
+  while(1) {
+    for (int i = 0; i < KEYMATRIX_KEYCOUNT; i++) if (isKeyPressed(i)) {key = i; break;}
+    if (key != -1) break;
+  }
+  printf("Keymatrix ID here: $%02x(%d)\n", key, key);
+  uninstallKeyboardHandler();
+  while(glNextKey()!=0) {;}
   return 0;
 }
