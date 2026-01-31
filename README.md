@@ -85,6 +85,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - APP_GLTF.CPP - a 3D model viewer for GLB/GLTF files, also supporting animations and skinning.
 - APP_IMG.CPP - a simple image / picture viewer.
 - APP_MPG.CPP - a mpeg1 video player. Features Sound Blaster sound.
+- APP_TTF.CPP - a truetype (.ttf) font viewer.
 
 ## Some useful classes
 - CHARSET.HPP - a tiny font to be rendered per pixel
