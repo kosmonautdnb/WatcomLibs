@@ -85,6 +85,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - APP_VID.CPP - tests some of the WatcomGL video modies.
 - APP_PHYS.CPP - tiny app to test the 2D physics library "Physac", use the mouse and mouse buttons.
 - APP_MP3.CPP - Let's you play MP3 files via the Sound Blaster Interface (SBEMU tested, works).
+- APP_OGG.CPP - Let's you play OGG/Vorbis files via the Sound Blaster Interface (SBEMU tested, works).
 - APP_GLTF.CPP - a 3D model viewer for GLB/GLTF files, also supporting animations and skinning.
 - APP_IMG.CPP - a simple image / picture viewer.
 - APP_MPG.CPP - a mpeg1 video player. Features Sound Blaster sound.
@@ -134,6 +135,8 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - STBTEXT.HPP - Text editor basics  https://github.com/nothings/obbg/tree/master/stb  
 - STBTTF.HPP - Truetype text/font renderer  https://github.com/nothings/obbg/tree/master/stb  
 - STBRECT.HPP - Texture atlas generator  https://github.com/nothings/obbg/tree/master/stb  
+- STBOGG.HPP - STB_Vorbis.h to decode OGG (sound) files. https://github.com/nothings/obbg/tree/master/stb  
+- STBPRINT.HPP - STB_SPRINTF.h some good replacements for snprintf/vsprintf etc. https://github.com/nothings/obbg/tree/master/stb  
 - TEXTURES.HPP - a basic "texture cache"  
 - TINYEXPR.HPP - a math expression solver (string input)  https://github.com/codeplea/tinyexpr  
 - TRUETYPE.HPP - true type font rendering (also in OpenGL). Wraping of STBTTF.HPP  
