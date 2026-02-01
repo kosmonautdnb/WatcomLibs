@@ -1,11 +1,12 @@
 #include "SNDBLSTR.HPP"
 #include "CURSOR.HPP"
-#define MINIMP3_IMPLEMENTATION
-#include "MINIMP3.HPP"
+#include "STBOGG.HPP"
+#include "STBPRINT.HPP"
 #include <stdio.h>
 #include <conio.h>
 
-short samples[MINIMP3_MAX_SAMPLES_PER_FRAME];
+#define MAXSHORTS 2048
+short samples[MAXSHORTS];
 
 #define BUFFERSIZE (5000)
 #define RINGBUFFERSIZE (BUFFERSIZE*2)
@@ -37,11 +38,11 @@ void printPlayPos(int samplePos,int hz) {
 int main(int argc, const char *argv[]) {
 
   printf("\n");
-  printf("SBEMU MP3 Player\n");
+  printf("SBEMU OGG Player\n");
   printf("-------------------\n");
   if (argc != 2) {
-    printf("Usage: APP_MP3.EXE <MP3FILE.MP3>\n");
-    printf("in the source folder there should be a test.mp3\n");
+    printf("Usage: APP_OGG.EXE <OGGFILE.MP3>\n");
+    printf("in the source folder there should be a test.ogg\n");
     exit(0);
   }
   const char *fileName = argv[1];
@@ -49,7 +50,7 @@ int main(int argc, const char *argv[]) {
   FILE *in = fopen(fileName,"rb");
 
   if (in == NULL) {
-    printf("MP3<%s> not found.\n",fileName);
+    printf("OGG<%s> not found.\n",fileName);
     exit(0);
   }
 
@@ -57,7 +58,7 @@ int main(int argc, const char *argv[]) {
   int fileSize = ftell(in);
   fseek(in,0,SEEK_SET);
   unsigned char *fileData = (unsigned char*)malloc(fileSize);
-  printf("Loading MP3 <%s> with %dMb.\n", fileName,fileSize/1024/1024);
+  printf("Loading OGG <%s> with %dMb.\n", fileName,fileSize/1024/1024);
   fread(fileData,1,fileSize,in);
   fclose(in);                                                     
 
@@ -66,17 +67,29 @@ int main(int argc, const char *argv[]) {
   SBL_LockMemory((void*)&destPos, sizeof(int));
   SBL_LockMemory((void*)&endPos, sizeof(int));
 
-  mp3dec_t decoder;
-  mp3dec_frame_info_t info;
-  mp3dec_init(&decoder);
   double sourcePos = 0;
   destPos = 0;
   endPos = 0;
   memset((void*)ringBuffer,0,sizeof(ringBuffer));
-  unsigned char *mp3 = fileData;
-  int mp3_bytes = fileSize;
 
-  if (!SBL_Init()) {
+  unsigned char *ogg = fileData;
+  int ogg_bytes = fileSize;
+
+  int oggError = 0;
+  stb_vorbis *decoder = stb_vorbis_open_memory(ogg, ogg_bytes, &oggError, NULL);
+  if (oggError != VORBIS__no_error) {
+    printf("Couldn't start to decode OGG file due to some error.\n");
+    free(fileData);
+    exit(0);
+  }
+
+  stb_vorbis_info info = stb_vorbis_get_info(decoder);
+  int sample_rate = info.sample_rate;
+  int channels = info.channels;
+  printf("OGG channels: %d\n", channels);
+  printf("OGG sample rate: %d\n", sample_rate);
+
+  if (sample_rate < 100 || (!SBL_Init())) {
     printf("Sound Blaster not found!\n");
     printf("Maybe the IRQ/DMA/ADDRESS settings are wrong,\n");
     printf("Or you just don't have a Sound Blaster Card installed.\n");
@@ -89,33 +102,29 @@ int main(int argc, const char *argv[]) {
     free(fileData);
     exit(0);
   }
+
   SBL_POINTER p = SBL_Malloc(BUFFERSIZE);
   SBL_StartPlayback( &p, BUFFERSIZE,2,sampleOutputCallback);
   int startPos = destPos;
 
   int soundBlasterHz = SBL_SampleRateCorrected(SBL_SampleRate);
-  int mp3Hz = -1;
-  int mp3Channels = -1;
+  double rate = (double)soundBlasterHz/sample_rate;
+
   printf("Sound Blaster Frequency: %d\n",soundBlasterHz);
 
   printf("Press a key to stop playback.\n");
   while(!kbhit()) {
-    int sampleCount = mp3dec_decode_frame(&decoder, mp3, mp3_bytes, samples, &info);
-    if (sampleCount==0&&info.frame_bytes==0) endPos = sourcePos;
-    if (info.hz != mp3Hz) {mp3Hz = info.hz; mp3Channels = info.channels; printf("MP3 Frequency: %d\n",mp3Hz); printf("MP3 Channels: %d\n",mp3Channels);}
-    mp3 += info.frame_bytes;
-    mp3_bytes -= info.frame_bytes;
-    if (mp3Channels > 0 && mp3Hz > 0) {
-      const double rate = (double)soundBlasterHz/mp3Hz;
-      if (rate > 1.0) {printf("MP3 Sample Rate to low.\n"); break;}
-      while((int)(sourcePos+sampleCount*rate)>destPos) {;}
-      int k = 0; int a = 0; int w = 0; int l = 0;
-      for (int i = 0; i < sampleCount; i++) {
-        for (int j = 0; j < mp3Channels; j++) {a += samples[k++];w++;}
-        if ((int)sourcePos != l) {l = (int)sourcePos;ringBuffer[((int)sourcePos) % RINGBUFFERSIZE] = (a/w+32768)>>8; w = 0; a = 0;}
-        sourcePos += rate;
-      }
+    int sampleCount = stb_vorbis_get_samples_short_interleaved(decoder, 2, samples, MAXSHORTS);
+
+    while((int)(sourcePos+sampleCount*rate)>destPos) {;}
+
+    int k = 0; int a = 0; int w = 0; int l = 0;
+    for (int i = 0; i < sampleCount; i++) {
+      for (int j = 0; j < channels; j++) {a += samples[k++];w++;}
+      if ((int)sourcePos != l) {l = (int)sourcePos;ringBuffer[((int)sourcePos) % RINGBUFFERSIZE] = (a/w+32768)>>8; w = 0; a = 0;}
+      sourcePos += rate;
     }
+
     printPlayPos(destPos-startPos,soundBlasterHz);
   }
   endPos = 1; // mute
