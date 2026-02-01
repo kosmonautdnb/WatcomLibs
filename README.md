@@ -1,5 +1,5 @@
 # WatcomLibs
-Some useful libraries converted to WatcomC++.
+Some useful libraries converted to WatcomC++ 11.0 (And OpenWatcom and DJGPP).
 All the libraries had to be slightly adapted due to the "different" WatcomC++ mechanics.
 
 This should primarily serve as a starting point for your WatcomC++ FreeDOS experiments/projects. There aren't many WatcomC++ + FreeDOS sources available online yet. I've tried to gather some new and useful content and promote my DOS OpenGL implementation "WatcomGL".
