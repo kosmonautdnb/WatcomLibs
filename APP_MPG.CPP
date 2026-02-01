@@ -60,6 +60,8 @@ int main(int argc, const char *argv[]) {
     printf("usage: app_mpg.exe <movie.mpg>\n");
     printf("generate videos with ffmpeg and the following commandline:\n");
     printf("ffmpeg -i video.mp4 -c:v mpeg1video -q:v 0 -c:a libtwolame -b:a 224k -format mpeg video.mpg\n");
+    printf("\n");
+    printf("There should be a low quality test.mpg in the source folder.\n");
     exit(0);
   }
   const char *fileName = argv[1];
