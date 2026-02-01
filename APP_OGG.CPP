@@ -6,6 +6,7 @@
 #include <conio.h>
 
 #define MAXSHORTS 2048
+#define FORCECHANNELCOUNT 2
 short samples[MAXSHORTS];
 
 #define BUFFERSIZE (5000)
@@ -114,13 +115,13 @@ int main(int argc, const char *argv[]) {
 
   printf("Press a key to stop playback.\n");
   while(!kbhit()) {
-    int sampleCount = stb_vorbis_get_samples_short_interleaved(decoder, 2, samples, MAXSHORTS);
+    int sampleCount = stb_vorbis_get_samples_short_interleaved(decoder, FORCECHANNELCOUNT, samples, MAXSHORTS);
 
     while((int)(sourcePos+sampleCount*rate)>destPos) {;}
 
     int k = 0; int a = 0; int w = 0; int l = 0;
     for (int i = 0; i < sampleCount; i++) {
-      for (int j = 0; j < channels; j++) {a += samples[k++];w++;}
+      for (int j = 0; j < FORCECHANNELCOUNT; j++) {a += samples[k++];w++;}
       if ((int)sourcePos != l) {l = (int)sourcePos;ringBuffer[((int)sourcePos) % RINGBUFFERSIZE] = (a/w+32768)>>8; w = 0; a = 0;}
       sourcePos += rate;
     }
