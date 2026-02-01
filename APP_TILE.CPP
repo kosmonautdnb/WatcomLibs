@@ -5,6 +5,8 @@
 
 // ASPECT RATIO IS WRONG FOR 16:9 MONITORS
 
+// You may watch this Youtube video to get an idea of using this stb tilemap editor: https://www.youtube.com/watch?v=f9sdvwTBBOg
+
 #define STB_TILEMAP_EDITOR_IMPLEMENTATION
 void STBTE_DRAW_RECT(int,int,int,int,unsigned int);
 void STBTE_DRAW_TILE(int,int,unsigned short,int,float *);
