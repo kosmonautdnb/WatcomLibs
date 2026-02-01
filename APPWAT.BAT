@@ -28,6 +28,7 @@ wpp386 /mf mpeg1.cpp
 wpp386 /mf -fottf.obj truetype.cpp
 wpp386 /mf app_ttf.cpp
 wpp386 /mf -foogg.obj app_ogg.cpp
+wpp386 /mf -fotile.obj app_tile.cpp
 wcl.exe APP_SPPL.C
 wlink @appkeys.lnk OPTION QUIET OPTION STack = 65536 NAME APP_KEYS.EXE
 wlink @appvid.lnk OPTION QUIET OPTION STack = 65536 NAME APP_VID.EXE
@@ -39,6 +40,7 @@ wlink FILE sb.obj FILE ogg.obj FILE c.obj OPTION QUIET OPTION STack = 65536 NAME
 wlink @appttf.lnk OPTION QUIET OPTION STack = 65536 NAME APP_TTF.EXE
 wlink @appimg.lnk OPTION QUIET OPTION STack = 65536 NAME APP_IMG.EXE
 wlink @appmpg.lnk OPTION QUIET OPTION STack = 65536 NAME APP_MPG.EXE
+wlink FILE gl.obj FILE tile.obj OPTION QUIET OPTION STack = 65536 NAME APP_TILE.EXE
 @echo off
 del keys.obj
 del spk.obj
@@ -71,3 +73,4 @@ del mpeg1.obj
 del ttf.obj
 del app_ttf.obj
 del ogg.obj
+del tile.obj
