@@ -90,6 +90,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - APP_IMG.CPP - a simple image / picture viewer.
 - APP_MPG.CPP - a mpeg1 video player. Features Sound Blaster sound.
 - APP_TTF.CPP - a truetype (.ttf) font viewer.
+- APP_TILE.CPP - a simple tilemap editor template, which may be used to edit tilemaps using STBTILED.HPP (stb_tilemap_editor.h)
 
 ## Some useful classes
 - CHARSET.HPP - a tiny font to be rendered per pixel
