@@ -77,20 +77,21 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 
 ## Some useful applications
 **Use APPDJGPP.BAT to build the APPs with DJGPP and APPWAT.BAT to build the APPs with WatcomC/OpenWatcom.**
-- APP_SPKT.CPP - a very rudimentary pc beeper tracker, not reprogramming the timerfrequency and just one voice at a time. Very simple export format. (**too slow for DosBOX**)
-- APP_SPPL.C - a simple C program, a simple replayer for tunes exported by Speaker Tracker. (WatcomC in real mode around 24Kb).
-- DEMOSNG1.SPK - a Speaker Tracker Demo Tune by 5tarbuck.
-- DEMOSNG1.RAW - a Speaker Tracker exported Tune by 5tarbuck to be played with APP_SPPL.C.
-- APP_KEYS.CPP - outputs the Keyboard Scancodes of the input key.
-- APP_VID.CPP - tests some of the WatcomGL video modies.
-- APP_PHYS.CPP - tiny app to test the 2D physics library "Physac", use the mouse and mouse buttons.
-- APP_MP3.CPP - Let's you play MP3 files via the Sound Blaster Interface (SBEMU tested, works).
-- APP_OGG.CPP - Let's you play OGG/Vorbis files via the Sound Blaster Interface (SBEMU tested, works).
 - APP_GLTF.CPP - a 3D model viewer for GLB/GLTF files, also supporting animations and skinning.
 - APP_IMG.CPP - a simple image / picture viewer.
+- APP_KEYS.CPP - outputs the Keyboard Scancodes of the input key.
+- APP_MP3.CPP - Let's you play MP3 files via the Sound Blaster Interface (SBEMU tested, works).
 - APP_MPG.CPP - a mpeg1 video player. Features Sound Blaster sound.
-- APP_TTF.CPP - a truetype (.ttf) font viewer.
+- APP_OGG.CPP - Let's you play OGG/Vorbis files via the Sound Blaster Interface (SBEMU tested, works).
+- APP_PHYS.CPP - tiny app to test the 2D physics library "Physac", use the mouse and mouse buttons.
+- APP_SPKT.CPP - a very rudimentary pc beeper tracker, not reprogramming the timerfrequency and just one voice at a time. Very simple export format. (**too slow for DosBOX**)
+- APP_SPPL.C - a simple C program, a simple replayer for tunes exported by Speaker Tracker. (WatcomC in real mode around 24Kb).
+- APP_SVG.CPP - a very basic loading of an SVG (Vector Graphics) image and displaying it.
 - APP_TILE.CPP - a simple tilemap editor template, which may be used to edit tilemaps using STBTILED.HPP (stb_tilemap_editor.h)
+- APP_TTF.CPP - a truetype (.ttf) font viewer.
+- APP_VID.CPP - tests some of the WatcomGL video modies.
+- DEMOSNG1.SPK - a Speaker Tracker Demo Tune by 5tarbuck.
+- DEMOSNG1.RAW - a Speaker Tracker exported Tune by 5tarbuck to be played with APP_SPPL.C.
 
 ## Some useful classes
 - CHARSET.HPP - a tiny font to be rendered per pixel
@@ -108,7 +109,8 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - GLEGA.HPP - display WatcomGL in 16 Colors EGA modes instead of Vesa or VGA.
 - GLRECORD.HPP - lets you record the whole OpenGL state per frame and render it to a H264 MP4.
 - GTFLOG.CPP - just a temporary / very simple logger for CGLTF file structure.
-- IMAGE.HPP - Image loading/saving/resizing PNG,JPG,BMP,TGA,GIF,PSD and others  
+- IMAGE.HPP - Image loading/saving/resizing PNG,JPG,BMP,TGA,GIF,PSD and others
+- JOMPEG.HPP - A rudimentary mpeg1 encoder. https://github.com/yui0/slibs
 - JSONREAD.HPP - a json reader https://github.com/rafagafe/tiny-json  
 - JSONWRT.HPP - a json writer https://github.com/rafagafe/tiny-json  
 - KEYMTRX.HPP - direct access to the keyboard matrix (for WatcomC and DJGPP) 
@@ -116,6 +118,8 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - MINIMP3.HPP - A mp3 decoder  https://github.com/lieff/minimp3  
 - MINIMP4.HPP - A mp4 muxer/demuxer (e.g. for h264 movies) https://github.com/lieff/minimp4
 - MPEG1.HPP - mpeg1 wrapper for PLMPEG.hpp
+- NANOSVG.HPP - a SVG (Vector Graphics) loader // https://github.com/memononen/nanosvg
+- NSVGRAST.HPP - a SVG (Vector Graphics) renderer // https://github.com/memononen/nanosvg
 - OPENGLFX.HPP - Some post processing OpenGL effects like antialiasing(FXAA(https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/ )), toon shader, motion blur
 - PARSON.HPP - another json reader/writer https://github.com/kgabis/parson
 - PHYSAC - a tiny, 2D physics library (demo in app_phys.cpp) https://github.com/victorfisac/Physac
