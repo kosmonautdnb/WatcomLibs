@@ -28,11 +28,25 @@
 //#include "nanosvg.h" :mad:
 #include "NANOSVG.HPP" // :mad:
 
+#ifndef ___floorf
 #define ___floorf(__val__) (float)floor((double)(__val__)) // :mad:
+#endif //___floorf
+
+#ifndef ___ceilf
 #define ___ceilf(__val__) (float)ceil((double)(__val__)) // :mad:
+#endif //___ceilf
+
+#ifndef ___atan2f
 #define ___atan2f(__val1__,__val2__) (float)atan2((double)(__val1__),(double)(__val2__)) // :mad:
+#endif //___atan2f
+
+#ifndef ___fmodf
 #define ___fmodf(__val1__,__val2__) (float)fmod((double)(__val1__),(double)(__val2__)) // :mad:
+#endif //___fmodf
+
+#ifndef ___isnan
 #define ___isnan(__val__) ((__val__)!=(__val__)) // :mad: dunno if this also works with Watcom C
+#endif //___isnan
 
 #ifndef NANOSVGRAST_CPLUSPLUS
 #ifdef __cplusplus

@@ -29,15 +29,41 @@
 #ifndef NANOSVG_H
 #define NANOSVG_H
 
+#ifndef ___sqrtf
 #define ___sqrtf(__val__) (float)sqrt((double)(__val__)) // :mad:
+#endif //___sqrtf
+
+#ifndef ___sinf
 #define ___sinf(__val__) (float)sin((double)(__val__)) // :mad:
+#endif //___sinf
+
+#ifndef ___cosf
 #define ___cosf(__val__) (float)cos((double)(__val__)) // :mad:
+#endif //___cosf
+
+#ifndef ___acosf
 #define ___acosf(__val__) (float)acos((double)(__val__)) // :mad:
+#endif //___acosf
+
+#ifndef ___fabsf
 #define ___fabsf(__val__) (float)fabs((double)(__val__)) // :mad:
+#endif //___fabsf
+
+#ifndef ___roundf
 #define ___roundf(__val__) (float)floor((double)(__val__)+0.5) // :mad:
+#endif //___roundf
+
+#ifndef ___tanf
 #define ___tanf(__val__) (float)tan((double)(__val__)) // :mad:
+#endif //___tanf
+
+#ifndef ___NANOLONGLONG
 #define ___NANOLONGLONG int // :mad: WatcomC++ has problems with 64 bit arithmetic
+#endif //___NANOLONGLONG
+
+#ifndef ___strtoll
 #define ___strtoll strtol // :mad: // :mad: WatcomC++ has problems with 64 bit arithmetic
+#endif //___strtoll
 
 #ifndef NANOSVG_CPLUSPLUS
 #ifdef __cplusplus
