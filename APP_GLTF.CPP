@@ -40,7 +40,7 @@ int main(int argc, const char *argv[]) {
   printf("-------------------------\n");
   if (argc != 2) {
     printf("usage: app_gltf.exe <filename.glb>\n");
-    printf("in the source folder there is \"vroid.glb\" for testing.\n");
+    printf("in the source folder there is \"test.glb\" for testing.\n");
     exit(0);
   }
   const char *fileName = argv[1];
