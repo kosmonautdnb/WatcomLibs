@@ -133,7 +133,8 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - STBIMGRS.HPP - a image rescale library (many filters)  https://github.com/nothings/obbg/tree/master/stb  
 - STBIMGWR.HPP - writer for different image formats. Like PNG,JPG,BMP,TGA. Wrapped in image.hpp  https://github.com/nothings/obbg/tree/master/stb  
 - STBPERLIN.HPP - 3D Perlin Noise and fractal brownian motion (fbm) Noise. For "position dependend" random. https://github.com/nothings/obbg/tree/master/stb  
-- STBTEXT.HPP - Text editor basics  https://github.com/nothings/obbg/tree/master/stb  
+- STBTEXT.HPP - Text editor basics  https://github.com/nothings/obbg/tree/master/stb
+- STBTILED.HPP - a little tilemap editor template.  https://github.com/nothings/obbg/tree/master/stb  
 - STBTTF.HPP - Truetype text/font renderer  https://github.com/nothings/obbg/tree/master/stb  
 - STBRECT.HPP - Texture atlas generator  https://github.com/nothings/obbg/tree/master/stb  
 - STBOGG.HPP - STB_Vorbis.h to decode OGG (sound) files. https://github.com/nothings/obbg/tree/master/stb  
