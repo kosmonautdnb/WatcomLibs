@@ -30,6 +30,7 @@ wpp386 /mf app_ttf.cpp
 wpp386 /mf -foogg.obj app_ogg.cpp
 wpp386 /mf -fotile.obj app_tile.cpp
 wcl.exe APP_SPPL.C
+wcl386 /mf APP_SVG.CPP GLIMPL.CPP
 wlink @appkeys.lnk OPTION QUIET OPTION STack = 65536 NAME APP_KEYS.EXE
 wlink @appvid.lnk OPTION QUIET OPTION STack = 65536 NAME APP_VID.EXE
 wlink @appspkt.lnk OPTION QUIET OPTION STack = 65536 NAME APP_SPKT.EXE
@@ -74,3 +75,5 @@ del ttf.obj
 del app_ttf.obj
 del ogg.obj
 del tile.obj
+del app_svg.obj
+del glimpl.obj

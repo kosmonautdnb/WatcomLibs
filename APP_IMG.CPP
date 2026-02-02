@@ -132,6 +132,7 @@ int main(int argc, const char *argv[]) {
 
   // cleanup
   glDone();
+  img.free();
 
   // return to DOS
   return 0;

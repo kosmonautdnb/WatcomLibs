@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+// This editor seem to crash some time (here it crashed once), so maybe save "often".
+
 // ASPECT RATIO IS WRONG FOR 16:9 MONITORS
 
 // You may watch this Youtube video to get an idea of using this stb tilemap editor: https://www.youtube.com/watch?v=f9sdvwTBBOg
