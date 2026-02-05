@@ -39,6 +39,7 @@ int main(int argc, const char *argv[]) {
   unsigned int* img = (unsigned int*)malloc(w*h*4);
   nsvgRasterize(rast, image, 0,0,1/aspect, (unsigned char*)img, w, h, w*4);
   nsvgDelete(image);
+  nsvgDeleteRasterizer(rast);
 
   bool quit = false;
   while(!quit) {
