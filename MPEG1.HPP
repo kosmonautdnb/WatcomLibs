@@ -2,6 +2,7 @@
 #define __MPEG1_HPP__
 
 unsigned int mpeg1_playMovie(const char *movieName); // returns opengl texture
+void mpeg1_close(unsigned int texture);
 bool mpeg1_update();
 void mpeg1_display(unsigned int texture);
 double mpeg1_playTime();

@@ -7,9 +7,9 @@ extern int glFrameBufferWidth;
 extern int glFrameBufferHeight;
 extern unsigned int *glFrameBuffer;
 
-plm_t *plm;
-double plmSeconds;
-double plmAspect;
+plm_t *plm = NULL;
+double plmSeconds = 0;
+double plmAspect = 1;
 void video_cb(plm_t *plm, plm_frame_t *frame, void *user) {plm_frame_to_rgba(frame, (uint8_t *)user, plm_get_width(plm) * sizeof(unsigned int));}
 
 MPEG1_AUDIOCALLBACK plmAudioCallback;
@@ -33,7 +33,7 @@ GLuint mpeg1_playMovie(const char *movieName) {
     return 0;
   }
   
-  plm = plm_create_with_file(file, true);
+  plm = plm_create_with_file(file, true); // true = close when done (destroyed)
   if (!plm) {
     return 0;
   }
@@ -67,6 +67,13 @@ GLuint mpeg1_playMovie(const char *movieName) {
   
   plmSeconds = glSeconds();
   return texture;
+}
+
+void mpeg1_close(unsigned int texture) {
+  glDeleteTextures(1,&texture);
+  if (plm == NULL) return;
+  plm_destroy(plm);
+  plm = NULL;
 }
 
 bool mpeg1_update() {
@@ -106,4 +113,3 @@ void mpeg1_display(unsigned int texture) {
 double mpeg1_playTime() {
   return plm_get_time(plm);
 }
-

@@ -46,6 +46,9 @@ void waitSoundBlasterStart() {
   int a = soundBlasterTicks;
   while(a == soundBlasterTicks) {;}
   soundBlasterPlayTime = 0;
+#ifdef SBEMUSOUNDBLASTERON
+    glSetTime((double)soundBlasterPlayTime/SBL_SampleRate);
+#endif
 }
 
 #else
@@ -71,6 +74,7 @@ int main(int argc, const char *argv[]) {
 
   if (!glVesa(640,480,16)) glVGA();
   glRefresh();
+  glSetTime(0);
   unsigned int texture = mpeg1_playMovie(fileName);
 
 #ifdef SBEMUSOUNDBLASTERON
@@ -108,7 +112,7 @@ int main(int argc, const char *argv[]) {
   }
 
   glDone();
-
+  mpeg1_close(texture);
 
 #ifdef SBEMUSOUNDBLASTERON
   SBL_Free(&sblMem);
