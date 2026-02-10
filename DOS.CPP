@@ -328,6 +328,24 @@ bool dosHasDrive(const char driveLetter) {
 #endif // ON_WINDOWS
 }
 
+bool dosIsDriveReady(const char driveLetter) {
+#if defined(__WATCOMC__) || defined(__DJGPP__)
+  int d = -1;
+  if (driveLetter >= 'A' && driveLetter <= 'Z') d = driveLetter - 'A' + 1;
+  if (driveLetter >= 'a' && driveLetter <= 'z') d = driveLetter - 'a' + 1;
+  if (d < 0) return false;
+
+  union REGS r;
+  r.h.ah = 0x04;
+  r.h.dl = d & 255;
+  int386(0x13,&r,&r);
+  return !(r.x.cflag);
+#endif // defined(__WATCOMC__) || defined(__DJGPP__)
+#ifdef ON_WINDOWS
+  return true;
+#endif // ON_WINDOWS
+}
+
 #ifdef __WATCOMC__
 void dosCreateFolder(const String &folderName) {
   mkdir(dosFileName(folderName).c_str());
