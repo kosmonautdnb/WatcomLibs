@@ -30,6 +30,12 @@ void createSpriteObjectFrameBuffer(SpriteObject *sp, int w, int h) {
   glBindFramebuffer(GL_FRAMEBUFFER,0);
 }
 
+void freeSpriteObject(SpriteObject *sp) {
+  if (sp->frameBufferColor != 0) {glDeleteTextures(1,&sp->frameBufferColor); sp->frameBufferColor = 0;}
+  if (sp->frameBufferDepth != 0) {glDeleteTextures(1,&sp->frameBufferDepth); sp->frameBufferDepth = 0;}
+  if (sp->frameBuffer != 0) {glDeleteFramebuffers(1,&sp->frameBuffer); sp->frameBuffer = 0;}
+}
+
 static int spViewport[4];
 static int spScissor[4];
 
