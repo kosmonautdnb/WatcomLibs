@@ -393,10 +393,10 @@ void GLTFA_File::fillNode(GLTFA_Node *j, cgltf_node *k) const {
   }
   j->meshId = (unsigned int)k->mesh;
   j->skinId = (unsigned int)k->skin;
-  j->hasScaling = k->has_scale; j->scaling = Vector(k->scale[0],k->scale[1],k->scale[2]);
-  j->hasRotation = k->has_rotation; j->rotation = Quaternion(k->rotation[0],k->rotation[1],k->rotation[2],k->rotation[3]);
-  j->hasTranslation = k->has_translation; j->translation = Vector(k->translation[0],k->translation[1],k->translation[2]);
-  j->hasMatrix = k->has_matrix; for (int m = 0; m < 16; m++) j->matrix.m[m] = k->matrix[m];
+  j->hasScaling = k->has_scale?true:false; j->scaling = Vector(k->scale[0],k->scale[1],k->scale[2]);
+  j->hasRotation = k->has_rotation?true:false; j->rotation = Quaternion(k->rotation[0],k->rotation[1],k->rotation[2],k->rotation[3]);
+  j->hasTranslation = k->has_translation?true:false; j->translation = Vector(k->translation[0],k->translation[1],k->translation[2]);
+  j->hasMatrix = k->has_matrix?true:false; for (int m = 0; m < 16; m++) j->matrix.m[m] = k->matrix[m];
 }
 
 void GLTFA_File::recalculateNodes() {

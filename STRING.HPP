@@ -32,7 +32,7 @@ public:
     return *this;
   }
   
-  const bool operator==(const String &b) const {
+  bool operator==(const String &b) const {
     if (b.length() != length())
       return false;
     for (int32_t i = 0; i < length(); i++) {
@@ -42,11 +42,11 @@ public:
     return true;
   }
   
-  const bool operator!=(const String &b) const {
+  bool operator!=(const String &b) const {
     return !(*this == b);
   }
   
-  const bool operator<(const String &b) const {
+  bool operator<(const String &b) const {
     int32_t l = length();
     if (b.length()<l) l = b.length();
     for (int32_t i = 0; i < l; i++) {
@@ -56,7 +56,7 @@ public:
     return b.length()<length();
   }
   
-  const bool operator>(const String &b) const {
+  bool operator>(const String &b) const {
     int32_t l = length();
     if (b.length()<l) l = b.length();
     for (int32_t i = 0; i < l; i++) {
@@ -143,7 +143,7 @@ public:
     int32_t i = b.length();
     do {
       i--;
-      b[i]=(va % 10)+'0';
+      b[i]=(char)((va % 10)+'0');
       va /= 10;
     } while(va>0);
     if (v < 0) {i--;b[i]='-';}
@@ -271,7 +271,8 @@ public:
   static String fromFloat(float v) {
     String k;
     k.resize(16);
-    snprintf_x4(&(k[0]),16,"%f",v);
+    //snprintf_x4(&(k[0]),16,"%f",v);
+    sprintf(&(k[0]),"%f",v);
     k.resize(strlen(k.c_str()));
     return k;
   }
@@ -279,7 +280,8 @@ public:
   static String fromDouble(double v) {
     String k;
     k.resize(32);
-    snprintf_x4(&(k[0]),32,"%f",v);
+    //snprintf_x4(&(k[0]),32,"%f",v);
+    sprintf(&(k[0]),"%f",v);
     k.resize(strlen(k.c_str()));
     return k;
   }

@@ -369,7 +369,6 @@ Matrix rotationMatrixZ(double a) {
 }
 
 Matrix rotationMatrixAngleAxis(double a, double x, double y, double z) {
-  double m[16];
   double OneMinusCosAngle, CosAngle, SinAngle;
   double A_OneMinusCosAngle, C_OneMinusCosAngle;
   CosAngle = cos(a);

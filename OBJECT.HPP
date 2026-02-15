@@ -8,7 +8,7 @@ public:
   virtual uint32_t hash() const = 0;
   virtual bool equals(Object *a) const = 0;
   virtual class String toString() const = 0;
-  virtual bool serialize(class Serializer *ser) {return false;}
+  virtual bool serialize(class Serializer *ser) {(void)(ser);return false;}
 };
 
 uint32_t getHash(const class Object &v);

@@ -114,8 +114,8 @@ void Quaternion::yawPitchRoll(double yaw, double pitch, double roll) {
 
 Vector Quaternion::getYawPitchRoll() const {
   Vector euler;
-  const static double PI_OVER_2 = PI*0.5;
-  const static double EPSILON = 1e-10;
+  //const static double PI_OVER_2 = PI*0.5;
+  //const static double EPSILON = 1e-10;
   double k = 2.0*(w*y-x*z);
   if (k<-1) k=-1;
   if (k>1) k=1;

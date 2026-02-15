@@ -215,6 +215,7 @@ static bool isIMRECT(IMTRI *t0, IMTRI *t1) {
 }
 
 static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
+  (void)(t1);
   if (t0->flags != 0) return;
   const float R = ImGui::GetIO().DisplaySize.x;
   const float B = ImGui::GetIO().DisplaySize.y;
@@ -593,15 +594,15 @@ static void ImGuiKeyBoardInput() {
     int c = translate(currentKey);
   
     if (c<256) {
-      ImGui::GetIO().AddInputCharacter(c);
+      ImGui::GetIO().AddInputCharacter((ImWchar)c);
       ImGui::GetIO().KeysDown[c]=true;
     } else  
       ImGui::GetIO().KeysDown[c]=true;
   }
 
-  ImGui::GetIO().KeyShift = currentKeyShift;
-  ImGui::GetIO().KeyCtrl = currentKeyCtrl;
-  ImGui::GetIO().KeyAlt = currentKeyAlt;
+  ImGui::GetIO().KeyShift = currentKeyShift?true:false;
+  ImGui::GetIO().KeyCtrl = currentKeyCtrl?true:false;
+  ImGui::GetIO().KeyAlt = currentKeyAlt?true:false;
 }
 
 void ImGuiNewFrame() {
@@ -619,8 +620,8 @@ void ImGuiNewFrame() {
   if (mouseX > glFrameBufferWidth-1) mouseX = glFrameBufferWidth-1;
   if (mouseY > glFrameBufferHeight-1) mouseY = glFrameBufferHeight-1;
   io.MousePos = ImVec2(mouseX,mouseY);
-  io.MouseDown[0] = mouseButtons & 1;
-  io.MouseDown[1] = mouseButtons & 2;
+  io.MouseDown[0] = (mouseButtons & 1) ? true:false;
+  io.MouseDown[1] = (mouseButtons & 2) ? true:false;
   io.MouseWheel = (signed char)((mouseButtons>>8)&0xff);
   ImGuiKeyBoardInput();
   ImGui::NewFrame();

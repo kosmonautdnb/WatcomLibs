@@ -47,11 +47,11 @@ uint32_t getHash(const int32_t &v) {
 }
 
 uint32_t getHash(const uint64_t &v) {
-  return (v & 0xffffffff)^(v>>32);
+  return (uint32_t)((v & 0xffffffff)^(v>>32));
 }
 
 uint32_t getHash(const int64_t &v) {
-  return (v & 0xffffffff)^(v>>32);
+  return (uint32_t)((v & 0xffffffff)^(v>>32));
 }
 
 uint32_t getHash(const float &v) {
@@ -155,11 +155,11 @@ String toString(const int32_t &v) {
 }
 
 String toString(const uint64_t &v) {
-  return String::fromInt(v);
+  return String::fromInt((uint32_t)v); // !!ATTENTION!!
 }
 
 String toString(const int64_t &v) {
-  return String::fromInt(v);
+  return String::fromInt((int32_t)v); // !!ATTENTION!!
 }
 
 String toString(const float &v) {

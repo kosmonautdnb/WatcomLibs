@@ -148,6 +148,7 @@ static unsigned short _dosGetFileTime(const String &filePath) {
 
 }
 
+#ifdef __DJGPP__
 static unsigned int _dosGetFileSize(const String &filePath) {
 #ifdef __DJGPP__
   struct stat buf;
@@ -160,6 +161,7 @@ static unsigned int _dosGetFileSize(const String &filePath) {
   fclose(in);
   return s;
 }
+#endif
 
 static FileTime toFileTime(int date, int time) {
   FileTime r;
@@ -211,7 +213,7 @@ Array<File> dosGetFiles(const String &filePath) {
       r.date = toFileTime(direntp->d_date,direntp->d_time);
       r.attributes = direntp->d_attr;
       ret.push_back(r);
-    } while(1==1);
+    } while(1);
     closedir( dirp );
   }
   return ret;
@@ -306,7 +308,7 @@ bool dosHasDrive(const char driveLetter) {
   union REGS r;
   r.h.ah = 0x44;
   r.h.al = 0x08;
-  r.h.bl = d & 255;
+  r.h.bl = (unsigned char)(d & 255);
   int386(0x21,&r,&r);
   return (r.w.ax==0x00)||(r.w.ax==0x01);
 #endif // defined(__WATCOMC__) || defined(__DJGPP__)
@@ -337,7 +339,7 @@ bool dosIsDriveReady(const char driveLetter) {
 
   union REGS r;
   r.h.ah = 0x04;
-  r.h.dl = d & 255;
+  r.h.dl = (unsigned char)(d & 255);
   int386(0x13,&r,&r);
   return !(r.x.cflag);
 #endif // defined(__WATCOMC__) || defined(__DJGPP__)
@@ -410,18 +412,18 @@ String dosFileName(const String &filePath) {
 }
 
 String getPath(const String &fileName) {
-  int64_t k0 = fileName.findLast("/");
-  int64_t k1 = fileName.findLast("\\");
-  int64_t k = fileName.length();
+  int32_t k0 = fileName.findLast("/");
+  int32_t k1 = fileName.findLast("\\");
+  int32_t k = fileName.length();
   if (k0 < k1) k0 = k1;
   if (k0>0) k = k0+1;
   return fileName.substr(0,k);
 }
 
 String getName(const String &fileName) {
-  int64_t k0 = fileName.findLast("/");
-  int64_t k1 = fileName.findLast("\\");
-  int64_t k = 0;
+  int32_t k0 = fileName.findLast("/");
+  int32_t k1 = fileName.findLast("\\");
+  int32_t k = 0;
   if (k0 < k1) k0 = k1;
   if (k0>0) k = k0+1;
   return fileName.old_substr(k,fileName.findLast("."));
@@ -564,7 +566,7 @@ bool doslfnPath(char *name, const char *fileName, bool longPath) {
   REGS16 regs;
   memset(&regs,0,sizeof(regs));
   regs.ax = 0x7160;
-  regs.cx = (longPath ? 2 : 1)+0x100;
+  regs.cx = (unsigned short)((longPath ? 2 : 1)+0x100);
   regs.ds = dosInterfaceMemory1.segment;
   regs.si = 0;
   regs.es = dosInterfaceMemory2.segment;
@@ -607,9 +609,9 @@ int32_t doslfnOpen(const char *fileName, bool read) {
   ((__INHERIT__)<<7)|\
   ((__SHARE__)<<4)|\
   ((__ACCESS__)<<0)
-  regs.bx = SHAREMODE(1,0,0,0,0,0,read?2:3,read?0:1);
+  regs.bx = (unsigned short)(SHAREMODE(1,0,0,0,0,0,read?2:3,read?0:1));
   regs.cx = 0; // File Attributes
-  regs.dx = ((read ? 0 : 1)<<4)|(read?1:2);
+  regs.dx = (unsigned short)(((read ? 0 : 1)<<4)|(read?1:2));
   regs.ds = dosInterfaceMemory.segment;
   regs.si = 0;
   dosInt386x(0x21, &regs, &regs);
@@ -625,7 +627,7 @@ int32_t doslfnOpen(const char *fileName, bool read) {
 
 #define FILEIO_BYTES 8192
 
-bool doslfnRead(int32_t fileHandle, void *dest, uint64_t byteCount) {
+bool doslfnRead(int32_t fileHandle, void *dest, uint32_t byteCount) {
   DOSPOINTER dosInterfaceMemory = dosMalloc(FILEIO_BYTES);
   if (dosInterfaceMemory.ptr == NULL) return false;
 
@@ -633,9 +635,9 @@ bool doslfnRead(int32_t fileHandle, void *dest, uint64_t byteCount) {
     REGS16 regs;
     memset(&regs,0,sizeof(regs));
     regs.ax = 0x3f00;
-    regs.bx = fileHandle & 0xffff;
+    regs.bx = (unsigned short)(fileHandle & 0xffff);
     uint32_t readCount = byteCount > FILEIO_BYTES ? FILEIO_BYTES : byteCount;
-    regs.cx = readCount;
+    regs.cx = (unsigned short)readCount;
     regs.ds = dosInterfaceMemory.segment;
     regs.dx = 0;
     dosInt386x(0x21, &regs, &regs);
@@ -659,7 +661,7 @@ bool doslfnRead(int32_t fileHandle, void *dest, uint64_t byteCount) {
   return true;
 }
 
-bool doslfnWrite(int32_t fileHandle, void *source, uint64_t byteCount) {
+bool doslfnWrite(int32_t fileHandle, void *source, uint32_t byteCount) {
   DOSPOINTER dosInterfaceMemory = dosMalloc(FILEIO_BYTES);
   if (dosInterfaceMemory.ptr == NULL) return false;
 
@@ -667,9 +669,9 @@ bool doslfnWrite(int32_t fileHandle, void *source, uint64_t byteCount) {
     REGS16 regs;
     memset(&regs,0,sizeof(regs));
     regs.ax = 0x4000;
-    regs.bx = fileHandle & 0xffff;
+    regs.bx = (unsigned short)(fileHandle & 0xffff);
     uint32_t writeCount = byteCount > FILEIO_BYTES ? FILEIO_BYTES : byteCount;
-    regs.cx = writeCount;
+    regs.cx = (unsigned short)writeCount;
     memcpy(dosInterfaceMemory.ptr,source,writeCount);
     regs.ds = dosInterfaceMemory.segment;
     regs.dx = 0;
@@ -693,13 +695,13 @@ bool doslfnWrite(int32_t fileHandle, void *source, uint64_t byteCount) {
   return true;
 }
 
-bool doslfnSeek(int32_t fileHandle, uint64_t pos, uint32_t seekMode) {
+bool doslfnSeek(int32_t fileHandle, uint32_t pos, uint32_t seekMode) {
   REGS16 regs;
   memset(&regs,0,sizeof(regs));
-  regs.ax = 0x4200+(seekMode==SEEK_SET?0:0)+(seekMode==SEEK_CUR?1:0)+(seekMode==SEEK_END?2:0);
-  regs.bx = fileHandle & 0xffff;
-  regs.cx = (pos >> 16) & 0xffff;
-  regs.dx = pos & 0xffff;
+  regs.ax = (unsigned short)(0x4200+(seekMode==SEEK_SET?0:0)+(seekMode==SEEK_CUR?1:0)+(seekMode==SEEK_END?2:0));
+  regs.bx = (unsigned short)(fileHandle & 0xffff);
+  regs.cx = (unsigned short)((pos >> 16) & 0xffff);
+  regs.dx = (unsigned short)(pos & 0xffff);
   dosInt386x(0x21, &regs, &regs);
   if (regs.cflag) {
     return false;
@@ -711,7 +713,7 @@ bool doslfnClose(int32_t fileHandle) {
   REGS16 regs;
   memset(&regs,0,sizeof(regs));
   regs.ax  = 0x3e00;
-  regs.bx = fileHandle & 0xffff;
+  regs.bx = (unsigned short)(fileHandle & 0xffff);
   dosInt386x(0x21, &regs, &regs);
   if (regs.cflag) {
     dosErrorCode = regs.ax;
@@ -721,17 +723,17 @@ bool doslfnClose(int32_t fileHandle) {
   return true;
 }
 
-uint64_t doslfnTell(int32_t fileHandle) {
+uint32_t doslfnTell(int32_t fileHandle) {
   FILE k;
   memset(&k,0,sizeof(FILE));
   k._handle = fileHandle;
   return ftell(&k);
 }
 
-uint64_t doslfnSize(int32_t fileHandle) {
-  uint64_t cp = doslfnTell(fileHandle);
+uint32_t doslfnSize(int32_t fileHandle) {
+  uint32_t cp = doslfnTell(fileHandle);
   doslfnSeek(fileHandle,0,SEEK_END);
-  uint64_t r = doslfnTell(fileHandle);
+  uint32_t r = doslfnTell(fileHandle);
   doslfnSeek(fileHandle,cp,SEEK_SET);
   return r;
 }
@@ -744,7 +746,7 @@ LFNFILEINFO doslfnInfo(int32_t fileHandle) {
   REGS16 regs;
   memset(&regs,0,sizeof(regs));
   regs.ax = 0x71a6;
-  regs.bx = fileHandle & 0xffff;
+  regs.bx = (unsigned short)(fileHandle & 0xffff);
   regs.cflag = true;
   regs.ds = dosInterfaceMemory.segment;
   regs.dx = 0;
@@ -782,7 +784,7 @@ __inline DOSPOINTER makeDosPointer(uint16_t selector, uint16_t segment) {
 DOSPOINTER dosMalloc(uint32_t size) {
   union REGS regs;
   regs.w.ax = 0x100;
-  regs.w.bx = (size+15)/16;
+  regs.w.bx = (unsigned short)((size+15)/16);
   regs.w.cflag = false;
   int386(0x31, &regs, &regs);
   if (regs.w.cflag) {
@@ -808,7 +810,7 @@ bool dosFree(const DOSPOINTER &mem) {
 }
 
 typedef struct {
-  long edi;
+  long edi; // maybe better unsigned
   long esi;
   long ebp;
   long reserved;
@@ -816,8 +818,8 @@ typedef struct {
   long edx;
   long ecx;
   long eax;
-  short flags;
-  short es,ds,fs,gs,ip,cs,sp,ss;
+  unsigned short flags;
+  unsigned short es,ds,fs,gs,ip,cs,sp,ss;
 } _REGS16;
 
 uint16_t dosInt386x(uint32_t intno, REGS16 *in, REGS16 *out) {
@@ -837,21 +839,21 @@ uint16_t dosInt386x(uint32_t intno, REGS16 *in, REGS16 *out) {
   rmregs.es = in->es;
   rmregs.flags = in->cflag ? 0x01 : 0x00;
   r.w.ax = 0x300;
-  r.h.bl = intno;
+  r.h.bl = (unsigned char)intno;
   r.h.bh = 0;
   r.w.cx = 0;
   r.x.edi = (unsigned)&rmregs;
   int386x(0x31,&r,&r,&sr);
-  out->ax = rmregs.eax; 
-  out->bx = rmregs.ebx; 
-  out->cx = rmregs.ecx; 
-  out->dx = rmregs.edx; 
-  out->si = rmregs.esi; 
-  out->di = rmregs.edi; 
-  out->es = rmregs.es;
-  out->cs = rmregs.cs;
-  out->ss = rmregs.ss;
-  out->ds = rmregs.ds;
+  out->ax = (unsigned short)rmregs.eax; 
+  out->bx = (unsigned short)rmregs.ebx; 
+  out->cx = (unsigned short)rmregs.ecx; 
+  out->dx = (unsigned short)rmregs.edx; 
+  out->si = (unsigned short)rmregs.esi; 
+  out->di = (unsigned short)rmregs.edi; 
+  out->es = (unsigned short)rmregs.es;
+  out->cs = (unsigned short)rmregs.cs;
+  out->ss = (unsigned short)rmregs.ss;
+  out->ds = (unsigned short)rmregs.ds;
   out->cflag = (rmregs.flags & 0x01) ? true : false;
   return out->ax;
 }

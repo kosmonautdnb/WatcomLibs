@@ -60,7 +60,7 @@ String operator+(const String &a, const int32_t b) {
 String toLower(const String &v) {
   String r = v;
   for (int32_t i = 0; i < r.length(); i++) {
-    if (r[i]>='A'&&r[i]<='Z') r[i]=r[i]-'A'+'a';
+    if (r[i]>='A'&&r[i]<='Z') r[i]=(char)(r[i]-'A'+'a');
   }
   return r;
 }
