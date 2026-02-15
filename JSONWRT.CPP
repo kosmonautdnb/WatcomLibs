@@ -21,7 +21,7 @@
   SOFTWARE.
 
 */
-#define snprintf(__dest__, __remLen__, __fmt__, __value__) sprintf(__dest__,__fmt__,__value__)
+#define snprintfvv(__dest__, __remLen__, __fmt__, __value__) sprintf(__dest__,__fmt__,__value__)
 
 #include <stddef.h> // For NULL
 #include "jsonwrt.hpp"
@@ -305,7 +305,7 @@ char* json_double( char* dest, char const* name, double value ) {
 char* funcname( char* dest, char const* name, type value, size_t* remLen  ) {       \
     int digitLen;                                                                   \
     dest = primitivename( dest, name, remLen );                                     \
-    digitLen = snprintf( dest, *remLen, fmt, value );                               \
+    digitLen = snprintfvv( dest, *remLen, fmt, value );                               \
     if(digitLen >= (int)*remLen+1){                                                 \
     	digitLen = (int)*remLen;}                                                     \
     *remLen -= (size_t)digitLen;                                                    \
