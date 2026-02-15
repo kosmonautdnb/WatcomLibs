@@ -433,6 +433,29 @@ String getExtension(const String &fileName) {
   return fileName.substr(fileName.findLast("."));
 }
 
+#ifdef __DJGPP__
+// it's said that DJGPP features long filenames by default, lets see..
+bool doslfnCreateDirectory(const char *name) {(void)(name); return false;}
+bool doslfnDeleteDirectory(const char *name) {(void)(name); return false;}
+bool doslfnChangeDirectory(const char *name) {(void)(name); return false;}
+bool doslfnDeleteFiles(const char *name, bool useWildCards) {(void)(name); (void)(useWildCards); return false;}
+FileTime doslfnGetFileTime(const char *name) {(void)(name); return FileTime();}
+bool doslfnGetCWD(char *name, uint16_t onDrive) {(void)(name);(void)(onDrive); return false;}
+bool doslfnRename(const char *oldName, const char *newName) {(void)(oldName);(void)(newName); return false;}
+bool doslfnPath(char *name, const char *fileName, bool longPath) {(void)(name);(void)(fileName);(void)(longPath); return false;}
+bool doslfnLongPath(char *name, const char *fileName) {(void)(name);(void)(fileName); return false;}
+bool doslfnShortPath(char *name, const char *fileName) {(void)(name);(void)(fileName); return false;}
+int32_t doslfnOpen(const char *fileName, bool read) {(void)(fileName);(void)(read); return 0;}
+bool doslfnRead(int32_t fileHandle, void *dest, uint32_t byteCount) {(void)(fileHandle);(void)(dest);(void)(byteCount); return false;}
+bool doslfnWrite(int32_t fileHandle, void *source, uint32_t byteCount) {(void)(fileHandle);(void)(source);(void)(byteCount); return false;}
+bool doslfnSeek(int32_t fileHandle, uint32_t pos, uint32_t seekMode) {(void)(fileHandle);(void)(pos);(void)(seekMode); return false;}
+bool doslfnClose(int32_t fileHandle) {(void)(fileHandle); return false;}
+uint32_t doslfnTell(int32_t fileHandle) {(void)(fileHandle); return 0;}
+uint32_t doslfnSize(int32_t fileHandle) {(void)(fileHandle); return 0;}
+LFNFILEINFO doslfnInfo(int32_t fileHandle) {(void)(fileHandle); return LFNFILEINFO();}
+#endif // __DJGPP__
+
+
 #ifdef __WATCOMC__
 
 // long file name extensions (maybe you need doslfn.com)
