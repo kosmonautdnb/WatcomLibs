@@ -412,6 +412,34 @@ Matrix inverse(const Matrix &a) {
   return c;
 }
 
+Matrix rotationMatrixFromNormal(const Vector &a) {
+  Matrix ret;
+  if (fabs(a.y)>fabs(a.z)) {
+    Vector forward = Vector(0,0,1);
+    Vector x = normalize(cross(forward,a));
+    Vector z = normalize(cross(a,x));
+    Vector y = normalize(cross(z,x));
+    x = normalize(cross(z,y));
+    z = normalize(cross(y,x));
+    y = normalize(cross(z,x));
+    ret.setColumn(0,x);
+    ret.setColumn(1,y);
+    ret.setColumn(2,z);
+  } else {
+    Vector up = Vector(0,1,0);
+    Vector x = normalize(cross(up,a));
+    Vector z = normalize(cross(a,x));
+    Vector y = normalize(cross(z,x));
+    x = normalize(cross(z,y));
+    z = normalize(cross(y,x));
+    y = normalize(cross(z,x));
+    ret.setColumn(0,x);
+    ret.setColumn(1,y);
+    ret.setColumn(2,z);
+  }
+  return ret;
+}
+
 Matrix transpose(const Matrix &a) {
   Matrix c = a;
   c.transpose();
