@@ -20,7 +20,7 @@ public:
   }
 
   void free() {
-    delete[] data;
+    if (data != 0) ::free(data);
     data = 0;
     width = -1;
     height = -1;
