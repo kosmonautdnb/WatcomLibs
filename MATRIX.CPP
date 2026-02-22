@@ -414,7 +414,7 @@ Matrix inverse(const Matrix &a) {
 
 Matrix rotationMatrixFromNormal(const Vector &a) {
   Matrix ret;
-  if (fabs(a.y)>fabs(a.z)) {
+  if (length(a.xz())<0.001) { // here is a "bug" (gimbal lock)
     Vector forward = Vector(0,0,1);
     Vector x = normalize(cross(forward,a));
     Vector z = normalize(cross(a,x));
@@ -422,6 +422,7 @@ Matrix rotationMatrixFromNormal(const Vector &a) {
     x = normalize(cross(z,y));
     z = normalize(cross(y,x));
     y = normalize(cross(z,x));
+    x.w =  z.w = y.w = 0;
     ret.setColumn(0,x);
     ret.setColumn(1,y);
     ret.setColumn(2,z);
@@ -433,6 +434,7 @@ Matrix rotationMatrixFromNormal(const Vector &a) {
     x = normalize(cross(z,y));
     z = normalize(cross(y,x));
     y = normalize(cross(z,x));
+    x.w =  z.w = y.w = 0;
     ret.setColumn(0,x);
     ret.setColumn(1,y);
     ret.setColumn(2,z);
