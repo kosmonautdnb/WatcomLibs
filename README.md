@@ -73,7 +73,8 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - SET.HPP - a bit like std::set
 - STRING.HPP - a bit like std::string  
 - TYPES.HPP - a bit like "stdint"   
-- VECTOR.HPP - some 3d vector stuff (w is handled differently than xyz)  
+- VECTOR.HPP - some 3d vector stuff (w is handled differently than xyz)
+- QUATERNN.HPP - a simple Quaternion class, mainly for interpolated rotations.  
 
 ## Some useful applications
 **Use APPDJGPP.BAT to build the APPs with DJGPP and APPWAT.BAT to build the APPs with WatcomC/OpenWatcom.**
@@ -125,7 +126,6 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - PHYSAC - a tiny, 2D physics library (demo in app_phys.cpp) https://github.com/victorfisac/Physac
 - PLMPEG.HPP - MPEG1 (Video/Sound) Replay Single Header library https://github.com/phoboslab/pl_mpeg  
 - PSDIMAGE.HPP - simple PhotoShop PSD loader featuring layers  (PSD image loader by DrPetter)  
-- QUATERNN.HPP - a simple Quaternion class, mainly for interpolated rotations.
 - RANS.HPP - public domain Range Asymmetric Numeral System Compressor/Decompressor(Something like Huffman) by Ryg. https://github.com/rygorous/ryg_rans (may be patented by wrong persons)
 - SMATH.HPP - Some string math functions. Maybe not usable at all..
 - SMPLOBJL.HPP - a basic/tiny wavefront .OBJ/.MTL mesh loader  
