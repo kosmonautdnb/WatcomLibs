@@ -50,8 +50,8 @@ public:
     return "[" + ::toString(x) + "," + ::toString(y) + "," + ::toString(z) + "," + ::toString(w) + "]";
   }
 
-  bool operator==(const Vector &b) {return b.x==x&&b.y==y&&b.z==z&&b.w==w;}
-  bool operator!=(const Vector &b) {return !(b.x==x&&b.y==y&&b.z==z&&b.w==w);}
+  bool operator==(const Vector &b) const {return b.x==x&&b.y==y&&b.z==z&&b.w==w;}
+  bool operator!=(const Vector &b) const {return !(b.x==x&&b.y==y&&b.z==z&&b.w==w);}
    
   Vector &set(double _x, double _y, double _z);
   Vector &set(double _x, double _y, double _z, double _w);

@@ -58,8 +58,8 @@ public:
 
   void identity() {x=0;y=0;z=0;w=1;}
 
-  bool operator==(const Quaternion &b) {return b.x==x&&b.y==y&&b.z==z&&b.w==w;}
-  bool operator!=(const Quaternion &b) {return !(b.x==x&&b.y==y&&b.z==z&&b.w==w);}
+  bool operator==(const Quaternion &b) const {return b.x==x&&b.y==y&&b.z==z&&b.w==w;}
+  bool operator!=(const Quaternion &b) const {return !(b.x==x&&b.y==y&&b.z==z&&b.w==w);}
 
   Vector complex() const;
 
