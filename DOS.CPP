@@ -12,6 +12,7 @@
 #include <sys/exceptn.h>
 #include <sys/stat.h>
 #include <dos.h>
+#include <dir.h>
 #include <unistd.h>
 #include <signal.h>
 #include <dirent.h>
@@ -149,18 +150,18 @@ static unsigned short _dosGetFileTime(const String &filePath) {
 }
 
 #ifdef __DJGPP__
-static unsigned int _dosGetFileSize(const String &filePath) {
-#ifdef __DJGPP__
-  struct stat buf;
-  if (stat(filePath.c_str(), &buf) == 0) return buf.st_size;
-#endif // __DJGPP__
-  FILE *in = fopen(filePath.c_str(),"rb");
-  if (in == NULL) return 0;
-  fseek(in,0,SEEK_END);
-  int s = ftell(in);
-  fclose(in);
-  return s;
-}
+//static unsigned int _dosGetFileSize(const String &filePath) {
+//#ifdef __DJGPP__
+//  struct stat buf;
+//  if (stat(filePath.c_str(), &buf) == 0) return buf.st_size;
+//#endif // __DJGPP__
+//  FILE *in = fopen(filePath.c_str(),"rb");
+//  if (in == NULL) return 0;
+//  fseek(in,0,SEEK_END);
+//  int s = ftell(in);
+//  fclose(in);
+//  return s;
+//}
 #endif
 
 static FileTime toFileTime(int date, int time) {
@@ -220,22 +221,34 @@ Array<File> dosGetFiles(const String &filePath) {
 #endif // __WATCOMC__
 #ifdef __DJGPP__
   Array<File> ret;
-  DIR *dirp;
-  struct dirent *direntp;
-  dirp = opendir( dosFileName(filePath).c_str() );
-  if( dirp != NULL ) {
-    do {
-      direntp = readdir( dirp );
-      if( direntp == NULL )
-        break;
-      File r;
-      r.name = toFileName(filePath,direntp->d_name);
-      r.size = _dosGetFileSize(r.name.full);
-      r.date = toFileTime(_dosGetFileDate(r.name.full),_dosGetFileTime(r.name.full));
-      r.attributes = direntp->d_type == DT_DIR ? DOS_ATTR_SUBDIR : 0;
-      ret.push_back(r);
-    } while(1==1);
-    closedir( dirp );
+//  DIR *dirp;
+//  struct dirent *direntp;
+//  dirp = opendir( dosFileName(filePath).c_str() );
+//  if( dirp != NULL ) {
+//    do {
+//      direntp = readdir( dirp );
+//      if( direntp == NULL )
+//        break;
+//      File r;
+//      r.name = toFileName(filePath,direntp->d_name);
+//      r.size = _dosGetFileSize(r.name.full);
+//      r.date = toFileTime(_dosGetFileDate(r.name.full),_dosGetFileTime(r.name.full));
+//      r.attributes = direntp->d_type == DT_DIR ? DOS_ATTR_SUBDIR : 0;
+//      ret.push_back(r);
+//    } while(1==1);
+//    closedir( dirp );
+//  }
+  int done;
+  struct ffblk fb;
+  done = findfirst(dosFileName(filePath+"*.*").c_str(),&fb,FA_ARCH|FA_RDONLY|FA_DIREC);
+  while(done == 0) {
+    File r;
+    r.name = toFileName(filePath,fb.ff_name);
+    r.size = fb.ff_fsize;
+    r.date = toFileTime(fb.ff_fdate,fb.ff_ftime);
+    r.attributes = fb.ff_attrib;
+    ret.push_back(r);
+    done = findnext(&fb);
   }
   return ret;
 #endif // __DJGPP__
