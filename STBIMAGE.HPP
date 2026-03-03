@@ -1,3 +1,24 @@
+#include "types.hpp"
+#define STBI_NO_SIMD
+#define MEMORYMANAGERBUGFIX
+
+#ifdef MEMORYMANAGERBUGFIX // WatcomC crashes with bigger images without this
+#define STBI_REALLOC_SIZED(p,oldsz,newsz) __realloc2__(p,oldsz,newsz);
+#define STBI_MALLOC(sz)           malloc(sz)
+#define STBI_REALLOC(p,newsz)     realloc(p,newsz) // maybe this keeps being problematic here
+#define STBI_FREE(p)              free(p)
+#ifdef STB_IMAGE_IMPLEMENTATION
+#include <string.h>
+void *__realloc2__(void *a, int oldSize, int newSize) {
+  void *b = malloc(newSize);
+  int copySize = oldSize>newSize?newSize:oldSize;
+  memcpy(b,a,copySize);
+  free(a);
+  return b;
+}
+#endif
+#endif
+
 /* stb_image - v2.30 - public domain image loader - http://nothings.org/stb
                                   no warranty implied; use at your own risk
 

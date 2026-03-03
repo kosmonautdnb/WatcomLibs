@@ -1,4 +1,24 @@
+#include "types.hpp"
 #define _CRT_SECURE_NO_WARNINGS
+
+#define MEMORYMANAGERBUGFIX2
+#ifdef MEMORYMANAGERBUGFIX2 // WatcomC crashes with bigger images without this
+#define STBIW_REALLOC_SIZED(p,oldsz,newsz) __realloc3__(p,oldsz,newsz);
+#define STBIW_MALLOC(sz)           malloc(sz)
+#define STBIW_REALLOC(p,newsz)     realloc(p,newsz) // maybe this keeps being problematic here
+#define STBIW_FREE(p)              free(p)
+#ifdef STB_IMAGE_WRITE_IMPLEMENTATION
+#include <string.h>
+void *__realloc3__(void *a, int oldSize, int newSize) {
+  void *b = malloc(newSize);
+  int copySize = oldSize>newSize?newSize:oldSize;
+  memcpy(b,a,copySize);
+  free(a);
+  return b;
+}
+#endif
+#endif
+
 /* stb_image_write - v1.16 - public domain - http://nothings.org/stb
    writes out PNG/BMP/TGA/JPEG/HDR images to C stdio - Sean Barrett 2010-2015
                                      no warranty implied; use at your own risk
