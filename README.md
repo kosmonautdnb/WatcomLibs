@@ -118,7 +118,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - MARCHING.HPP - Marching Cubes and Marching Tetraeders.
 - MINIMP3.HPP - A mp3 decoder  https://github.com/lieff/minimp3  
 - MINIMP4.HPP - A mp4 muxer/demuxer (e.g. for h264 movies) https://github.com/lieff/minimp4
-- MINIZ.HPP - A mini version of the ZLib, so to say.
+- MINIZ.HPP - A mini version of the ZLib, so to say. Zip compression+decompression  https://github.com/richgel999/miniz
 - MPEG1.HPP - mpeg1 wrapper for PLMPEG.hpp
 - NANOSVG.HPP - a SVG (Vector Graphics) loader // https://github.com/memononen/nanosvg
 - NSVGRAST.HPP - a SVG (Vector Graphics) renderer // https://github.com/memononen/nanosvg
