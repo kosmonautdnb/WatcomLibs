@@ -24,6 +24,35 @@
  *
  **************************************************************************/
 
+#define MEMORYMANAGERBUGFIX3
+#ifdef MEMORYMANAGERBUGFIX3 // WatcomC crashes at realloc with big data
+#include <string.h>
+#include <stdlib.h>
+void *__malloc4__(unsigned int size) {
+  unsigned char *a = (unsigned char*)malloc(size+4);
+  *(unsigned int*)a = size;
+  a += 4;
+  return (void*)a;
+}
+void __free4__(void *a) {
+  if (a == NULL) return;
+  unsigned char *b = (unsigned char *)a;
+  b -= 4;
+  free(b);
+}
+void *__realloc4__(void *a, unsigned int newSize) {
+  void *b = __malloc4__(newSize);
+  if (a == NULL) return b;
+  unsigned char *a_ = (unsigned char *)a;
+  unsigned int *a__ = (unsigned int *)(a_-4);
+  unsigned int oldSize = *a__;
+  unsigned int copySize = oldSize>newSize?newSize:oldSize;
+  memcpy(b,a,copySize);
+  __free4__(a);
+  return b;
+}
+#endif
+
 #include "miniz.hpp"
 
 typedef unsigned char mz_validate_uint16[sizeof(mz_uint16) == 2 ? 1 : -1];

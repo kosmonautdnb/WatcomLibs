@@ -111,6 +111,8 @@
      (i.e. 32-bit stat() fails for me on files > 0x7FFFFFFF bytes).
 */
 // edited on 05.03.2026 by Stefan Mader to get it compile with WatcomC 11.0 and in just two files (miniz.hpp and miniz.cpp)
+#ifndef __MINIZ_HPP__
+#define __MINIZ_HPP__
 #define MINIZ_EXPORT // :mad:
 
 //#include "miniz_export.h"
@@ -665,9 +667,9 @@ typedef struct mz_dummy_time_t_tag
 #define MZ_FREE(x) (void)x, ((void)0)
 #define MZ_REALLOC(p, x) NULL
 #else
-#define MZ_MALLOC(x) malloc(x)
-#define MZ_FREE(x) free(x)
-#define MZ_REALLOC(p, x) realloc(p, x)
+#define MZ_MALLOC(x) __malloc4__(x)
+#define MZ_FREE(x) __free4__(x)
+#define MZ_REALLOC(p, x) __realloc4__(p, x)
 #endif
 
 #define MZ_MAX(a, b) (((a) > (b)) ? (a) : (b))
@@ -1512,3 +1514,5 @@ extern "C"
 #endif
 
 #endif /* MINIZ_NO_ARCHIVE_APIS */
+
+#endif // __MINIZ_HPP__

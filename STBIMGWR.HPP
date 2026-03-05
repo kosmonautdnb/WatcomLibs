@@ -9,6 +9,7 @@
 #define STBIW_FREE(p)              free(p)
 #ifdef STB_IMAGE_WRITE_IMPLEMENTATION
 #include <string.h>
+#include <stdlib.h>
 void *__realloc3__(void *a, int oldSize, int newSize) {
   void *b = malloc(newSize);
   int copySize = oldSize>newSize?newSize:oldSize;
