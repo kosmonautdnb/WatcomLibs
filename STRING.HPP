@@ -392,12 +392,12 @@ public:
     return -1;
   }
 
-  int32_t find(const String &v) {return findFirst(v);}
-  bool startsWith(const String &v) {
+  int32_t find(const String &v) const {return findFirst(v);}
+  bool startsWith(const String &v) const {
     return find(v) == 0;
   }
 
-  bool endsWith(const String &v) {
+  bool endsWith(const String &v) const {
     return findLast(v) == length()-v.length();
   }
  

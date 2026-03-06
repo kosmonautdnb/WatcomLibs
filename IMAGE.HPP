@@ -36,7 +36,7 @@ public:
   // PNM (PPM and PGM binary only)
   // HDR
   static RGBAImage fromFile(const char *fileName);
-  static RGBAImage fromMemory(const uint8_t *fileData, uint32_t fileLength);
+  static RGBAImage fromMemory(const void *fileData, uint32_t fileLength);
 
   bool savePNG(const char *fileName);
   bool saveJPEG(const char *fileName, int quality = 100);

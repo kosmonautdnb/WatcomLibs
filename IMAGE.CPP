@@ -18,10 +18,10 @@ RGBAImage RGBAImage::fromFile(const char *fileName) {
   return r;
 }
 
-RGBAImage RGBAImage::fromMemory(const uint8_t *fileData, uint32_t fileLength) {
+RGBAImage RGBAImage::fromMemory(const void *fileData, uint32_t fileLength) {
   RGBAImage r;
   int width, height, channels;
-  r.data = (unsigned int*)stbi_load_from_memory(fileData, fileLength, &width, &height, &channels, 4);
+  r.data = (unsigned int*)stbi_load_from_memory((const unsigned char *)fileData, fileLength, &width, &height, &channels, 4);
   r.width = r.data == NULL ? -1 : width;
   r.height = r.data == NULL ? -1 : height;
   return r;
