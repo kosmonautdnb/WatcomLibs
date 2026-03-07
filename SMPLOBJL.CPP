@@ -38,7 +38,7 @@ void addTexture(SMPL_Texture &t, const String &params, const String &materialLib
   t.fileName = a;
 }
 
-static bool loadMaterialLib(SMPL_File *f,const String &fileName) {
+bool loadMaterialLib(SMPL_File *f,const String &fileName) {
   String currentMaterial;
   FILE *in = fopen(fileName.c_str(), "r");
   if (in == NULL) return false;
@@ -108,7 +108,7 @@ static bool loadMaterialLib(SMPL_File *f,const String &fileName) {
   return true;
 }
 
-SMPL_File *loadObj(const String &fileName, bool triangulate) {
+SMPL_File *loadObj(const String &fileName, bool triangulate, MaterialLibLoader_t lm) {
   SMPL_File *ret = NULL;
 
   FILE *in = fopen(fileName.c_str(),"r");
@@ -159,7 +159,10 @@ SMPL_File *loadObj(const String &fileName, bool triangulate) {
         int32_t k = pre1;
         if (pre2 > pre1) k = pre2;
         if (k >= 0) a = fileName.substr(0,k)+"/"+a;
-        loadMaterialLib(ret, a);
+        if (lm != NULL) 
+          lm(ret,a); 
+        else
+          loadMaterialLib(ret, a);
         continue;
       }
     } else {

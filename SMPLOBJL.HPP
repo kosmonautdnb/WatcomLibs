@@ -120,7 +120,10 @@ public:
   int32_t faceVertexCount(const int32_t index) {return faceIndexCount[index];}
 };
 
-SMPL_File *loadObj(const String &fileName, bool triangulate = false);
+typedef bool (*MaterialLibLoader_t)(SMPL_File *f,const String &fileName);
+bool loadMaterialLib(SMPL_File *f,const String &fileName);
+
+SMPL_File *loadObj(const String &fileName, bool triangulate = false, MaterialLibLoader_t lm = NULL);
 SMPL_Ply *loadPly(const String &fileName);
 
 #endif // __SMPLOBJL_HPP__
