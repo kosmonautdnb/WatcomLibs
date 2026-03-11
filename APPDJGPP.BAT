@@ -30,6 +30,8 @@ gpp -c -O3 -oapp_ttf.obj app_ttf.cpp
 gpp -c -O3 -oogg.obj app_ogg.cpp
 gpp -c -O3 -otile.obj app_tile.cpp
 gpp -c -O3 -osvg.obj app_svg.cpp
+gpp -c -O3 -oapp_zip.obj app_zip.cpp 
+gpp -c -O3 -oz.obj miniz.cpp
 gpp -o APP_KEYS.EXE gl.obj keys.obj keymtrix.obj
 gpp -o APP_VID.EXE gl.obj e.obj vid.obj
 gpp -o APP_SPKT.EXE gl.obj i1.obj i2.obj o.obj s.obj sp.obj d.obj f.obj e.obj spk.obj
@@ -43,6 +45,7 @@ gpp -o APP_MPG.EXE app_mpg.obj mp.obj gl.obj sndblstr.obj
 gpp -o APP_TTF.EXE app_ttf.obj ttf.obj gl.obj
 gpp -o APP_TILE.EXE tile.obj gl.obj
 gpp -o APP_SVG.EXE svg.obj gl.obj
+gpp -o APP_ZIP.EXE app_zip.obj z.obj s.obj o.obj d.obj
 @echo off
 del keys.obj
 del spk.obj
@@ -76,3 +79,5 @@ del ttf.obj
 del ogg.obj
 del tile.obj
 del svg.obj
+del app_zip.obj
+del z.obj

@@ -29,6 +29,8 @@ wpp386 /mf -fottf.obj truetype.cpp
 wpp386 /mf app_ttf.cpp
 wpp386 /mf -foogg.obj app_ogg.cpp
 wpp386 /mf -fotile.obj app_tile.cpp
+wpp386 /mf -foapp_zip.obj app_zip.cpp 
+wpp386 /mf -foz.obj miniz.cpp
 wcl.exe APP_SPPL.C
 wcl386 /mf APP_SVG.CPP GLIMPL.CPP
 wlink @appkeys.lnk OPTION QUIET OPTION STack = 65536 NAME APP_KEYS.EXE
@@ -42,6 +44,7 @@ wlink @appttf.lnk OPTION QUIET OPTION STack = 65536 NAME APP_TTF.EXE
 wlink @appimg.lnk OPTION QUIET OPTION STack = 65536 NAME APP_IMG.EXE
 wlink @appmpg.lnk OPTION QUIET OPTION STack = 65536 NAME APP_MPG.EXE
 wlink FILE gl.obj FILE tile.obj OPTION QUIET OPTION STack = 65536 NAME APP_TILE.EXE
+wlink @appzip.lnk OPTION QUIET OPTION STack = 65536 NAME APP_ZIP.EXE
 @echo off
 del keys.obj
 del spk.obj
@@ -77,3 +80,5 @@ del ogg.obj
 del tile.obj
 del app_svg.obj
 del glimpl.obj
+del app_zip.obj
+del z.obj
