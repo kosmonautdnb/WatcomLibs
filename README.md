@@ -91,6 +91,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - APP_TILE.CPP - a simple tilemap editor template, which may be used to edit tilemaps using STBTILED.HPP (stb_tilemap_editor.h)
 - APP_TTF.CPP - a truetype (.ttf) font viewer.
 - APP_VID.CPP - tests some of the WatcomGL video modies.
+- APP_ZIP.CPP - a zip program that compresses the contents of a folder recursive and with long filenames.
 - DEMOSNG1.SPK - a Speaker Tracker Demo Tune by 5tarbuck.
 - DEMOSNG1.RAW - a Speaker Tracker exported Tune by 5tarbuck that can be played e.g. with APP_SPPL.C.
 
