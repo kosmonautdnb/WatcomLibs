@@ -282,11 +282,8 @@ Vector &Vector::normalize() {
   return *this;
 }
 
-Vector &Vector::operator-() {
-  x = -x;
-  y = -y;
-  z = -z;
-  return *this;
+Vector Vector::operator-() {
+  return Vector(-x,-y,-z);
 }
 
 Vector &Vector::operator+=(const Vector &b) {

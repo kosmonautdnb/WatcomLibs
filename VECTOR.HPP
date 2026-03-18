@@ -85,7 +85,7 @@ public:
 
   Vector &normalize();
 
-  Vector &operator-();
+  Vector operator-();
 
   Vector &operator+=(const Vector &b);
   Vector &operator-=(const Vector &b);
