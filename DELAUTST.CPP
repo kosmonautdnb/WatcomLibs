@@ -11,6 +11,8 @@ Array<double> points;
 Array<size_t> triangles;
 
 int main(int argc, const char **argv) {
+  (void)(argc);
+  (void)(argv);
   glVesa(640,480,32);
   Delaunator delau;
   while(1) {
