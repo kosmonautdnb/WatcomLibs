@@ -13,6 +13,7 @@ volatile unsigned char ringBuffer[RINGBUFFERSIZE];
 volatile int destPos = 0;
 volatile int endPos = 0;
 
+#pragma off(check_stack)
 void sampleOutputCallback(unsigned char *buffer, unsigned int bufferLength, unsigned int playPos) {
   for (int i = 0; i < bufferLength; i++) {
     if (endPos != 0 && destPos>=endPos) {buffer[i]=0; continue;}
@@ -20,6 +21,7 @@ void sampleOutputCallback(unsigned char *buffer, unsigned int bufferLength, unsi
     destPos++;
   }
 }
+#pragma on(check_stack)
 
 void printPlayPos(int samplePos,int hz) {
   printf("\n");

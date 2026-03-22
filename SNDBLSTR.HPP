@@ -53,6 +53,7 @@ bool SBL_LockMemory(void *address, unsigned int byteSize);
 bool SBL_UnlockMemory(void *address, unsigned int byteSize);
 
 #ifdef __WATCOMC__
+#define WATCOMC_SOUNDBLASTER_STACK_SIZE 4096 // interrupt stack size
 #define SBL_WriteSample8(__8bitptr__,__index__,__8bitvalue__) {((unsigned char*)__8bitptr__)[__index__] = (unsigned char)(__8bitvalue__);}
 #endif // __WATCOMC__
 

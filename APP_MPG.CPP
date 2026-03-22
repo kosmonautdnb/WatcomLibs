@@ -26,6 +26,7 @@ void audioCallback(float *stereoSamples, int sampleCount, int sampleRate, double
   }
 }
 
+#pragma off(check_stack)
 void soundBlasterCallback(unsigned char *buffer, unsigned int bufferLength, unsigned int playPos) {
   soundBlasterTicks++;
   soundBlasterPlayTime += bufferLength;
@@ -41,6 +42,7 @@ void soundBlasterCallback(unsigned char *buffer, unsigned int bufferLength, unsi
     }
   }
 }
+#pragma on(check_stack)
 
 void waitSoundBlasterStart() {
   int a = soundBlasterTicks;

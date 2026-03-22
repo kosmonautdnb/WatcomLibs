@@ -139,7 +139,8 @@ unsigned short SBL_Interrupt = 0;
 
 // ------------
 
-#define SBL_ServiceInterrupt_length 4095
+#define SBL_ServiceInterrupt_length 8192
+#pragma off(check_stack)
 void SBL_InterruptPart() {
   if (SBL_IsPlaying) {
     SBL_PortionPlaying++;
@@ -151,15 +152,32 @@ void SBL_InterruptPart() {
   }
   inp(SBL_Port + SBL_DATA_STATE);
 }
+#pragma on(check_stack)
 
 #ifdef __WATCOMC__
-typedef void (__interrupt __far* SBL_InterruptHandler)();
+typedef void (__interrupt __far *SBL_InterruptHandler)();
 SBL_InterruptHandler SBL_OldInterruptVector = NULL;
+char SBL_interrupt_stack[WATCOMC_SOUNDBLASTER_STACK_SIZE]; // just a 4k stack
+void *SBL_old_stack_ptr;
+unsigned short SBL_old_stack_seg;
+#pragma off(check_stack)
 void __interrupt __far SBL_ServiceInterrupt() {
+  __asm {
+    mov SBL_old_stack_ptr,esp
+    mov SBL_old_stack_seg,ss
+    mov ax,ds
+    mov ss,ax
+    lea esp,SBL_interrupt_stack[WATCOMC_SOUNDBLASTER_STACK_SIZE]
+  }
   SBL_InterruptPart();
   if (SBL_Irq > 7) outp(0xA0,0x20);
   outp(0x20,0x20);
+  __asm {
+    mov ss,SBL_old_stack_seg
+    mov esp,SBL_old_stack_ptr
+  }
 }
+#pragma on(check_stack)
 #endif // __WATCOMC__
 
 #ifdef __DJGPP__
@@ -447,7 +465,7 @@ bool SBL_Init() {
   SBL_LockInterruptMemory();
 #ifdef __WATCOMC__
   SBL_OldInterruptVector = _dos_getvect(SBL_Interrupt);
-  _dos_setvect(SBL_Interrupt, SBL_ServiceInterrupt);
+  _dos_setvect(SBL_Interrupt, (SBL_InterruptHandler)SBL_ServiceInterrupt);
 #endif // __WATCOMC__
 #ifdef __DJGPP__
   _go32_dpmi_get_protected_mode_interrupt_vector(SBL_Interrupt,&SBL_old_handler); 
