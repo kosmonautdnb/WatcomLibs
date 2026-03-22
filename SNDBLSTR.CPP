@@ -155,26 +155,32 @@ void SBL_InterruptPart() {
 #pragma on(check_stack)
 
 #ifdef __WATCOMC__
+
 typedef void (__interrupt __far *SBL_InterruptHandler)();
 SBL_InterruptHandler SBL_OldInterruptVector = NULL;
 char SBL_interrupt_stack[WATCOMC_SOUNDBLASTER_STACK_SIZE]; // just a 4k stack
 void *SBL_old_stack_ptr;
 unsigned short SBL_old_stack_seg;
+unsigned short SBL_ax;
 #pragma off(check_stack)
-void __interrupt __far SBL_ServiceInterrupt() {
-  __asm {
-    mov SBL_old_stack_ptr,esp
-    mov SBL_old_stack_seg,ss
-    mov ax,ds
-    mov ss,ax
-    lea esp,SBL_interrupt_stack[WATCOMC_SOUNDBLASTER_STACK_SIZE]
-  }
+void SBL_ServiceInterrupt() {
   SBL_InterruptPart();
   if (SBL_Irq > 7) outp(0xA0,0x20);
   outp(0x20,0x20);
+}
+void __interrupt __far SBL_ServiceInterruptWrapper() {
+  // sadly around here are some push/pops I can't get rid off even with #pragma aux, there is no declspec(naked) in watcomc11
   __asm {
-    mov ss,SBL_old_stack_seg
+    mov SBL_old_stack_ptr,esp
+    mov SBL_old_stack_seg,ss
+    mov SBL_ax,ds
+    mov ss,SBL_ax
+    lea esp,SBL_interrupt_stack[WATCOMC_SOUNDBLASTER_STACK_SIZE]
+  }
+  SBL_ServiceInterrupt();
+  __asm {
     mov esp,SBL_old_stack_ptr
+    mov ss,SBL_old_stack_seg
   }
 }
 #pragma on(check_stack)
@@ -465,7 +471,7 @@ bool SBL_Init() {
   SBL_LockInterruptMemory();
 #ifdef __WATCOMC__
   SBL_OldInterruptVector = _dos_getvect(SBL_Interrupt);
-  _dos_setvect(SBL_Interrupt, (SBL_InterruptHandler)SBL_ServiceInterrupt);
+  _dos_setvect(SBL_Interrupt, (SBL_InterruptHandler)SBL_ServiceInterruptWrapper);
 #endif // __WATCOMC__
 #ifdef __DJGPP__
   _go32_dpmi_get_protected_mode_interrupt_vector(SBL_Interrupt,&SBL_old_handler); 
