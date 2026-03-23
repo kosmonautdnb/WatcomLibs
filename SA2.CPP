@@ -71,7 +71,6 @@
 
 #define UNUSED(__p__) (void)(__p__)
 
-unsigned int adlibTrackerDataLockStart = 0;
 void adlibTrackerCodeLockStart() {
   inp(0x388);
 }
@@ -1120,7 +1119,6 @@ void play_line() {
 void adlibTrackerCodeLockEnd() {
   inp(0x388);
 }
-unsigned int adlibTrackerDataLockEnd = 0;
 
 #ifdef __WATCOMC__
 bool ADLIB_LockMemory(void *address, long byteSize) {
@@ -1149,26 +1147,154 @@ bool ADLIB_UnlockMemory(void *address, long byteSize) {
     return false;
   return true;
 }
+#define ADLIB_LOCKVAR(__v__) ADLIB_LockMemory((void*)&(__v__),sizeof(__v__))
+#define ADLIB_LOCKVAR2(__v__,__t__) ADLIB_LockMemory((void*)&(__v__),sizeof(__t__))
+#define ADLIB_UNLOCKVAR(__v__) ADLIB_UnlockMemory((void*)&(__v__),sizeof(__v__))
+#define ADLIB_UNLOCKVAR2(__v__,__t__) ADLIB_UnlockMemory((void*)&(__v__),sizeof(__t__))
 #endif //__WATCOMC__
+
+#ifdef __DJGPP__
+#define ADLIB_LOCKVAR(__v__) _go32_dpmi_lock_data((void*)&(__v__),sizeof(__v__))
+#define ADLIB_LOCKVAR2(__v__,__t__) _go32_dpmi_lock_data((void*)&(__v__),sizeof(__t__))
+#define ADLIB_UNLOCKVAR(__v__) 
+#define ADLIB_UNLOCKVAR2(__v__,__t__) 
+#endif // __WATCOMC__
 
 void adlibTrackerLock(void *data, unsigned long size) {
 #ifdef __DJGPP__
-  _go32_dpmi_lock_data((void*)&adlibTrackerDataLockStart,(long)&adlibTrackerDataLockEnd-(long)&adlibTrackerDataLockStart);
   _go32_dpmi_lock_code((void*)adlibTrackerCodeLockStart,(long)adlibTrackerCodeLockEnd-(long)adlibTrackerCodeLockStart);
   _go32_dpmi_lock_data(data,size);
 #endif // __DJGPP__
 #ifdef __WATCOMC__
-  ADLIB_LockMemory((void*)&adlibTrackerDataLockStart,(long)&adlibTrackerDataLockEnd-(long)&adlibTrackerDataLockStart);
   ADLIB_LockMemory((void*)adlibTrackerCodeLockStart,(long)adlibTrackerCodeLockEnd-(long)adlibTrackerCodeLockStart);
   ADLIB_LockMemory(data,size);
 #endif // __WATCOMC__
+  ADLIB_LOCKVAR2(register_bypass2,unsigned char[246]);
+  ADLIB_LOCKVAR2(register_map,unsigned char[9]);
+  ADLIB_LOCKVAR2(InsTab,unsigned short[32]);
+  ADLIB_LOCKVAR2(mainvol,unsigned char);
+  ADLIB_LOCKVAR2(current_bpm,unsigned short);
+  ADLIB_LOCKVAR2(segnum,unsigned short);
+  ADLIB_LOCKVAR2(count,unsigned char);
+  ADLIB_LOCKVAR2(_eff,unsigned char);
+  ADLIB_LOCKVAR2(_para,unsigned char);
+  ADLIB_LOCKVAR2(_patternorder,unsigned int);
+  ADLIB_LOCKVAR2(_songlength,unsigned int);
+  ADLIB_LOCKVAR2(_restart,unsigned int);
+  ADLIB_LOCKVAR2(_bpm,unsigned int);
+  ADLIB_LOCKVAR2(_arpeggio,unsigned int);
+  ADLIB_LOCKVAR2(_acommands,unsigned int);
+  ADLIB_LOCKVAR2(_trackorder,unsigned int);
+  ADLIB_LOCKVAR2(_channels,unsigned int);
+  ADLIB_LOCKVAR2(_trackdata,unsigned int);
+  ADLIB_LOCKVAR(Okt1);
+  ADLIB_LOCKVAR(Okt2);
+  ADLIB_LOCKVAR(Okt3);
+  ADLIB_LOCKVAR(Okt4);
+  ADLIB_LOCKVAR(Okt5);
+  ADLIB_LOCKVAR(Okt6);
+  ADLIB_LOCKVAR(Okt7);
+  ADLIB_LOCKVAR(Okt8);
+  ADLIB_LOCKVAR(NoteTab);
+  ADLIB_LOCKVAR2(arpeggio_table,unsigned char[64]);
+  ADLIB_LOCKVAR2(vibratotab,unsigned char[64]);
+  ADLIB_LOCKVAR2(stopped,unsigned char[9]);
+  ADLIB_LOCKVAR2(channel_active,unsigned char[9]);
+  ADLIB_LOCKVAR2(channel_ins,unsigned char[9]);
+  ADLIB_LOCKVAR2(channel_note,unsigned char[9]);
+  ADLIB_LOCKVAR2(channel_note2,unsigned char[9]);
+  ADLIB_LOCKVAR2(channel_vol2,unsigned char[9]);
+  ADLIB_LOCKVAR2(channel_vol,unsigned char[9]);
+  ADLIB_LOCKVAR2(channel_vpos,unsigned char[9]);
+  ADLIB_LOCKVAR2(channel_vspeed,unsigned char[9]);
+  ADLIB_LOCKVAR2(channel_vdepth,unsigned char[9]);
+  ADLIB_LOCKVAR2(channel_eff,unsigned short[9]);
+  ADLIB_LOCKVAR2(channel_freq,unsigned short[9]);
+  ADLIB_LOCKVAR2(channel_fshift,unsigned short[9]);
+  ADLIB_LOCKVAR2(channel_pdest,unsigned short[9]);
+  ADLIB_LOCKVAR2(channel_pspeed,unsigned short[9]);
+  ADLIB_LOCKVAR2(channel_aspeed,unsigned char[9]);
+  ADLIB_LOCKVAR2(channel_acurpos,unsigned char[9]);
+  ADLIB_LOCKVAR2(channel_acursp,unsigned char[9]);
+  ADLIB_LOCKVAR2(channel_vsubt,unsigned char[9]);
+  ADLIB_LOCKVAR2(current_speed,unsigned char[9]);
+  ADLIB_LOCKVAR2(current_line,unsigned char[9]);
+  ADLIB_LOCKVAR2(break_pos,unsigned char[9]);
+  ADLIB_LOCKVAR2(pattern_break,unsigned char[9]);
+  ADLIB_LOCKVAR2(position_jump,unsigned char[9]);
+  ADLIB_LOCKVAR2(segments,unsigned char*[9]);
+  ADLIB_LOCKVAR2(channel_segment,unsigned char[9]);
+  ADLIB_LOCKVAR2(work_pattern,unsigned int[9]);
+  ADLIB_LOCKVAR2(current_pos,unsigned char[9]);
+  ADLIB_LOCKVAR2(s_count,unsigned char[9]);
+  ADLIB_LOCKVAR2(new_position,unsigned char[9]);
+  ADLIB_LOCKVAR(effect_calls);
 }
 void adlibTrackerUnlock(void *data, unsigned long size) {
 #ifdef __WATCOMC__
-  ADLIB_UnlockMemory((void*)&adlibTrackerDataLockStart,(long)&adlibTrackerDataLockEnd-(long)&adlibTrackerDataLockStart);
   ADLIB_UnlockMemory((void*)adlibTrackerCodeLockStart,(long)adlibTrackerCodeLockEnd-(long)adlibTrackerCodeLockStart);
   ADLIB_UnlockMemory(data,size);
 #endif // __WATCOMC__
+  ADLIB_UNLOCKVAR2(register_bypass2,unsigned char[246]);
+  ADLIB_UNLOCKVAR2(register_map,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(InsTab,unsigned short[32]);
+  ADLIB_UNLOCKVAR2(mainvol,unsigned char);
+  ADLIB_UNLOCKVAR2(current_bpm,unsigned short);
+  ADLIB_UNLOCKVAR2(segnum,unsigned short);
+  ADLIB_UNLOCKVAR2(count,unsigned char);
+  ADLIB_UNLOCKVAR2(_eff,unsigned char);
+  ADLIB_UNLOCKVAR2(_para,unsigned char);
+  ADLIB_UNLOCKVAR2(_patternorder,unsigned int);
+  ADLIB_UNLOCKVAR2(_songlength,unsigned int);
+  ADLIB_UNLOCKVAR2(_restart,unsigned int);
+  ADLIB_UNLOCKVAR2(_bpm,unsigned int);
+  ADLIB_UNLOCKVAR2(_arpeggio,unsigned int);
+  ADLIB_UNLOCKVAR2(_acommands,unsigned int);
+  ADLIB_UNLOCKVAR2(_trackorder,unsigned int);
+  ADLIB_UNLOCKVAR2(_channels,unsigned int);
+  ADLIB_UNLOCKVAR2(_trackdata,unsigned int);
+  ADLIB_UNLOCKVAR(Okt1);
+  ADLIB_UNLOCKVAR(Okt2);
+  ADLIB_UNLOCKVAR(Okt3);
+  ADLIB_UNLOCKVAR(Okt4);
+  ADLIB_UNLOCKVAR(Okt5);
+  ADLIB_UNLOCKVAR(Okt6);
+  ADLIB_UNLOCKVAR(Okt7);
+  ADLIB_UNLOCKVAR(Okt8);
+  ADLIB_UNLOCKVAR(NoteTab);
+  ADLIB_UNLOCKVAR2(arpeggio_table,unsigned char[64]);
+  ADLIB_UNLOCKVAR2(vibratotab,unsigned char[64]);
+  ADLIB_UNLOCKVAR2(stopped,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(channel_active,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(channel_ins,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(channel_note,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(channel_note2,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(channel_vol2,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(channel_vol,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(channel_vpos,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(channel_vspeed,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(channel_vdepth,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(channel_eff,unsigned short[9]);
+  ADLIB_UNLOCKVAR2(channel_freq,unsigned short[9]);
+  ADLIB_UNLOCKVAR2(channel_fshift,unsigned short[9]);
+  ADLIB_UNLOCKVAR2(channel_pdest,unsigned short[9]);
+  ADLIB_UNLOCKVAR2(channel_pspeed,unsigned short[9]);
+  ADLIB_UNLOCKVAR2(channel_aspeed,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(channel_acurpos,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(channel_acursp,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(channel_vsubt,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(current_speed,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(current_line,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(break_pos,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(pattern_break,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(position_jump,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(segments,unsigned char*[9]);
+  ADLIB_UNLOCKVAR2(channel_segment,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(work_pattern,unsigned int[9]);
+  ADLIB_UNLOCKVAR2(current_pos,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(s_count,unsigned char[9]);
+  ADLIB_UNLOCKVAR2(new_position,unsigned char[9]);
+  ADLIB_UNLOCKVAR(effect_calls);
 }
 
 #pragma on(check_stack)

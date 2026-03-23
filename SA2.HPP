@@ -63,7 +63,7 @@
 
 extern volatile unsigned short current_bpm;
 
-void adlibTrackerLock(void *data, unsigned long size); // actually this currently doesn't lock all data (WatcomC stuff that is initialized with 0 lands in bss section :/ )
+void adlibTrackerLock(void *data, unsigned long size);
 void adlibTrackerUnlock(void *data, unsigned long size);
 
 bool prepare_song(unsigned char *data);
