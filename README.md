@@ -101,6 +101,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - CGLTF - a gltf loader https://github.com/jkuhlmann/cgltf
 - CGLTFA - simple and fast coded GLTF scene object and skinning displayer
 - COLL.HPP - simple collisions (includes capsules, velocity stretched spheres).
+- CORNERS.HPP - Haris/Noble corner detection.
 - CURSOR.HPP - BIOS Text Cursor Set/Get (e.g. for printf).
 - DELAUNTR.HPP - 2D Delaunator derived from https://github.com/delfrrr/delaunator-cpp.git
 - DELAUTST.CPP - 2D Delaunay triangulation test program. (Delaunator)
