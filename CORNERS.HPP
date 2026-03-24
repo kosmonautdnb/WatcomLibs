@@ -16,24 +16,34 @@ public:
   int width;
   int height;
   double *values;
+  double *gradients;
+  double *blurredGradients;
 #define CORNER_VAL(__x__,__y__) values[(x+(__x__))+(y+(__y__))*width]
 
   bool subPixels;
   bool subPixelsQuadratic;
-  double threshold;
+  double k;
+  int shiftingWindowSize;
+  int gaussKernelSize;
 
 
   Corners(int width, int height) {
     this->width = width;
     this->height = height;
     values = new double[width*height];
+    gradients = new double[width*height*3];
+    blurredGradients = new double[width*height*3];
     subPixels = false;
     subPixelsQuadratic = false;
-    threshold = 0.00015;
+    k = 0.04;
+    gaussKernelSize = 4;
+    shiftingWindowSize = 4;
   }
 
   ~Corners() {
     delete[] values;
+    delete[] gradients;
+    delete[] blurredGradients;
   }
 
   double polyPeak(double lower, double middle, double upper) {
@@ -79,29 +89,89 @@ public:
   }
 #define CORNER_LUMA(__x__,__y__) luma(rgba[(x+(__x__))+(y+(__y__))*width])
 
-  void cornerIntensities(unsigned int *rgba) {
-    // harris corner measure
+  void collectGradients(unsigned int *rgba) {
     for (int y = 1; y < height-1; y++) {
       for (int x = 1; x < width-1; x++) {
-        double h = (double)((CORNER_LUMA(1,-1)+CORNER_LUMA(1,0)+CORNER_LUMA(1,1)) - (CORNER_LUMA(-1,-1)+CORNER_LUMA(-1,0)+CORNER_LUMA(-1,1)))/6.0;
-        double v = (double)((CORNER_LUMA(-1,1)+CORNER_LUMA(0,1)+CORNER_LUMA(1,1)) - (CORNER_LUMA(-1,-1)+CORNER_LUMA(0,-1)+CORNER_LUMA(1,-1)))/6.0;
-        double hh = h*h;
-        double vv = v*v;
-        double vh = v*h;
-        double det = hh*vv-vh*vh;
-        double tr = hh+vv;
-        //double originalHarris = (det - k*tr*tr)/tr - threshold;
-        double harrisNoble = det / (tr+0.0001) - threshold;
-        values[x+y*width] = harrisNoble; // this can get numerical instable if just using floats
+        double h = (double)((CORNER_LUMA(1,-1)+CORNER_LUMA(1,0)+CORNER_LUMA(1,1)) - (CORNER_LUMA(-1,-1)+CORNER_LUMA(-1,0)+CORNER_LUMA(-1,1)))/3.0;
+        double v = (double)((CORNER_LUMA(-1,1)+CORNER_LUMA(0,1)+CORNER_LUMA(1,1)) - (CORNER_LUMA(-1,-1)+CORNER_LUMA(0,-1)+CORNER_LUMA(1,-1)))/3.0;
+        double *gr = &gradients[(x+y*width)*3+0];
+        gr[0] = h*h;
+        gr[1] = v*v;
+        gr[2] = v*h;
       }
     }
   }
 
-  void collectCorners(Array<CornerPoint> *points) {
-    // non maximum supression
-    for (int y = 2; y < height-2; y++) {
-      for (int x = 2; x < width-2; x++) {
-        float p0 = CORNER_VAL(0,0);
+  void blurGradients() {
+    // actually you need a gaussian blur here, currently it's a box blur
+    for (int y = 1; y < height-1; y++) {
+      for (int x = 1; x < width-1; x++) {
+        double hh = 0;
+        double vv = 0;
+        double vh = 0;
+        double w = 0;
+        for (int y2 = -gaussKernelSize; y2 <= gaussKernelSize; y2++) {
+          for (int x2 = -gaussKernelSize; x2 <= gaussKernelSize; x2++) {
+            int xp = x + x2;
+            int yp = y + y2;
+            if (xp>0&&xp<width-1&&yp>0&&yp<height-1) {
+              double *gr = &gradients[(xp+yp*width)*3+0];
+              hh += gr[0];
+              vv += gr[1];
+              vh += gr[2];
+              w += 1.0;
+            }
+          }
+        }
+        if (w != 0) {
+          hh /= w;
+          vv /= w;
+          vh /= w;
+        }
+        double *gr = &blurredGradients[(x+y*width)*3+0];
+        gr[0] = hh;        
+        gr[1] = vv;        
+        gr[2] = vh;        
+      }
+    }
+  }
+
+  double harris() {
+    double max_ = 0;
+    for (int y = 1+shiftingWindowSize; y < height-1-shiftingWindowSize; y++) {
+      for (int x = 1+shiftingWindowSize; x < width-1-shiftingWindowSize; x++) {
+        double hh = 0;
+        double vv = 0;
+        double vh = 0;
+        for (int y2 = -shiftingWindowSize; y2 <= shiftingWindowSize; y2++) {
+          for (int x2 = -shiftingWindowSize; x2 <= shiftingWindowSize; x2++) {
+            int xp = x + x2;
+            int yp = y + y2;
+            if (xp>0&&xp<width-1&&yp>0&&yp<height-1) {
+              double *gr = &blurredGradients[(xp+yp*width)*3+0];
+              hh += gr[0];
+              vv += gr[1];
+              vh += gr[2];
+            }
+          }
+        }
+        double determinant = hh*vv-vh*vh;
+        double trace = hh+vv;
+        double harris = determinant - k*trace*trace; // harris
+        //double harris = trace == 0 ? 0 : determinant/trace; // harris noble
+        values[x+y*width] = harris;
+        if (harris>max_) max_ = harris;
+      }
+    }
+    return max_;
+  }
+
+  void collectCorners(Array<CornerPoint> *points, double threshold) {
+    // non-maximum supression
+    for (int y = 1+shiftingWindowSize; y < height-1-shiftingWindowSize; y++) {
+      for (int x = 1+shiftingWindowSize; x < width-1-shiftingWindowSize; x++) {
+        double p0 = CORNER_VAL(0,0);
+        if (p0<threshold) continue;
         if (CORNER_VAL(-1,0)>=p0||CORNER_VAL(+1,0)>=p0||CORNER_VAL(0,-1)>=p0||CORNER_VAL(0,+1)>=p0) continue;
         CornerPoint k;
         if (subPixels) {
@@ -119,8 +189,10 @@ public:
   }
 
   void process(unsigned int *rgba, Array<CornerPoint> *points) {
-    cornerIntensities(rgba);
-    collectCorners(points);
+    collectGradients(rgba);
+    blurGradients();
+    double max_ = harris();
+    collectCorners(points, max_ * k);
   }
 };
 
