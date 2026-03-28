@@ -125,7 +125,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - MPEG1.HPP - mpeg1 wrapper for PLMPEG.hpp
 - NANOSVG.HPP - a SVG (Vector Graphics) loader // https://github.com/memononen/nanosvg
 - NSVGRAST.HPP - a SVG (Vector Graphics) renderer // https://github.com/memononen/nanosvg
-- OPENGLFX.HPP - Some post processing OpenGL effects like antialiasing(FXAA(https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/ )), toon shader, motion blur
+- OPENGLFX.HPP - Some post processing OpenGL effects like antialiasing(FXAA(https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/ )), toon shader, motion blur, bloom, SSAO  
 - PARSON.HPP - another json reader/writer https://github.com/kgabis/parson
 - PHYSAC - a tiny, 2D physics library (demo in app_phys.cpp) https://github.com/victorfisac/Physac
 - PLMPEG.HPP - MPEG1 (Video/Sound) Replay Single Header library https://github.com/phoboslab/pl_mpeg  
