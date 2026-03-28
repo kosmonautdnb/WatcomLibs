@@ -9,7 +9,7 @@
 #define glSkySphere(__texture_atan2__) doSkySphere((__texture_atan2__),glDepthBuffer,glFrameBuffer,glFrameBufferWidth,glFrameBufferHeight);
 #define glSkyPlane(__texture__) doSkyPlane(__texture__,glDepthBuffer,glFrameBuffer,glFrameBufferWidth,glFrameBufferHeight);
 #define glBloom(__passes__,__threshold__,__gain__) bloom(glFrameBuffer,glFrameBufferWidth,glFrameBufferHeight,__passes__,__threshold__,__gain__);
-#define glSSAO(__scale__,__kernel__,__depthScale__) ambientOcclusion(glFrameBuffer,glDepthBuffer,glFrameBufferWidth,glFrameBufferHeight,__scale__,__kernel__,__depthScale__);
+#define glSSAO(__scale__,__kernel__,__depthScale__) ambientOcclusion(glFrameBuffer,glDepthBuffer,glFrameBufferWidth,glFrameBufferHeight,__scale__,__kernel__,__depthScale__); //100,100,10 seems to be ok for 640x480 and a far plane of 100
 
 // Post processing Anti Aliasing (FXAA) // from glsl at geeks3d.com
 // currently much too slow for realtime
