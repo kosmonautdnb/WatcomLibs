@@ -148,6 +148,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - STBRECT.HPP - Texture atlas generator  https://github.com/nothings/obbg/tree/master/stb  
 - STBOGG.HPP - STB_Vorbis.h to decode OGG (sound) files. https://github.com/nothings/obbg/tree/master/stb  
 - STBPRINT.HPP - STB_SPRINTF.h some good replacements for snprintf/vsprintf etc. https://github.com/nothings/obbg/tree/master/stb  
+- SUMARETB.HPP - (float) Summed Area Table / Integral Image  
 - TEXTURES.HPP - a basic "texture cache"  
 - TINYEXPR.HPP - a math expression solver (string input)  https://github.com/codeplea/tinyexpr  
 - TRUETYPE.HPP - true type font rendering (also in OpenGL). Wraping of STBTTF.HPP  
