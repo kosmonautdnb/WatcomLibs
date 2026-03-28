@@ -9,6 +9,7 @@
 #define glSkySphere(__texture_atan2__) doSkySphere((__texture_atan2__),glDepthBuffer,glFrameBuffer,glFrameBufferWidth,glFrameBufferHeight);
 #define glSkyPlane(__texture__) doSkyPlane(__texture__,glDepthBuffer,glFrameBuffer,glFrameBufferWidth,glFrameBufferHeight);
 #define glBloom(__passes__,__threshold__,__gain__) bloom(glFrameBuffer,glFrameBufferWidth,glFrameBufferHeight,__passes__,__threshold__,__gain__);
+#define glSSAO(__scale__,__kernel__,__depthScale__) ambientOcclusion(glFrameBuffer,glDepthBuffer,glFrameBufferWidth,glFrameBufferHeight,__scale__,__kernel__,__depthScale__);
 
 // Post processing Anti Aliasing (FXAA) // from glsl at geeks3d.com
 // currently much too slow for realtime
@@ -68,5 +69,9 @@ extern int _sky_plane_stepWidth; // how fine granular the calculations are 16 is
 
 // A gaussian bloom
 void bloom(unsigned int *frameBuffer, unsigned int width, unsigned int height, int passes, float threshold, float gain);
+
+
+// A simple screenspace ambient occlusion
+void ambientOcclusion(unsigned int *frameBuffer, float *depthBuffer, int width, int height, float scale, float kernelSize, float depthScale);
 
 #endif //__OPENGLFX_HPP__

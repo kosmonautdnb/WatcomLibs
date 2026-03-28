@@ -714,3 +714,76 @@ void bloom(unsigned int *frameBuffer, unsigned int width, unsigned int height, i
   }}
   delete[] bloomBuffer;
 }
+
+static void calcSummedAreaTable(float *table, const float *data, int width, int height) {
+  float *dest = table;
+  const float *src = data;
+  float lastX = 0;
+  for (int x = 0; x < width; x++) {
+    *dest = *src + lastX; lastX = *dest; dest++; src++;
+  }
+  for (int y = 1; y < height; y++) {
+    lastX = 0;
+    float *dest2 = dest-width;
+    *dest = *src + lastX + *dest2; lastX = *dest; dest++; dest2++; src++;
+    for (int x = 1; x < width; x++) {
+      *dest = *src + lastX + *dest2 - *(dest2-1); lastX = *dest; dest++; dest2++; src++;
+    }
+  }
+}
+
+static inline float getSummedArea(const float *table, int width, int height, int x0,int y0, int x1,int y1) {
+  if ((unsigned int)(x0|x1)>=width) {
+    if (x0 >= width) x0 = width-1;
+    if (x1 >= width) x1 = width-1;
+    if (x0 < 0) x0 = 0;
+    if (x1 < 0) x1 = 0;
+  }
+  if ((unsigned int)(y0|y1)>=height) {
+    if (y0 >= height) y0 = height-1;
+    if (y1 >= height) y1 = height-1;
+    if (y0 < 0) y0 = 0;
+    if (y1 < 0) y1 = 0;
+  }
+  float count = (float)((x1-x0)*(y1-y0));
+  if (count == 0) return 0;
+  return (table[x1+y1*width]-table[x0+y1*width]-table[x1+y0*width]+table[x0+y0*width])/count;
+} 
+
+static void shade(unsigned int *d, float s) {
+  if (s < 1) return;
+  s = 1.0 / s;
+  int r = *d & 255;
+  int g = ((*d)>>8) & 255;
+  int b = ((*d)>>16) & 255;
+  r *= s;
+  g *= s;
+  b *= s;
+  *d = (r)|(g<<8)|(b<<16)|0xff000000;
+}
+
+void ambientOcclusion(unsigned int *frameBuffer, float *depthBuffer, int width, int height, float scale, float kernelSize, float depthScale) {
+  float *table = new float[width*height];
+  calcSummedAreaTable(table,glDepthBuffer,width,height);
+  float kernelW1 = 1;
+  float kernelW2 = 3;
+  float kernelW3 = 6;
+  float scaleUp = scale/kernelW1/kernelW2/kernelW3;
+  int kernelBig = kernelSize/kernelW1;
+  int kernelSmall = kernelSize/kernelW2;                                                                                                                                                                                                          
+  int kernelVerySmall = kernelSize/kernelW3;
+  int kernel;
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      float z = depthBuffer[x+y*width];
+      kernel = kernelBig; float averageBig = getSummedArea(table, width, height, x-kernel,y-kernel, x+kernel,y+kernel);
+      int ks = fabs(z - averageBig)*depthScale;
+      kernel = kernelSmall+ks; float averageSmall = getSummedArea(table, width, height, x-kernel,y-kernel, x+kernel,y+kernel);
+      kernel = kernelVerySmall+ks; float averageVerySmall = getSummedArea(table, width, height, x-kernel,y-kernel, x+kernel,y+kernel);
+      float delta = ((z - averageBig)*kernelW1+(z - averageSmall)*kernelW2+(z - averageVerySmall)*kernelW3);
+      if (delta > 0 && z != 1)
+        shade(&frameBuffer[x+y*width],delta*scaleUp);
+    }
+  }
+  delete[] table;
+}
