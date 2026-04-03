@@ -463,6 +463,10 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#if defined(__WATCOMC__) && (__WATCOMC__ < 1200) // :mad: WatcomC 11 texts must have less character count than 0x4000
+#define WATCOMC_11_SPRINTF
+#endif
+
 #include "imgui.h"
 #include <ctype.h>      // toupper, isprint
 #include <math.h>       // sqrtf, fabsf, fmodf, powf, cosf, sinf, floorf, ceilf
@@ -1807,7 +1811,9 @@ bool ImGuiTextFilter::PassFilter(const char* val) const
 #define va_copy(dest, src) (dest = src)
 #endif
 
+#ifdef WATCOMC_11_SPRINTF
 static char testBuffer[0x4000]; // :mad: todo unreliably was vsnprintf(NULL,0
+#endif
 
 // Helper: Text buffer for logging/accumulating text
 void ImGuiTextBuffer::appendv(const char* fmt, va_list args)
@@ -1816,7 +1822,11 @@ void ImGuiTextBuffer::appendv(const char* fmt, va_list args)
     args_copy[0] = args[0];
     //va_copy(args_copy, args);
 
+#ifdef WATCOMC_11_SPRINTF
     int len = vsprintf(testBuffer, fmt, args);         // FIXME-OPT: could do a first pass write attempt, likely successful on first pass.
+#else
+    int len = vsprintf(NULL, fmt, args);         // FIXME-OPT: could do a first pass write attempt, likely successful on first pass.
+#endif
     if (len <= 0)
         return;
 
