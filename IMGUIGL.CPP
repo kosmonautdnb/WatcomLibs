@@ -144,9 +144,9 @@ static bool isIMRECT(IMTRI *t0, IMTRI *t1) {
     const ImDrawVert *a = t0->v[i];
     for (int j = 0; j < 3; j++) {
       const ImDrawVert *b = t1->v[j];
+      if (a->col != b->col) return false;
       if (a->pos.x != b->pos.x) continue;
       if (a->pos.y != b->pos.y) continue;
-      if (a->col != b->col) return false;
       if (hasTexture && (a->uv.x != b->uv.x)) continue;
       if (hasTexture && (a->uv.y != b->uv.y)) continue;
       if (sameVertices>=2) return false;
