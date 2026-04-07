@@ -5039,7 +5039,7 @@ void ImGui::TextUnformatted(const char* text, const char* text_end)
 
     const float wrap_pos_x = window->DC.TextWrapPos;
     const bool wrap_enabled = wrap_pos_x >= 0.0f;
-    if (text_end - text > 2000 && !wrap_enabled)
+    if (text_end - text > 2000*1000 && !wrap_enabled) // :mad: was "> 2000" but didn't work here / was buggy with scrolling, so I "disabled" it that way.
     {
         // Long text!
         // Perform manual coarse clipping to optimize for long multi-line text
