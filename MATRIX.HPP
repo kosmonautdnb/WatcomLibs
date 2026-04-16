@@ -64,8 +64,8 @@ public:
   Matrix &operator *=(const Matrix &a);
   Matrix &operator /=(const Matrix &a);
 
-  Matrix rotationMatrix3x3();
-  Matrix matrix3x3();
+  Matrix rotationMatrix3x3() const;
+  Matrix matrix3x3() const;
 
   bool invert();
   void normalize3x3();

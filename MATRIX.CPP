@@ -169,7 +169,7 @@ Matrix &Matrix::operator/=(const Matrix &a) {
   return *this;
 }
 
-Matrix Matrix::rotationMatrix3x3() {
+Matrix Matrix::rotationMatrix3x3() const {
   Matrix result;
   result.identity();
   for (int i = 0; i < 3; i++) {
@@ -181,7 +181,7 @@ Matrix Matrix::rotationMatrix3x3() {
   return result;
 }
 
-Matrix Matrix::matrix3x3() {
+Matrix Matrix::matrix3x3() const {
   Matrix result;
   result.identity();
   for (int i = 0; i < 3; i++) {
