@@ -107,6 +107,8 @@ __inline float halffloat(unsigned short f) { // not tested
   unsigned int fbits = fsign|fexponent|fmantissa;
   return *((float*)&fbits);
 }
-
+__inline double signd(double a) {return a < 0 ? -1 : a == 0 ? 0 : 1;}
+__inline double absd(double a) {return a < 0 ? -a : a;}
+#define powd(__a__,__b__) ((__b__)==0?1.0:signd(__a__)*pow(absd(__a__),__b__)) // needs math.h (WatcomC 11 has problems with pow this is a fix for that)
 
 #endif //__TYPES_HPP__

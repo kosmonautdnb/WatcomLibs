@@ -1,5 +1,6 @@
 #include "vector.hpp"
 #include "matrix.hpp"
+#include "types.hpp"
 #include <math.h>
 
 #ifndef PI
@@ -610,18 +611,18 @@ Vector cos(const Vector &a) {
 
 Vector pow(const Vector &a, const double &b) {
   Vector r;
-  r.x = pow(a.x,b);
-  r.y = pow(a.y,b);
-  r.z = pow(a.z,b);
+  r.x = powd(a.x,b);
+  r.y = powd(a.y,b);
+  r.z = powd(a.z,b);
   r.w = a.w;
   return r;
 }
 
 Vector pow(const Vector &a, const Vector &b) {
   Vector r;
-  r.x = pow(a.x,b.x);
-  r.y = pow(a.y,b.y);
-  r.z = pow(a.z,b.z);
+  r.x = powd(a.x,b.x);
+  r.y = powd(a.y,b.y);
+  r.z = powd(a.z,b.z);
   r.w = a.w;
   return r;
 }
