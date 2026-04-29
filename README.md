@@ -194,3 +194,5 @@ to be used this way:
 
 wlink @pmodew.lnk @mylink.lnk OPTION QUIET OPTION STack = 65536 NAME myexe.exe
 
+
+The original WatcomLibs repository lives at: https://github.com/kosmonautdnb/WatcomLibs.git
