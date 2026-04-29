@@ -5,8 +5,6 @@
 String folder;
 mz_zip_archive zip;
 
-#define ZIPBUFFERSIZE (1024*64)
-
 char buffer1[MAX_LFN_PATH];
 char buffer2[MAX_LFN_PATH];
 
@@ -55,7 +53,7 @@ int main(int argc, const char *argv[]) {
 
   mz_zip_zero_struct(&zip);
 
-  if (!mz_zip_writer_init_file(&zip, zipName.c_str(), ZIPBUFFERSIZE)) {
+  if (!mz_zip_writer_init_file(&zip, zipName.c_str(), 0)) {
     printf("Zip create error for <%s>\n",zipName.c_str());
     exit(0);
   }
