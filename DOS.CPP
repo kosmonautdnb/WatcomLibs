@@ -33,11 +33,12 @@ String getCWD() {
   String currentWorkingDirectory; currentWorkingDirectory.resize(2048);
   getcwd(&(currentWorkingDirectory[0]),currentWorkingDirectory.length());
   currentWorkingDirectory.resize(strlen(currentWorkingDirectory.c_str()));
-  return unixFileName(currentWorkingDirectory+"/");
+  return unixFileName(currentWorkingDirectory+(currentWorkingDirectory>3?"/":""));
 #endif // defined(__WATCOM__) || defined(__DJGPP__)
 
 #ifdef ON_WINDOWS
- return unixFileName(String((std::filesystem::current_path().string().c_str())))+"/";
+  String currentWorkingDirectory = String(std::filesystem::current_path().string().c_str());
+  return unixFileName(currentWorkingDirectory+(currentWorkingDirectory>3?"/":""));
 #endif // ON_WINDOWS
 }
 
