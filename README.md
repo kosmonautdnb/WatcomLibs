@@ -80,7 +80,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 **Use APPDJGPP.BAT to build the APPs with DJGPP and APPWAT.BAT to build the APPs with WatcomC/OpenWatcom.**
 - APP_GLTF.CPP - a 3D model viewer for GLB/GLTF files, also supporting animations and skinning.
 - APP_IMG.CPP - a simple image / picture viewer.
-- APP_LDIR.CPP - a simple recursive long filename dir commant to look for file extensions.
+- APP_LDIR.CPP - a simple recursive long filename dir command to look for file extensions.
 - APP_KEYS.CPP - outputs the Keyboard Scancodes of the input key.
 - APP_MP3.CPP - Let's you play MP3 files via the Sound Blaster Interface (SBEMU tested, works).
 - APP_MPG.CPP - a mpeg1 video player. Features Sound Blaster sound.
