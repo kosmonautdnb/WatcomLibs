@@ -34,6 +34,7 @@ gpp -c -O3 -oapp_zip.obj app_zip.cpp
 gpp -c -O3 -oz.obj miniz.cpp
 gpp -c -O3 -osa.obj sa2.cpp
 gpp -c -O3 -osa2.obj app_sa2.cpp
+gpp -c -O3 -oapp_ldir.obj app_ldir.cpp
 gpp -o APP_KEYS.EXE gl.obj keys.obj keymtrix.obj
 gpp -o APP_VID.EXE gl.obj e.obj vid.obj
 gpp -o APP_SPKT.EXE gl.obj i1.obj i2.obj o.obj s.obj sp.obj d.obj f.obj e.obj spk.obj
@@ -49,6 +50,7 @@ gpp -o APP_TILE.EXE tile.obj gl.obj
 gpp -o APP_SVG.EXE svg.obj gl.obj
 gpp -o APP_ZIP.EXE app_zip.obj z.obj s.obj o.obj d.obj
 gpp -o APP_SA2.EXE sa.obj sa2.obj sndblstr.obj
+gpp -o APP_LDIR.EXE s.obj d.obj o.obj app_ldir.obj
 @echo off
 del keys.obj
 del spk.obj
@@ -86,3 +88,4 @@ del app_zip.obj
 del z.obj
 del sa.obj
 del sa2.obj
+del app_ldir.obj
