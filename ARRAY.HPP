@@ -125,6 +125,7 @@ public:
   }
 
   void afterCopy() {
+    // no copy constructor, yet
     T *copiedData = data;
     size_t copiedSize = usedSize;
     data = NULL;
