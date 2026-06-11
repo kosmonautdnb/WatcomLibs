@@ -380,6 +380,7 @@ bool start_song(unsigned int bl) {
 bool prepare_song(unsigned char *data) {
   bool succeeded = true;
   init_device();
+  unload_song(0);
   succeeded = succeeded && load_song(0,data);
   succeeded = succeeded && start_song(0);
   return succeeded;

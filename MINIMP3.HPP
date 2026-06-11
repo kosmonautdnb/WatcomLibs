@@ -7,6 +7,7 @@
     See <http://creativecommons.org/publicdomain/zero/1.0/>.
 */
 //#include <stdint.h> :mad:
+// :mad: seems not to work with WatcomC++11 loop optimization switch /ol
 #include "types.hpp"
 
 #define MINIMP3_MAX_SAMPLES_PER_FRAME (1152*2)
