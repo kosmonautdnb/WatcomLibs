@@ -4,27 +4,59 @@
 #include <stdlib.h>
 
 // Please use the constructor with different C pointers only, not one and the same C pointer in different SharedPointers
-// !!!Just a prototype not really tested, yet!!!
-// WatcomC++ 11.0
+// Usage: char *a = new char[10]; sprintf(a,"World"); SharedPointer<char> b = SharedPointer<char>(a,true);
+// use setDebug() to find refCount problems, the refCount object may have been deleted already when you acces a different pointer wrongly..
 
-// Usage: char *a = new char[10]; sprintf(a,"World"); SharedPointer<char> b = SharedPointer<char>(a);
+#define REFCOUNTEDOBJECTISDELETED -0x4000
 
-class RefCount {
+template<class T>
+class RefCountedObject {
 public:
-  RefCount(bool debug = false) : count(1), debug(debug) {;}
-  bool debug;
+  T *ptr;
   int count;
+  bool debug;
+  bool array;
+
+  RefCountedObject(T *ptr, bool array) : ptr(ptr), array(array), count(1), debug(false) {;}
+
+  void del() {
+    if (ptr != NULL) {
+      if (!array) delete ptr;
+      if (array) delete[] ptr;
+      ptr = NULL;
+    }
+    count = REFCOUNTEDOBJECTISDELETED;
+    if (!debug) {
+      delete this;
+    }
+  }
+
+  bool addRef() {
+    if (count != REFCOUNTEDOBJECTISDELETED) count++;
+    return true;
+  }
+
+  bool release() {
+    if (decRef() == 0) {
+      del();
+      return true;
+    } 
+    return false;
+  }
+
+  int decRef() {
+    if (count != REFCOUNTEDOBJECTISDELETED) count--;
+    return count;
+  }
 };
 
 template<class T>
 class SharedPointer {
 public:
-  T *ptr;
-  RefCount *refs;
+  RefCountedObject<T> *ref;
 
-  SharedPointer(T *t = NULL, bool debug = false) {
-    ptr = t; 
-    refs = new RefCount(debug);
+  SharedPointer(T *t = NULL, bool cArray = false) {
+    ref = new RefCountedObject<T>(t, cArray);
   }
 
   ~SharedPointer() {
@@ -32,50 +64,49 @@ public:
   }
   
   SharedPointer(const SharedPointer<T> &b) {
-    ptr = b.ptr; 
-    refs = b.refs;
+    ref = b.ref;
     addRef();
   }
 
   const SharedPointer<T> &operator=(SharedPointer<T> &b) {
-    T *ptrBefore = ptr;
-    RefCount *refsBefore = refs;
-    ptr = b.ptr; 
-    refs = b.refs;
+    RefCountedObject<T> *refBefore = ref;
+    ref = b.ref;
     addRef();
-    refsBefore->count--;
-    if (refsBefore->count == 0) {
-      if (ptrBefore != NULL) {delete ptrBefore; ptrBefore = NULL;}
-      if (refsBefore != NULL && (!refsBefore->debug)) {delete refsBefore; refsBefore = NULL;}
-    }
+    if (refBefore != NULL) refBefore->release();
     return *this;
   }
 
   operator T*() {
-    if (refs->count<=0) return NULL;
-    return ptr;
+    return ref == NULL || ref->count <= 0 ? NULL : ref->ptr;
   }
 
-  void addRef() {
-    refs->count++;
+  bool addRef() {
+    return ref == NULL ? false : ref->addRef();
   }
 
   bool release() {
-    if (decRef() == 0) {
-      if (ptr != NULL) {delete ptr; ptr = NULL;}
-      if (refs != NULL && (!refs->debug)) {delete refs; refs = NULL;}
-      return true;
-    } 
-    return false;
+    return ref == NULL ? false : ref->release();
   }
 
   int decRef() {
-    refs->count--;
-    return refs->count;
+    return ref == NULL ? REFCOUNTEDOBJECTISDELETED : ref->decRef();
   }
 
-  int references() {
-    return refs->count;
+  int refs() {
+    return ref == NULL? REFCOUNTEDOBJECTISDELETED : ref->count;
+  }
+
+  bool setDebug(bool debug = true) {
+    if (ref == NULL) return false;
+    ref->debug = debug;
+    if (!debug) {
+      if (ref->count == REFCOUNTEDOBJECTISDELETED) {
+        ref->del(); 
+        ref = NULL;
+        return true;
+      }
+    }
+    return false;
   }
 };
 
