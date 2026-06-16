@@ -68,7 +68,7 @@ public:
     addRef();
   }
 
-  const SharedPointer<T> &operator=(SharedPointer<T> &b) {
+  const SharedPointer<T> &operator=(const SharedPointer<T> &b) {
     RefCountedObject<T> *refBefore = ref;
     ref = b.ref;
     addRef();
