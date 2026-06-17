@@ -76,9 +76,23 @@ public:
     return *this;
   }
 
-  operator T*() {
+  T* ptr() {
     return ref == NULL || ref->count <= 0 ? NULL : ref->ptr;
   }
+
+  operator T*() {
+    return ptr();
+  }
+
+  T* operator->() {
+    return ptr();
+  }
+
+  bool operator==(const SharedPointer &b) {if (ref == NULL || b.ref == NULL) return ref == NULL && b.ref == NULL; return ref->ptr == b.ref->ptr;}
+  bool operator!=(const SharedPointer &b) {return !(*this == b);}
+
+  bool operator==(const T *b) {if (ref == NULL) return false; return ref->ptr == b;}
+  bool operator!=(const T *b) {return !(*this == b);}
 
   bool addRef() {
     return ref == NULL ? false : ref->addRef();
@@ -107,6 +121,17 @@ public:
       }
     }
     return false;
+  }
+};
+
+template<class TO, class FROM>
+class sharedPointer {
+public:
+  static SharedPointer<TO> convert(const SharedPointer<FROM> &from) {
+    SharedPointer<TO> to; 
+    to.ref = reinterpret_cast<RefCountedObject<TO>*>(from.ref); 
+    to.addRef(); 
+    return to;
   }
 };
 
