@@ -17,11 +17,12 @@ public:
   int count;
   bool debug;
   bool array;
+  bool dontDeletePointer;
 
-  RefCountedObject(T *ptr = NULL, bool array = false) : ptr(ptr), array(array), count(1), debug(false) {;}
+  RefCountedObject(T *ptr = NULL, bool array = false, bool dontDeletePointer = false) : ptr(ptr), array(array), count(1), debug(false), dontDeletePointer(dontDeletePointer) {;}
 
   void del() {
-    if (ptr != NULL) {
+    if (ptr != NULL && (!dontDeletePointer)) {
       if (!array) delete ptr;
       if (array) delete[] ptr;
       ptr = NULL;
@@ -56,8 +57,8 @@ class SharedPointer {
 public:
   RefCountedObject<T> *ref;
 
-  SharedPointer(T *t = NULL, bool cArray = false) {
-    ref = new RefCountedObject<T>(t, cArray);
+  SharedPointer(T *t = NULL, bool cArray = false, bool dontDeletePointer = false) {
+    ref = new RefCountedObject<T>(t, cArray, dontDeletePointer);
   }
 
   ~SharedPointer() {
@@ -144,16 +145,13 @@ class WeakPointer {
 public:
   RefCountedObject<T> *ref;
 
-  WeakPointer(T *t = NULL, bool cArray = false) {
-    ref = new RefCountedObject<T>(t, cArray); // this will never be deleted (you need to delete the pointer yourself) (maybe you need a weak pointer of "this")
+  WeakPointer() : ref(NULL) {
   }
 
-  WeakPointer(const SharedPointer<T> &t) { // normal way of creating a weak pointer
-    ref = t.ref;
+  WeakPointer(const SharedPointer<T> &t) : ref(t.ref) {
   }
 
-  WeakPointer(const WeakPointer<T> &b) {
-    ref = b.ref;
+  WeakPointer(const WeakPointer<T> &b) : ref(b.ref) {
   }
 
   ~WeakPointer() {
@@ -221,13 +219,13 @@ public:
   }
 
   static WeakPointer<T> from(SharedPointer<T> &b) {
-    WeakPointer<T> r; 
+    WeakPointer<T> r;
     r.ref = b.ref; 
     return r;
   }
 
   static const WeakPointer<T> from(const SharedPointer<T> &b) {
-    WeakPointer<T> r; 
+    WeakPointer<T> r;
     r.ref = b.ref; 
     return r;
   }
