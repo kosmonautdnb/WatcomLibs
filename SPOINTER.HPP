@@ -250,13 +250,15 @@ public:
   static const SharedPointer<TO> convert(const SharedPointer<FROM> &from) {
     SharedPointer<TO> to; 
     to.ref = reinterpret_cast<RefCountedObject<TO>*>(from.ref); 
+    to.ref->ptr = dynamic_cast<TO*>(from.ref->ptr); // a cast may alter the ptrs value in C++
     to.addRef(); 
     return to;
   }
 
-  static SharedPointer<TO> convert(SharedPointer<FROM> &from) {
+  static SharedPointer<TO> convert(SharedPointer<FROM> from) {
     SharedPointer<TO> to; 
     to.ref = reinterpret_cast<RefCountedObject<TO>*>(from.ref); 
+    to.ref->ptr = dynamic_cast<TO*>(from.ref->ptr);
     to.addRef(); 
     return to;
   }
@@ -272,30 +274,35 @@ public:
   static WeakPointer<TO> convert(WeakPointer<FROM> &from) {
     WeakPointer<TO> to; 
     to.ref = reinterpret_cast<RefCountedObject<TO>*>(from.ref); 
+    to.ref->ptr = dynamic_cast<TO*>(from.ref->ptr);
     return to;
   }
 
   static const WeakPointer<TO> convert(const WeakPointer<FROM> &from) {
     WeakPointer<TO> to; 
     to.ref = reinterpret_cast<RefCountedObject<TO>*>(from.ref); 
+    to.ref->ptr = dynamic_cast<TO*>(from.ref->ptr);
     return to;
   }
 
   static const WeakPointer<TO> weak(const SharedPointer<FROM> &from) {
     WeakPointer<TO> to; 
     to.ref = reinterpret_cast<RefCountedObject<TO>*>(from.ref); 
+    to.ref->ptr = dynamic_cast<TO*>(from.ref->ptr);
     return to;
   }
 
-  static WeakPointer<TO> weak(SharedPointer<FROM> &from) {
+  static WeakPointer<TO> weak(SharedPointer<FROM> from) {
     WeakPointer<TO> to; 
     to.ref = reinterpret_cast<RefCountedObject<TO>*>(from.ref); 
+    to.ref->ptr = dynamic_cast<TO*>(from.ref->ptr);
     return to;
   }
 
-  static SharedPointer<TO> shared(WeakPointer<FROM> &from) {
+  static SharedPointer<TO> shared(WeakPointer<FROM> from) {
     SharedPointer<TO> to; 
     to.ref = reinterpret_cast<RefCountedObject<TO>*>(from.ref); 
+    to.ref->ptr = dynamic_cast<TO*>(from.ref->ptr);
     to.addRef(); 
     return to;
   }
@@ -303,6 +310,7 @@ public:
   static const SharedPointer<TO> shared(const WeakPointer<FROM> &from) {
     SharedPointer<TO> to; 
     to.ref = reinterpret_cast<RefCountedObject<TO>*>(from.ref); 
+    to.ref->ptr = dynamic_cast<TO*>(from.ref->ptr);
     to.addRef(); 
     return to;
   }
