@@ -81,7 +81,7 @@ int loadPCX(void *fileData, PCXLBM_U32 dataLength, PCXLBM_U32 **dest, PCXLBM_U32
   }
 #endif
 
-bool  lbmpcx_bigEndian = true;
+bool  lbmpcx_littleEndian = true; // littleEndian <> Intel, bigEndian <> Motorola
 FILE *pcxlbm_file = 0;
 void *pcxlbm_data = 0;
 PCXLBM_U32 pcxlbm_size = 0;
@@ -128,13 +128,13 @@ PCXLBM_U32 pcxlbm_tell() {
 
 PCXLBM_U32 pcxlbm_readLong() {
   PCXLBM_U32 a; pcxlbm_read(&a, 1, sizeof(PCXLBM_U32));
-  if (!lbmpcx_bigEndian) a = (((a>>24)&255)<<0) | (((a>>16)&255)<<8) | (((a>>8)&255)<<16) | (((a>>0)&255)<<24);
+  if (!lbmpcx_littleEndian) a = (((a>>24)&255)<<0) | (((a>>16)&255)<<8) | (((a>>8)&255)<<16) | (((a>>0)&255)<<24);
   return a;
 }
 
 PCXLBM_U16 pcxlbm_readShort() {
   PCXLBM_U16 a; pcxlbm_read(&a, 1, sizeof(PCXLBM_U16));
-  if (!lbmpcx_bigEndian) a = (PCXLBM_U16)((((a>>8)&255)<<0) | (((a>>0)&255)<<8));
+  if (!lbmpcx_littleEndian) a = (PCXLBM_U16)((((a>>8)&255)<<0) | (((a>>0)&255)<<8));
   return a;
 }
 
@@ -200,7 +200,7 @@ PCXLBM_S32 contains_icp(PCXLBM_U32 *pal_coord) {
 
 int loadPCX(PCXLBM_U32 **destPixels, PCXLBM_U32 *destWidth, PCXLBM_U32 *destHeight) {
 
-  lbmpcx_bigEndian = true;
+  lbmpcx_littleEndian = true;
 
   *destPixels = 0;
   *destWidth = 0;
@@ -646,7 +646,7 @@ void PCXLBM_LBMDecompressData(ILBM_HEADER *header, PCXLBM_U8 *src, PCXLBM_U8 *de
 
 int loadLBM(PCXLBM_U32 **destPixels, PCXLBM_U32 *destWidth, PCXLBM_U32 *destHeight) {
 
-  lbmpcx_bigEndian = false; // the lbms I have have little endian as encoding.. (from grafx2) (the original project seems to read them with big endian?)
+  lbmpcx_littleEndian = false;
 
   *destPixels = 0;
   *destWidth = 0;
