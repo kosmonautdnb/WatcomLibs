@@ -1131,7 +1131,11 @@ bool ADLIB_LockMemory(void *address, long byteSize) {
   Regs.w.cx = (unsigned short)(linear & 0xFFFF);
   Regs.w.si = (unsigned short)(byteSize >> 16);
   Regs.w.di = (unsigned short)(byteSize & 0xFFFF);
+#if defined(__386__)
   int386(0x31, &Regs, &Regs);
+#else
+  int86(0x31, &Regs, &Regs); // actually you don't have to lock memory in pure DOS
+#endif
   if (Regs.w.cflag)
     return false;
   return true;
@@ -1144,7 +1148,11 @@ bool ADLIB_UnlockMemory(void *address, long byteSize) {
   Regs.w.cx = (unsigned short)(linear & 0xFFFF);
   Regs.w.si = (unsigned short)(byteSize >> 16);
   Regs.w.di = (unsigned short)(byteSize & 0xFFFF);
+#if defined(__386__)
   int386(0x31, &Regs, &Regs);
+#else
+  int86(0x31, &Regs, &Regs); // actually you don't have to lock memory in pure DOS
+#endif
   if (Regs.w.cflag)
     return false;
   return true;
