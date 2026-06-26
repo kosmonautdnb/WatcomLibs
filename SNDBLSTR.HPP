@@ -6,6 +6,7 @@
 // So to say it's a minimal example of sample playback with SBEMU.
 // Currently not for DJGPP..
 // And currently missing all cli/sti, however maybe that is not a bigger problem.
+// it works with the flat (32bit /mf) and with the (16bit) huge memory model of WatcomC (/mh)
 //------------
 #ifndef __SNDBLSTR_HPP__
 #define __SNDBLSTR_HPP__
@@ -42,19 +43,24 @@ void SBL_Done();
 
 unsigned char SBL_GetSampleVolume(); // %lll0rrr0 (l = left(0..7), r = right(0..7))
 void SBL_SetSampleVolume(unsigned char data); // %lll0rrr0 (l = left(0..7), r = right(0..7))
-void SBL_StartPlayback(SBL_POINTER *dosMemory, unsigned int dosMemorySize, unsigned int div, SBL_FillCallback callback);
+void SBL_StartPlayback(SBL_POINTER *dosMemory, unsigned long dosMemorySize, unsigned long div, SBL_FillCallback callback);
 void SBL_StopPlayback();
 
 // ---------
 
-SBL_POINTER SBL_Malloc(unsigned int size);
+SBL_POINTER SBL_Malloc(unsigned long size);
 bool SBL_Free(const SBL_POINTER *mem);
-bool SBL_LockMemory(void *address, unsigned int byteSize);
-bool SBL_UnlockMemory(void *address, unsigned int byteSize);
+bool SBL_LockMemory(void *address, unsigned long byteSize);
+bool SBL_UnlockMemory(void *address, unsigned long byteSize);
 
 #ifdef __WATCOMC__
 #define WATCOMC_SOUNDBLASTER_STACK_SIZE 4096 // interrupt stack size
+#if defined(__386__)
 #define SBL_WriteSample8(__8bitptr__,__index__,__8bitvalue__) {((unsigned char*)__8bitptr__)[__index__] = (unsigned char)(__8bitvalue__);}
+#else // defined(__386__)
+void SBL_WriteByteLegacy(void *ptr, unsigned char byte); // for the huge memory model of WatcomC /mh
+#define SBL_WriteSample8(__8bitptr__,__index__,__8bitvalue__) {SBL_WriteByteLegacy(&(((unsigned char*)__8bitptr__)[__index__]), (unsigned char)(__8bitvalue__));}
+#endif // defined(__386__)
 #endif // __WATCOMC__
 
 #ifdef __DJGPP__

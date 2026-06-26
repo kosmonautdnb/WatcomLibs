@@ -123,9 +123,9 @@ unsigned short SBL_Dma = 1;
 // ------------
 
 unsigned int SBL_IsPlaying = 0;
-unsigned int SBL_PortionCount = 0;
-unsigned int SBL_PortionSize = 0;
-unsigned int SBL_PortionPlaying = 0;
+unsigned long SBL_PortionCount = 0;
+unsigned long SBL_PortionSize = 0;
+unsigned long SBL_PortionPlaying = 0;
 unsigned char *SBL_PortionOutput = NULL;
 SBL_FillCallback SBL_Callback = NULL;
 
@@ -138,7 +138,6 @@ const int SBL_Interrupts[]  = {-1,-1,0xA,0xB,-1,0xD,-1,0xF,-1,-1,0x72,0x73,0x74,
 unsigned short SBL_Interrupt = 0;
 
 // ------------
-
 #define SBL_ServiceInterrupt_length 8192
 #pragma off(check_stack)
 void SBL_InterruptPart() {
@@ -146,7 +145,7 @@ void SBL_InterruptPart() {
     SBL_PortionPlaying++;
     if (SBL_Callback != NULL) {
       int fillUpPortion = (SBL_PortionPlaying+1)%SBL_PortionCount;
-      unsigned char *writeTo = SBL_PortionOutput+SBL_PortionSize*fillUpPortion;
+      unsigned char *writeTo = SBL_PortionOutput + (unsigned long)SBL_PortionSize*fillUpPortion;
       SBL_Callback(writeTo,SBL_PortionSize,SBL_PortionSize*(SBL_PortionPlaying+1));
     }
   }
@@ -159,17 +158,50 @@ void SBL_InterruptPart() {
 typedef void (__interrupt __far *SBL_InterruptHandler)();
 SBL_InterruptHandler SBL_OldInterruptVector = NULL;
 char SBL_interrupt_stack[WATCOMC_SOUNDBLASTER_STACK_SIZE]; // just a 4k stack
-void *SBL_old_stack_ptr;
+#if defined(__386__) || defined(__DJGPP__)
+  void *SBL_old_stack_ptr;
+#else // defined(__386__) || defined(__DJGPP__)
+  unsigned short SBL_old_stack_ptr;
+#endif // defined(__386__) || defined(__DJGPP__)
 unsigned short SBL_old_stack_seg;
 unsigned short SBL_ax;
+unsigned short SBL_old_ds;
+unsigned short SBL_ds;
 #pragma off(check_stack)
 void SBL_ServiceInterrupt() {
   SBL_InterruptPart();
   if (SBL_Irq > 7) outp(0xA0,0x20);
   outp(0x20,0x20);
 }
+
+#if defined(__386__) || defined(__DJGPP__)
+#else // defined(__386__) || defined(__DJGPP__)
+unsigned short SBL_write_segment;
+unsigned short SBL_write_offset;
+unsigned char SBL_write_byte;
+
+void SBL_WriteByteLegacy(void *ptr, unsigned char byte) { // all that here is for /mh the huge 286er 16 bit model of WatcomC
+  SBL_write_segment = FP_SEG(ptr);
+  SBL_write_offset = FP_OFF(ptr);
+  SBL_write_byte = byte;
+  __asm {
+    push ds
+    push di
+    push ax
+    mov di,SBL_write_offset
+    mov al,SBL_write_byte
+    mov ds,SBL_write_segment
+    mov ds:[di],al
+    pop ax
+    pop di
+    pop ds
+  }
+}
+#endif // defined(__386__) || defined(__DJGPP__)
+
 void __interrupt __far SBL_ServiceInterruptWrapper() {
   // sadly around here are some push/pops I can't get rid off even with #pragma aux, there is no declspec(naked) in watcomc11
+#if defined(__386__) || defined(__DJGPP__)
   __asm {
     mov SBL_old_stack_ptr,esp
     mov SBL_old_stack_seg,ss
@@ -177,11 +209,27 @@ void __interrupt __far SBL_ServiceInterruptWrapper() {
     mov ss,SBL_ax
     lea esp,SBL_interrupt_stack[WATCOMC_SOUNDBLASTER_STACK_SIZE]
   }
+#else // defined(__386__) || defined(__DJGPP__)
+  __asm {
+    mov SBL_old_stack_ptr,sp
+    mov SBL_old_stack_seg,ss
+    mov SBL_ax,ds
+    mov ss,SBL_ax
+    lea sp,SBL_interrupt_stack[WATCOMC_SOUNDBLASTER_STACK_SIZE]
+  }
+#endif // defined(__386__) || defined(__DJGPP__)
   SBL_ServiceInterrupt();
+#if defined(__386__) || defined(__DJGPP__)
   __asm {
     mov esp,SBL_old_stack_ptr
     mov ss,SBL_old_stack_seg
   }
+#else // defined(__386__) || defined(__DJGPP__)
+  __asm {
+    mov sp,SBL_old_stack_ptr
+    mov ss,SBL_old_stack_seg
+  }
+#endif // defined(__386__) || defined(__DJGPP__)
 }
 #pragma on(check_stack)
 #endif // __WATCOMC__
@@ -212,29 +260,39 @@ void SBL_WriteDSP(unsigned char value) {while(SBL_ReadPort(SBL_DSP_DATA_AND_COMM
 
 #ifdef __WATCOMC__
 
-bool SBL_LockMemory(void *address, unsigned int byteSize) {
+bool SBL_LockMemory(void *address, unsigned long byteSize) {
   union REGS Regs;
-  unsigned int linear = (unsigned int)address;
+  unsigned long linear = (unsigned long)address;
   Regs.w.ax = 0x600;
   Regs.w.bx = (unsigned short)(linear >> 16);
   Regs.w.cx = (unsigned short)(linear & 0xFFFF);
   Regs.w.si = (unsigned short)(byteSize >> 16);
   Regs.w.di = (unsigned short)(byteSize & 0xFFFF);
+#if defined(__386__) || defined(__DJGPP__)
   int386(0x31, &Regs, &Regs);
+#else // defined(__386__) || defined(__DJGPP__)
+  //int86(0x31, &Regs, &Regs); // actually you don't have to lock memory in pure DOS
+  return true;
+#endif // defined(__386__) || defined(__DJGPP__)
   if (Regs.w.cflag)
     return false;
   return true;
 }
 
-bool SBL_UnlockMemory(void *address, unsigned int byteSize) {
+bool SBL_UnlockMemory(void *address, unsigned long byteSize) {
   union REGS Regs;
-  unsigned int linear = (unsigned int)address;
+  unsigned long linear = (unsigned long)address;
   Regs.w.ax = 0x601;
   Regs.w.bx = (unsigned short)(linear >> 16);
   Regs.w.cx = (unsigned short)(linear & 0xFFFF);
   Regs.w.si = (unsigned short)(byteSize >> 16);
   Regs.w.di = (unsigned short)(byteSize & 0xFFFF);
+#if defined(__386__) || defined(__DJGPP__)
   int386(0x31, &Regs, &Regs);
+#else // defined(__386__) || defined(__DJGPP__)
+  //int86(0x31, &Regs, &Regs); // actually you don't have to lock memory in pure DOS
+  return true;
+#endif // defined(__386__) || defined(__DJGPP__)
   if (Regs.w.cflag)
     return false;
   return true;
@@ -244,13 +302,13 @@ bool SBL_UnlockMemory(void *address, unsigned int byteSize) {
 
 #ifdef __DJGPP__
 
-bool SBL_LockMemory(void *address, unsigned int byteSize) {
+bool SBL_LockMemory(void *address, unsigned long byteSize) {
   _go32_dpmi_lock_data(address,byteSize);
   // missing _go32_dpmi_lock_code();
   return true;
 }
 
-bool SBL_UnlockMemory(void *address, unsigned int byteSize) {
+bool SBL_UnlockMemory(void *address, unsigned long byteSize) {
   __UNUSED(address);
   __UNUSED(byteSize);
   // missing
@@ -263,13 +321,13 @@ bool SBL_UnlockMemory(void *address, unsigned int byteSize) {
 
 #define SBL_LockFunction(__func__, __size__) SBL_LockMemory((void*)__func__,__size__)
 
-#define SBL_LockRegion(__start__, __end__) SBL_LockMemory(&(__start__),(unsigned int)(__end__)-(unsigned int)(__start__))
+#define SBL_LockRegion(__start__, __end__) SBL_LockMemory(&(__start__),(unsigned long)(__end__)-(unsigned long)(__start__))
 
 #define SBL_Unlock(__var__) SBL_UnlockMemory(&(__var__),sizeof(__var__))
 
 #define SBL_UnlockFunction(__func__, __size__) SBL_UnlockMemory((void*)__func__,__size__)
 
-#define SBL_UnlockRegion(__start__, __end__) SBL_UnlockMemory(&(__start__),(unsigned int)(__end__)-(unsigned int)(__start__))
+#define SBL_UnlockRegion(__start__, __end__) SBL_UnlockMemory(&(__start__),(unsigned long)(__end__)-(unsigned long)(__start__))
 
 void SBL_DisableInterrupt() {
   if (SBL_Irq < 8) {
@@ -305,24 +363,46 @@ void SBL_EnableInterrupt() {
 
 SBL_POINTER SBL_NullPointer() {SBL_POINTER k; k.selector = 0; k.segment = 0; k.ptr = NULL; return k;}
 
-SBL_POINTER SBL_Pointer(unsigned short selector, unsigned short segment) {SBL_POINTER k; k.selector = selector; k.segment = segment; k.ptr = (void*)((unsigned int)segment * 16); return k;}
+#if defined(__386__) || defined(__DJGPP__)
+#define FARPNTR(__seg__,__ofs__) ((unsigned long)(__seg__)*16+(__ofs__))
+#else // defined(__386__) || defined(__DJGPP__)
+#define FARPNTR(__seg__,__ofs__) MK_FP(__seg__,__ofs__)
+#endif// defined(__386__) || defined(__DJGPP__)
 
-SBL_POINTER SBL_Malloc(unsigned int size) {
+SBL_POINTER SBL_Pointer(unsigned short selector, unsigned short segment) {SBL_POINTER k; k.selector = selector; k.segment = segment; k.ptr = (void*)FARPNTR(segment,0); return k;}
+
+SBL_POINTER SBL_Malloc(unsigned long size) {
   if (size>0x10000) return SBL_NullPointer();
   union REGS regs;
   regs.w.ax = 0x100;
   regs.w.bx = (unsigned short)((size*2+15)/16); // size is *2 here
   regs.w.cflag = false;
+#if defined(__386__) || defined(__DJGPP__)
   int386(0x31, &regs, &regs);
+#else // defined(__386__) || defined(__DJGPP__)
+  regs.w.ax = 0x4800;
+  // bx is paragraphs
+  int86(0x21, &regs, &regs);
+  // ax is segment here
+  regs.w.dx = 0; // selector is 0
+#endif // defined(__386__) || defined(__DJGPP__)
   if (regs.w.cflag) {
     return SBL_NullPointer();
   }
   SBL_POINTER b = SBL_Pointer(regs.w.dx,regs.w.ax); // dma should not cross 64k boundaries
-  unsigned int a = (unsigned int)b.ptr;
-  unsigned int c = a + size;
+#if defined(__386__) || defined(__DJGPP__)
+  unsigned long a = (unsigned long)b.ptr;
+  unsigned long c = a + size;
   if ((c>>16)>(a>>16)) {
     b.ptr = (void*)c;
   }
+#else // defined(__386__) || defined(__DJGPP__)
+  unsigned long a = (unsigned long)b.segment * 16;
+  unsigned long c = a + size;
+  if ((c>>16)>(a>>16)) {
+    b.ptr = MK_FP(b.segment+(size+15)/16,0);
+  }
+#endif // defined(__386__) || defined(__DJGPP__)
   return b;
 }
 
@@ -331,7 +411,14 @@ bool SBL_Free(const SBL_POINTER *mem) {
   regs.w.ax = 0x101;
   regs.w.dx = mem->selector;
   regs.w.cflag = false;
+#if defined(__386__) || defined(__DJGPP__)
   int386(0x31, &regs, &regs);
+#else // defined(__386__) || defined(__DJGPP__)
+  regs.w.ax = 0x4900;
+  SREGS sregs;
+  sregs.es = mem->segment;
+  int86x(0x21, &regs, &regs, &sregs);
+#endif // defined(__386__) || defined(__DJGPP__)
   if (regs.w.cflag) {
     return false;
   }
@@ -351,8 +438,12 @@ void SBL_EndDMA() {
   outp(SBL_dma_clear_flipflop[SBL_Dma], 0);
 }
 
-void SBL_StartDMA(void *address, unsigned int byteSize) {
-  unsigned int offs = (unsigned int)address;
+void SBL_StartDMA(void *address, unsigned long byteSize) {
+#if defined(__386__) || defined(__DJGPP__)
+  unsigned long offs = (unsigned long)address;
+#else // defined(__386__) || defined(__DJGPP__)
+  unsigned long offs = (unsigned long)FP_SEG(address)*16;
+#endif // defined(__386__) || defined(__DJGPP__)
   byteSize--;
   outp(SBL_dma_single_mask[SBL_Dma], (SBL_Dma & 0x3) | 4);
   outp(SBL_dma_clear_flipflop[SBL_Dma], 0);
@@ -382,14 +473,14 @@ bool SBL_Reset() {
 unsigned char SBL_GetSampleVolume() {return SBL_ReadMixer(SBL_MIX_DSP_VOLUME_SBPRO);}
 void SBL_SetSampleVolume(unsigned char data) {SBL_WriteMixer(SBL_MIX_DSP_VOLUME_SBPRO,data);}
 
-void SBL_SetSampleRate(int freq) {
-  int tc = 256-(1000000 / freq);
+void SBL_SetSampleRate(long freq) {
+  long tc = 256-(1000000 / freq);
   SBL_WriteDSP(SBL_CMD_SET_SAMPLE_RATE);
   SBL_WriteDSP((unsigned char)tc);
 }
 
 unsigned short SBL_SampleRateCorrected(unsigned short sampleRate) {
-  int tc = 256-(1000000 / sampleRate);
+  long tc = 256-(1000000 / sampleRate);
   return (unsigned short)(1000000/-(tc-256));
 }
 
@@ -404,7 +495,7 @@ void SBL_StopPlayback() {
   SBL_WriteDSP(SBL_CMD_DISABLE_SPEAKER);
 }
 
-void SBL_StartPlayback(SBL_POINTER *dosMemory, unsigned int dosMemorySize, unsigned int div, SBL_FillCallback callback) {
+void SBL_StartPlayback(SBL_POINTER *dosMemory, unsigned long dosMemorySize, unsigned long div, SBL_FillCallback callback) {
   SBL_StopPlayback();
   SBL_SetSampleVolume(0xEE);
   if ((dosMemorySize % div)!=0) {
@@ -415,7 +506,7 @@ void SBL_StartPlayback(SBL_POINTER *dosMemory, unsigned int dosMemorySize, unsig
   SBL_StartDMA(dosMemory->ptr, dosMemorySize);
   SBL_SetSampleRate(SBL_SampleRate);
   SBL_WriteDSP(SBL_CMD_ENABLE_SPEAKER);
-  unsigned int oneSpan = dosMemorySize / div;
+  unsigned long oneSpan = dosMemorySize / div;
   SBL_PortionCount = div;
   SBL_PortionSize = oneSpan;
   SBL_PortionPlaying = 0;
@@ -496,21 +587,23 @@ void SBL_Done() {
 }
 
 // ------------
-
+#pragma off(check_stack)
 void SBL_TestCallback(unsigned char *buffer, unsigned int bufferSize, unsigned int playPos) {
   for (unsigned int i = 0; i < bufferSize; i++) {
     SBL_WriteSample8(buffer,i,(playPos/100) & 1 ? 96 : 16);
     playPos++;
   }
 }
-
+#pragma on(check_stack)
 // ------------
 
 void soundBlasterTestFunction() {
+
   SBL_Init();
 
-  unsigned int size = 16384;
+  unsigned long size = 16384;
   SBL_POINTER p = SBL_Malloc(size);
+
   SBL_LockFunction(SBL_TestCallback,1024);
   SBL_StartPlayback( &p, size,2,SBL_TestCallback);
 
