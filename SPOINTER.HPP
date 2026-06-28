@@ -102,6 +102,14 @@ public:
     return ptr();
   }
 
+  T& operator[](int index) {
+    return ptr()[index];
+  }
+
+  const T& operator[](int index) const {
+    return ptr()[index];
+  }
+
   bool operator==(const SharedPointer<T> &b) {if (ref == NULL || b.ref == NULL) return ref == NULL && b.ref == NULL; return ref->ptr == b.ref->ptr;}
   bool operator!=(const SharedPointer<T> &b) {return !(*this == b);}
 
@@ -202,6 +210,14 @@ public:
 
   const T* operator->() const {
     return ptr();
+  }
+
+  T& operator[](int index) {
+    return ptr()[index];
+  }
+
+  const T& operator[](int index) const {
+    return ptr()[index];
   }
 
   SharedPointer<T> shared() {
