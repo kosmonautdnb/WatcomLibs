@@ -81,5 +81,12 @@ int main(int argc, char *argv[]) {
     printf("glEGA() 640x480 is not available.\n");
   }
 
+  printf("Press a key to test glEGA() 320x240;\n"); getch();
+  if (glEGA(320,240)) {
+    displayAndWait();
+  } else {
+    printf("glEGA() 320x240 is not available.\n");
+  }
+
   return 0;
 }
