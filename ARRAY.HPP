@@ -23,11 +23,11 @@ public:
     data = new T[(unsigned int)allocatedSize]; // no 64 bit new
   }
 
-#ifdef __DJGPP__
-#if __cplusplus >= 201103
-  Array(const Array &b) = default;
-#endif
-#endif
+//#ifdef __DJGPP__
+//#if __cplusplus >= 201103
+//  Array(const Array &b) = default; // maybe better to have the copy constructor implicitely defined default
+//#endif
+//#endif
 
   const Array &operator=(const Array &b) {
     T *copy = new T[(unsigned int)b.allocatedSize]; // no 64 bit new
