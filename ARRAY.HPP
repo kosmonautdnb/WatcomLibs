@@ -24,7 +24,9 @@ public:
   }
 
 #ifdef __DJGPP__
+#if __cplusplus >= 201103
   Array(const Array &b) = default;
+#endif
 #endif
 
   const Array &operator=(const Array &b) {
