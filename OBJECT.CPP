@@ -107,7 +107,7 @@ bool equals(const uint64_t &a, const uint64_t &b) {
 }
 
 bool equals(const int64_t &a, const uint64_t &b) {
-  return a == b;
+  return (uint64_t)a == b;
 }
 
 bool equals(const float &a,const float &b) {

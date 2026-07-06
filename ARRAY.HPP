@@ -23,6 +23,10 @@ public:
     data = new T[(unsigned int)allocatedSize]; // no 64 bit new
   }
 
+#ifdef __DJGPP__
+  Array(const Array &b) = default;
+#endif
+
   const Array &operator=(const Array &b) {
     T *copy = new T[(unsigned int)b.allocatedSize]; // no 64 bit new
     for (size_t i = 0; i < b.usedSize; i++)

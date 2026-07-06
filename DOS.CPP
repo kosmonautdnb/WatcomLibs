@@ -96,7 +96,7 @@ String currentTimeString() {
   int rtc_seconds = rtcRead(0);
   int rtc_minutes = rtcRead(2);
   int rtc_hours   = rtcRead(4);
-  int rtc_weekday = rtcRead(6);
+  //int rtc_weekday = rtcRead(6);
   int rtc_day     = rtcRead(7);
   int rtc_month   = rtcRead(8);
   int rtc_year    = rtcRead(9);
