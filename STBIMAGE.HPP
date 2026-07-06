@@ -1,5 +1,6 @@
 #include "types.hpp"
 #define STBI_NO_SIMD
+#define STBI_NO_THREAD_LOCALS
 #define MEMORYMANAGERBUGFIX
 
 #ifdef MEMORYMANAGERBUGFIX // WatcomC crashes with bigger images without this
