@@ -331,6 +331,7 @@ public:
   String old_substr(int32_t firstIndex, int32_t lastIndex) const {
     if (lastIndex == -1) return substr(firstIndex);
     if (firstIndex == -1) return "";
+    if (lastIndex < firstIndex) return "";
     if (firstIndex >= length()) return String(*this);
     String r;
     r.resize(lastIndex-firstIndex);
