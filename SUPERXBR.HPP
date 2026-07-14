@@ -1,5 +1,4 @@
 //// *** Super-xBR code begins here - MIT LICENSE *** ///
-
 /*
 
 *******  Super XBR Scaler  *******
@@ -34,6 +33,7 @@ and updated for compliance with WatcomC++ 11.0 by Stefan Mader on 14th of June 2
 
 you need #define __SUPERXBR_IMPLEMENTATION__ before including sbxr.hpp in exactly one of your source files.
 
+comment by Stefan Mader: It may be that there is some stuff here not converted correctly..
 */
 #ifndef __SUPERXBR_HPP__
 #define __SUPERXBR_HPP__
