@@ -127,19 +127,19 @@ PCXLBM_U32 pcxlbm_tell() {
 }
 
 PCXLBM_U32 pcxlbm_readLong() {
-  PCXLBM_U32 a; pcxlbm_read(&a, 1, sizeof(PCXLBM_U32));
+  PCXLBM_U32 a = 0; pcxlbm_read(&a, 1, sizeof(PCXLBM_U32));
   if (!lbmpcx_littleEndian) a = (((a>>24)&255)<<0) | (((a>>16)&255)<<8) | (((a>>8)&255)<<16) | (((a>>0)&255)<<24);
   return a;
 }
 
 PCXLBM_U16 pcxlbm_readShort() {
-  PCXLBM_U16 a; pcxlbm_read(&a, 1, sizeof(PCXLBM_U16));
+  PCXLBM_U16 a = 0; pcxlbm_read(&a, 1, sizeof(PCXLBM_U16));
   if (!lbmpcx_littleEndian) a = (PCXLBM_U16)((((a>>8)&255)<<0) | (((a>>0)&255)<<8));
   return a;
 }
 
 PCXLBM_U8 pcxlbm_readByte() {
-  PCXLBM_U8 a; pcxlbm_read(&a, 1, sizeof(PCXLBM_U8));
+  PCXLBM_U8 a = 0; pcxlbm_read(&a, 1, sizeof(PCXLBM_U8));
   return a;
 }
 

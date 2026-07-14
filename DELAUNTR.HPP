@@ -357,7 +357,7 @@ bool Delaunator::delaunator(Array<double> const* in_coords) {
   // initialize a hash table for storing edges of the advancing convex hull
   m_hash_size = static_cast<size_t>(llroundx2(ceil(sqrt(n))));
   m_hash.resize(m_hash_size);
-  {for (int i = 0; i < m_hash.size(); i++)  m_hash[i] = INVALID_INDEX;}
+  {for (int i = 0; i < (int)m_hash.size(); i++)  m_hash[i] = INVALID_INDEX;}
   //std::fill(m_hash.begin(), m_hash.end(), INVALID_INDEX); :mad:
 
   // initialize arrays for tracking the edges of the advancing convex hull
