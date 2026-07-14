@@ -105,7 +105,8 @@ __inline float halffloat(unsigned short f) { // not tested
     }
   }
   unsigned int fbits = fsign|fexponent|fmantissa;
-  return *((float*)&fbits);
+  void *c2 = (void*)&fbits;
+  return *((float*)c2);
 }
 __inline double signd(double a) {return a < 0 ? -1 : a == 0 ? 0 : 1;}
 __inline double absd(double a) {return a < 0 ? -a : a;}
