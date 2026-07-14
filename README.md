@@ -88,6 +88,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - APP_OGG.CPP - Let's you play OGG/Vorbis files via the Sound Blaster Interface (SBEMU tested, works).
 - APP_PHYS.CPP - tiny app to test the 2D physics library "Physac", use the mouse and mouse buttons.
 - APP_SA2.CPP - Surprise!Productions Adlib Tracker 2.0 Soundblaster replayer. Tracker: https://www.pouet.net/prod.php?which=70029
+- APP_SCAL.CPP - A 2 times upscaling of an image using the SuperXBR pixel art scaling algorithm.
 - APP_SPKT.CPP - a very rudimentary pc beeper tracker, not reprogramming the timerfrequency and just one voice at a time. Very simple export format. (**too slow for DosBOX**)
 - APP_SPPL.C - a simple C program, a simple replayer for tunes exported by Speaker Tracker. (WatcomC in real mode around 24Kb).
 - APP_SVG.CPP - a very basic loading of an SVG (Vector Graphics) image and displaying it.
@@ -151,7 +152,8 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - STBRECT.HPP - Texture atlas generator  https://github.com/nothings/obbg/tree/master/stb  
 - STBOGG.HPP - STB_Vorbis.h to decode OGG (sound) files. https://github.com/nothings/obbg/tree/master/stb  
 - STBPRINT.HPP - STB_SPRINTF.h some good replacements for snprintf/vsprintf etc. https://github.com/nothings/obbg/tree/master/stb  
-- SUMARETB.HPP - (float) Summed Area Table / Integral Image  
+- SUMARETB.HPP - (float) Summed Area Table / Integral Image
+- SUPERXBR.HPP - The SuperXBR pixel art scaling algorithm https://github.com/janert/pixelscalers
 - TEXTURES.HPP - a basic "texture cache"  
 - TINYEXPR.HPP - a math expression solver (string input)  https://github.com/codeplea/tinyexpr  
 - TRUETYPE.HPP - true type font rendering (also in OpenGL). Wraping of STBTTF.HPP  
