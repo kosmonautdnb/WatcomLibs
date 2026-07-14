@@ -39,6 +39,7 @@ comment by Stefan Mader: It may be that there is some stuff here not converted c
 #define __SUPERXBR_HPP__
 
 void superXBR(unsigned int* source, unsigned int* dest, int sourceWidth, int sourceHeight);
+void eagle(unsigned int* source, unsigned int* dest, int sourceWidth, int sourceHeight);
 
 #ifdef __SUPERXBR_IMPLEMENTATION__
 
@@ -365,6 +366,27 @@ void superXBR(unsigned int* source, unsigned int* dest, int sourceWidth, int sou
 }
 
 //// *** Super-xBR code ends here - MIT LICENSE *** ///
+
+#define EAGLE_X(__X__) ( (__X__<0)?0: ((__X__>=sourceWidth)?sourceWidth-1:__X__))
+#define EAGLE_Y(__Y__) ( (__Y__<0)?0: ((__Y__>=sourceHeight)?sourceHeight-1:__Y__))
+
+void eagle(unsigned int* source, unsigned int* dest, int sourceWidth, int sourceHeight) {
+  for (int y = 0; y < sourceHeight*2; y++) {
+    for (int x = 0; x < sourceWidth*2; x++) {
+      int kx=x/2,ky=y/2;
+      unsigned int col0 = source[kx+ky*sourceWidth];
+      unsigned int cols[3];
+      switch((x & 1)+(y & 1)*2) {
+        case 0: {cols[0] = source[EAGLE_X(kx)+EAGLE_Y(ky-1)*sourceWidth]; cols[1] = source[EAGLE_X(kx-1)+EAGLE_Y(ky-1)*sourceWidth]; cols[2] = source[EAGLE_X(kx-1)+EAGLE_Y(ky)*sourceWidth];} break;
+        case 1: {cols[0] = source[EAGLE_X(kx)+EAGLE_Y(ky-1)*sourceWidth]; cols[1] = source[EAGLE_X(kx+1)+EAGLE_Y(ky-1)*sourceWidth]; cols[2] = source[EAGLE_X(kx+1)+EAGLE_Y(ky)*sourceWidth];} break;
+        case 2: {cols[0] = source[EAGLE_X(kx)+EAGLE_Y(ky+1)*sourceWidth]; cols[1] = source[EAGLE_X(kx-1)+EAGLE_Y(ky+1)*sourceWidth]; cols[2] = source[EAGLE_X(kx-1)+EAGLE_Y(ky)*sourceWidth];} break;
+        case 3: {cols[0] = source[EAGLE_X(kx)+EAGLE_Y(ky+1)*sourceWidth]; cols[1] = source[EAGLE_X(kx+1)+EAGLE_Y(ky+1)*sourceWidth]; cols[2] = source[EAGLE_X(kx+1)+EAGLE_Y(ky)*sourceWidth];} break;
+      }
+      if (cols[0] == cols[1] && cols[1] == cols[2]) col0 = cols[0];
+      dest[x+y*sourceWidth*2] = col0;
+    }
+  }
+}
 
 #endif // __SUPERXBR_IMPLEMENTATION__
 #endif //__SUPERXBR_HPP__
