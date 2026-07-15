@@ -40,6 +40,7 @@ comment by Stefan Mader: It may be that there is some stuff here not converted c
 
 void superXBR(unsigned int* source, unsigned int* dest, int sourceWidth, int sourceHeight);
 void eagle(unsigned int* source, unsigned int* dest, int sourceWidth, int sourceHeight);
+void epx(unsigned int* source, unsigned int* dest, int sourceWidth, int sourceHeight);
 
 #ifdef __SUPERXBR_IMPLEMENTATION__
 
@@ -367,8 +368,8 @@ void superXBR(unsigned int* source, unsigned int* dest, int sourceWidth, int sou
 
 //// *** Super-xBR code ends here - MIT LICENSE *** ///
 
-#define EAGLE_X(__X__) ( (__X__<0)?0: ((__X__>=sourceWidth)?sourceWidth-1:__X__))
-#define EAGLE_Y(__Y__) ( (__Y__<0)?0: ((__Y__>=sourceHeight)?sourceHeight-1:__Y__))
+#define EAGLE_X(__X__) ( ((__X__)<0)?0: (((__X__)>=sourceWidth)?sourceWidth-1:(__X__)))
+#define EAGLE_Y(__Y__) ( ((__Y__)<0)?0: (((__Y__)>=sourceHeight)?sourceHeight-1:(__Y__)))
 
 void eagle(unsigned int* source, unsigned int* dest, int sourceWidth, int sourceHeight) {
   for (int y = 0; y < sourceHeight*2; y++) {
@@ -382,8 +383,28 @@ void eagle(unsigned int* source, unsigned int* dest, int sourceWidth, int source
         case 2: {cols[0] = source[EAGLE_X(kx)+EAGLE_Y(ky+1)*sourceWidth]; cols[1] = source[EAGLE_X(kx-1)+EAGLE_Y(ky+1)*sourceWidth]; cols[2] = source[EAGLE_X(kx-1)+EAGLE_Y(ky)*sourceWidth];} break;
         case 3: {cols[0] = source[EAGLE_X(kx)+EAGLE_Y(ky+1)*sourceWidth]; cols[1] = source[EAGLE_X(kx+1)+EAGLE_Y(ky+1)*sourceWidth]; cols[2] = source[EAGLE_X(kx+1)+EAGLE_Y(ky)*sourceWidth];} break;
       }
-      if (cols[0] == cols[1] && cols[1] == cols[2]) col0 = cols[0];
+      if (cols[0] == cols[1] && cols[0] == cols[2]) col0 = cols[0];
       dest[x+y*sourceWidth*2] = col0;
+    }
+  }
+}
+
+void epx(unsigned int* source, unsigned int* dest, int sourceWidth, int sourceHeight) {
+  for (int y = 0; y < sourceHeight; y++) {
+    for (int x = 0; x < sourceWidth; x++) {
+      unsigned int P = source[x+y*sourceWidth];
+      unsigned int A = source[x+EAGLE_Y(y-1)*sourceWidth];
+      unsigned int B = source[EAGLE_X(x+1)+y*sourceWidth];
+      unsigned int C = source[EAGLE_X(x-1)+y*sourceWidth];
+      unsigned int D = source[x+EAGLE_Y(y+1)*sourceWidth];
+      //bool same = false;
+      //if (A==B && B==C && C==D) same = true;
+      //if (B==C && C==D && D==A) same = true;
+      //if (C==D && D==A && A==B) same = true;
+      dest[(x*2+0)+y*2*sourceWidth*2] = (C==A) && (C !=D) && (A != B) ? A : P;
+      dest[(x*2+1)+y*2*sourceWidth*2] = (A==B) && (A !=C) && (B != D) ? B : P;
+      dest[(x*2+0)+(y*2+1)*sourceWidth*2] = (D==C) && (D !=B) && (C != A) ? C : P;
+      dest[(x*2+1)+(y*2+1)*sourceWidth*2] = (B==D) && (B !=A) && (D != C) ? D : P;
     }
   }
 }
