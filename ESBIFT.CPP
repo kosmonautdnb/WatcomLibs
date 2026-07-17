@@ -51,21 +51,19 @@ const char* saveFileNames = "c:/video/2/a%04d.png";
 #define PAIRSPERMIPLEVEL 64
 #define STEPCOUNT 40
 #define STEPSIZE 0.25f
-#define STEPINTENSITY 3
+#define STEPINTENSITY 3 // may be kept 1
 #define MIPRATIO_FRONT (0)
-#define MIPRATIO_DISTANCE (0.5f)
-#define SCALEINVARIANCE (0.25) // man verliert das feature ausserhalb
+#define MIPRATIO_DISTANCE (0.5f) // this has to be <= 0.5 currently (pictures maybe have to be 1280x720)
+#define SCALEINVARIANCE (0.25)
 #define ROTATIONINVARIANCE (10.f*3.14159f/180.f)
 #define ITERATIVE 1 // 0 or 1 (non iterative not working, yet)
-#define SAFEDELETE(__P__) {if ((__P__)!=NULL) {delete (__P__); (__P__) = NULL;}}
-#define CLEARPOINTERARRAY(__A__) {for(int i = 0; i < (__A__).size(); i++) {SAFEDELETE((__A__)[i]);} (__A__).clear();}
 #define LUMAR (0.25)
 #define LUMAG (0.6)
 #define LUMAB (0.15)
-#define FORMULA(__A__) pow(__A__,2.0)
+#define FORMULA(__A__) pow(__A__,2.0) // ^2 seems to be better for crisper mipmap filtering
 #define OVERSAMPLE 2
-#define ALLOWEDVARIANCE 10
 #define BORDER 50
+#define ALLOWEDVARIANCE 10 // man verliert das feature ausserhalb
 
 #if !ITERATIVE
 #undef MIPRATIO_DISTANCE
@@ -75,6 +73,9 @@ const char* saveFileNames = "c:/video/2/a%04d.png";
 #undef STEPSIZE
 #define STEPSIZE (0.002f*5)
 #endif
+
+#define SAFEDELETE(__P__) {if ((__P__)!=NULL) {delete (__P__); (__P__) = NULL;}}
+#define CLEARPOINTERARRAY(__A__) {for(int i = 0; i < (__A__).size(); i++) {SAFEDELETE((__A__)[i]);} (__A__).clear();}
 
 float _ifrand_(int index, float minf, float maxf) {
   float i = (float)index * 123.4567;
@@ -288,10 +289,13 @@ public:
 };
 Array<Feature> features;
 
-bool sampleDescriptor(FeatureImage *img, Feature *f, Descriptor *d) {
+bool sampleDescriptor(FeatureImage *img, Feature *f, Descriptor *d, int onlyMipLevel = -1) {
   bool ret = true;
   int mipCount = d->mipLevels.size();
-  for (int m = ((int)img->mipMaps.size()-1)*MIPRATIO_DISTANCE; m >= ((int)img->mipMaps.size()-1)*MIPRATIO_FRONT; m--) {
+  int start = ((int)img->mipMaps.size()-1)*MIPRATIO_DISTANCE;
+  int end = ((int)img->mipMaps.size()-1)*MIPRATIO_FRONT;
+
+  for (int m = start; m >= end; m--) {
     if (m >= descriptorPairs.size()) break;
     FeatureMipMap *mipLevel = img->mip(m); if (mipLevel == NULL) break;
     DescriptorMipLevelPairs *pairs = descriptorPairs[m]; int pairCount = pairs->pairs.size();
@@ -359,7 +363,10 @@ bool refineFeatureOneStep(FeatureImage *img, int mipLevel, Feature *f, Descripto
   float xVariance = fabs(maxDeltaX-minDeltaX)/maxX; // this is 1 if in one direction and 0 if in both directions
   float yVariance = fabs(maxDeltaY-minDeltaY)/maxY;
 
-  float l = sqrt(moveX*moveX + moveY*moveY); if (l != 0) l = 1.f/l;
+  float l;
+  //l = sqrt(moveX*moveX + moveY*moveY); 
+  l = fabs(moveX)+fabs(moveY); // this manhatten distance seems to be better maybe because of x,y variance
+  if (l != 0) l = 1.f/l;
   if (overall > 0) l *= (float)changes/overall;
   f->x += moveX * l * stepSize * xVariance;
   f->y += moveY * l * stepSize * yVariance;
@@ -561,7 +568,7 @@ int main(int argc, const char *argv[]) {
       if (first) {first = false; placeRandomFeatures(here);}
       if (!ITERATIVE) {for (int i = 0; i < features.size(); i++) {features[i].x=0.5;features[i].y=0.5;}}
       refineFeatures(here);
-      //if (ITERATIVE) {reSampleDescriptors(here);} // reSample should be called just in longer timespans somehow a feature encodes the whole scenery on lower levels
+      //if (ITERATIVE) {reSampleDescriptors(here);}
       displayImage(here);
       displayFeatures(here);
       glRefresh();
