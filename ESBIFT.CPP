@@ -28,20 +28,27 @@
 #include <conio.h>
 #include <math.h>
 #include <string.h>
+#ifdef __WATCOMC__
 #include <i86.h>
+#endif
+#ifdef __DJGPP__
+#include <dos.h>
+#endif
 #include "ARRAY.HPP"
 #include "IMAGE.HPP"
 #include "GL.H"
 
 // CONFIG
-#define PLAYBACK 1
-#define SAVE 0
+#define PLAYBACK 0
+#define SAVE 1
 
 #define XRES 640
 #define YRES 480
 
-const char* loadFileNames = "c:/video/1/a%04d.png";
-const char* saveFileNames = "c:/video/2/a%04d.png";
+const char* loadFileNames = "c:/video/_streetc/auto%04d.png";
+//const char* loadFileNames = "c:/video/_streeta/auto%04d.jpg";
+//const char* loadFileNames = "c:/video/1/a%04d.png";
+const char* saveFileNames = "c:/video/4/a%04d.png";
 
 #define FEATURECOUNT 256
 #define GLOBAL_MIPSCALE 0.625
@@ -64,6 +71,7 @@ const char* saveFileNames = "c:/video/2/a%04d.png";
 #define OVERSAMPLE 2
 #define BORDER 50
 #define ALLOWEDVARIANCE 10 // man verliert das feature ausserhalb
+#define MAXLIFETIME 20
 
 #if !ITERATIVE
 #undef MIPRATIO_DISTANCE
@@ -89,7 +97,7 @@ float fsign(float f) {return f < 0 ? -1 : f > 0 ? 1 : 0;}
 void setBiosCursor(int x, int y) {
   union REGS regs;
   struct SREGS sregs;
-  regs.x.eax = 0x200;
+  regs.w.ax = 0x200;
   regs.h.bh = 0;
   regs.h.dl = x;
   regs.h.dh = y;
@@ -516,6 +524,7 @@ void displayFeatures(FeatureImage *img) {
     x *= (float)XRES/img->width;
     y *= (float)YRES/img->height;
     if (features[f].lifeCounter >= 2) drawCircle(x,y,3,0xff000000|rand()|rand()*rand());
+    if (features[f].lifeCounter > MAXLIFETIME) randomFeature(img, &features[f]);
     features[f].lifeCounter++;
   }
 }
