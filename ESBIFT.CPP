@@ -39,8 +39,8 @@
 #include "GL.H"
 
 // CONFIG
-#define PLAYBACK 0
-#define SAVE 1
+#define PLAYBACK 1
+#define SAVE 0
 
 #define XRES 640
 #define YRES 480
@@ -416,20 +416,28 @@ bool refineFeature(FeatureImage *img, Feature *ft) {
 }
 
 // PROGRAM
+float cornerValue(FeatureImage *img, Feature *ft) { // just for more reasonable features
+  int mipLevel = (img->mipMaps.size()-1)*((MIPRATIO_DISTANCE-MIPRATIO_FRONT)*0.5+MIPRATIO_FRONT);
+  FeatureMipMap *mip = img->mipMaps[mipLevel];
+  float grad = 1.f;
+  float x = ft->x * mip->width; float y = ft->y * mip->height;
+  float xm = mip->lookupInterpolated(x-grad, y);
+  float x0 = mip->lookupInterpolated(x, y);
+  float xp = mip->lookupInterpolated(x+grad, y);
+  float ym = mip->lookupInterpolated(x, y-grad);
+  float y0 = mip->lookupInterpolated(x, y);
+  float yp = mip->lookupInterpolated(x, y+grad);
+  return fabs(x0 - (xp+xm)*0.5f)*fabs(y0 - (yp+ym)*0.5f);
+}
+
 void randomFeature(FeatureImage *img, Feature *ft) {
   int k = 10;
-  Feature bestFeature = *ft; float lastBestDistance = 10000.f;
+  Feature bestFeature = *ft; float lastBestCornerValue = 0;
   while (k >= 0) {
     ft->x = _frandx_(0,1);
     ft->y = _frandx_(0,1);
     if (sampleDescriptor(img, ft, ft->descriptor)) {
-      Feature ft2 = *ft;
-      refineFeature(img, &ft2);
-      float dx = ft2.x - ft->x;
-      float dy = ft2.y - ft->y;
-      float d = sqrt(dx*dx+dy*dy);
-      if (d < lastBestDistance) {lastBestDistance = d; bestFeature = *ft;}
-      break; // currently only the first hit
+      float d = cornerValue(img, ft); if (d > lastBestCornerValue) {lastBestCornerValue = d; bestFeature = *ft;}
     }
     k--;
   }
