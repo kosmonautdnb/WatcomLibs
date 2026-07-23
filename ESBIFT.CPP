@@ -23,6 +23,7 @@
 */
 // ESBIFT (Extremely Simple Brightness Invariant Feature Tracker)
 // currently not in a usable state
+// maybe disable randomBrightness first
 #include <stdlib.h>
 #include <stdio.h>
 #include <conio.h>
@@ -45,8 +46,8 @@
 #define XRES 640
 #define YRES 480
 
-const char* loadFileNames = "c:/video/_streetc/auto%04d.png";
-//const char* loadFileNames = "c:/video/_streeta/auto%04d.jpg";
+//const char* loadFileNames = "c:/video/_streetc/auto%04d.png";
+const char* loadFileNames = "c:/video/_streeta/auto%04d.jpg";
 //const char* loadFileNames = "c:/video/1/a%04d.png";
 const char* saveFileNames = "c:/video/4/a%04d.png";
 
@@ -56,13 +57,13 @@ const char* saveFileNames = "c:/video/4/a%04d.png";
 #define DESCRIPTORSIZE 5
 #define MAXMIPLEVELS 18
 #define PAIRSPERMIPLEVEL 64
+#define PAIRSTOSTAYNONRANDOM 8
 #define STEPCOUNT 40
 #define STEPSIZE 0.25f
-#define STEPINTENSITY 3 // may be kept 1
 #define MIPRATIO_FRONT (0)
 #define MIPRATIO_DISTANCE (0.5f) // this has to be <= 0.5 currently (pictures maybe have to be 1280x720)
 #define SCALEINVARIANCE (0.25)
-#define ROTATIONINVARIANCE (10.f*3.14159f/180.f)
+#define ROTATIONINVARIANCE (20.f/2.f*3.14159f/180.f)
 #define ITERATIVE 1 // 0 or 1 (non iterative not working, yet)
 #define LUMAR (0.25)
 #define LUMAG (0.6)
@@ -85,10 +86,15 @@ const char* saveFileNames = "c:/video/4/a%04d.png";
 #define SAFEDELETE(__P__) {if ((__P__)!=NULL) {delete (__P__); (__P__) = NULL;}}
 #define CLEARPOINTERARRAY(__A__) {for(int i = 0; i < (__A__).size(); i++) {SAFEDELETE((__A__)[i]);} (__A__).clear();}
 
+float randomLike(const int index) {
+    int b = index ^ (index * 11) ^ (index / 17) ^ (index >> 16) ^ (index * 1877) ^ (index * 8332) ^ (index * 173);
+    b = b ^ (b << 8) ^ (b * 23);
+    b >>= 3;
+    return (float)(b & 0xffff) / 0x10000;
+}
+
 float _ifrand_(int index, float minf, float maxf) {
-  float i = (float)index * 123.4567;
-  void *k = (void*)(&i); srand((*((unsigned int*)k))); 
-  return (float)rand() / (RAND_MAX-1) * (maxf-minf) + minf;
+  return randomLike(index) * (maxf-minf) + minf;
 }
 
 float _frandx_(float minf, float maxf) {return (float)rand() / (RAND_MAX-1) * (maxf-minf) + minf;}
@@ -108,15 +114,16 @@ void setBiosCursor(int x, int y) {
 
 class FeatureMipMap {
 public:
-  FeatureMipMap() : width(0), height(0) {}
+  FeatureMipMap() : width(0), height(0), minLuma(0), maxLuma(1) {}
   FeatureMipMap(int w, int h) : width(w), height(h) {lumas.resize(w*h); memset(&lumas[0],0,w*h*sizeof(float));}
   int width, height;
   Array<float> lumas;
-  float lookupInterpolated(float x, float y);
+  float minLuma,maxLuma;
+  __inline float lookupInterpolated(float x, float y);
   float pairScale();
 };
 
-float FeatureMipMap::lookupInterpolated(float x, float y) {
+__inline float FeatureMipMap::lookupInterpolated(float x, float y) {
   int xi = (int)x;
   int yi = (int)y;
   if (xi < 0 || yi < 0 || xi >= width-1 || yi >= height-1) return -1;
@@ -140,6 +147,7 @@ public:
   Array<FeatureMipMap*> mipMaps;
   FeatureMipMap *mip(int level);
   void generateMipMaps(float mipScale = 0.5f);
+  void randomBrightness();
 };
 
 FeatureMipMap *FeatureImage::mip(int level) {
@@ -150,11 +158,11 @@ FeatureMipMap *FeatureImage::mip(int level) {
 void FeatureImage::generateMipMaps(float mipScale) {
   CLEARPOINTERARRAY(mipMaps);
   FeatureMipMap *lastLevel = new FeatureMipMap(width,height); mipMaps.push_back(lastLevel);
-  for (int x = 0; x < width; x++) {
-    for (int y = 0; y < height; y++) {
-      unsigned int col = image[x+y*width]; int r = col & 255; int g = (col>>8) & 255; int b = (col>>16) & 255; 
-      lastLevel->lumas[x+y*width] = FORMULA((r*LUMAR+g*LUMAG+b*LUMAB)/255.f);
-    }
+  for (int i = 0; i < width*height; i++) {
+    unsigned int col = image[i]; int r = col & 255; int g = (col>>8) & 255; int b = (col>>16) & 255; float l = FORMULA((r*LUMAR+g*LUMAG+b*LUMAB)/255.f);
+    if (i==0||l<lastLevel->minLuma) lastLevel->minLuma = l;
+    if (i==0||l>lastLevel->maxLuma) lastLevel->maxLuma = l;
+    lastLevel->lumas[i] = l;
   }
   float *vImage = (float*)malloc(width*height*sizeof(float)); unsigned int *wImage = (unsigned int*)malloc(width*height*sizeof(unsigned int));
   while(lastLevel->width>4 && lastLevel->height>4) {
@@ -173,11 +181,31 @@ void FeatureImage::generateMipMaps(float mipScale) {
       }
     }
 
-    for (int i2 = 0; i2 < dWidth*dHeight; i2++) {level->lumas[i2] = (wImage[i2]>0) ? vImage[i2] / wImage[i2] : 0;}
+    for (int i2 = 0; i2 < dWidth*dHeight; i2++) {float l = (wImage[i2]>0) ? vImage[i2] / wImage[i2] : 0; 
+      if (i2==0||l<level->minLuma) level->minLuma = l;
+      if (i2==0||l>level->maxLuma) level->maxLuma = l;
+      level->lumas[i2] = l;
+    }
     lastLevel = level;
   }
   free(vImage); free(wImage);
+}
 
+void FeatureImage::randomBrightness() {
+  static int l = 0; l++; float contrast = _ifrand_(l*11+321,0,2); float brightness = _ifrand_(l*13+123,0,255*(1-contrast));
+  for (int x = 0; x < width; x++) {
+    for (int y = 0; y < height; y++) {
+      unsigned int col = image[x+y*width]; int r = col & 255; int g = (col>>8) & 255; int b = (col>>16) & 255; 
+      r *= contrast; g *= contrast; b *= contrast; r += brightness; g += brightness; b += brightness;
+      if (r < 0) r = 0;
+      if (g < 0) g = 0;
+      if (b < 0) b = 0;
+      if (r > 255) r = 255;
+      if (g > 255) g = 255;
+      if (b > 255) b = 255;
+      image[x+y*width] = r|(g<<8)|(b<<16)|(col & 0xff000000); 
+    }
+  }
 }
 
 char text[400] = {0};
@@ -197,6 +225,7 @@ FeatureImage *loadImage(const char *fileName, float scale = 1) {
   ret->image.resize(img.width * img.height);
   memcpy(&ret->image[0], img.data, img.width * img.height * sizeof(unsigned int));
   img.free();
+  ret->randomBrightness();
   ret->generateMipMaps(GLOBAL_MIPSCALE);
   return ret;
 }
@@ -231,14 +260,18 @@ void defaultDescriptorPairs() {
       r.y1 = _ifrand_(randomSeed*1332,-1,1);
       float dx = r.x1 - r.x0;
       float dy = r.y1 - r.y0;
-      r.influence = sqrt(dx*dx+dy*dy);
+      float d0 = sqrt(r.x0*r.x0+r.y0*r.y0); float d1 = sqrt(r.x1*r.x1+r.y1*r.y1); float k = d0*d1;
+      if (d0 != 0) d0 = 1.f/d0;
+      if (d1 != 0) d1 = 1.f/d1;
+      float a = r.x0*d0*r.x1*d1+r.y0*d0*r.y1*d1;
+      r.influence = sqrt(dx*dx+dy*dy)*(1-a)/(1+k); // distance between, angle difference, distance to 0
       level->pairs.push_back(r);
       randomSeed += 3;
     }
   }
 }
 
-int getBitForPair(FeatureMipMap *mip, float x, float y, DescriptorPositionPair *pair, float pairScale, float pairAngle, float gradientX, float gradientY) {
+__inline int getBitForPair(FeatureMipMap *mip, float x, float y, DescriptorPositionPair *pair, float pairScale, float pairAngle, float gradientX, float gradientY) {
   float x0 = x + (cos(pairAngle) * pair->x0 - sin(pairAngle) * pair->y0) * pairScale;
   float y0 = y + (sin(pairAngle) * pair->x0 + cos(pairAngle) * pair->y0) * pairScale;
   float x1 = x + (cos(pairAngle) * pair->x1 - sin(pairAngle) * pair->y1) * pairScale;
@@ -249,10 +282,12 @@ int getBitForPair(FeatureMipMap *mip, float x, float y, DescriptorPositionPair *
   x1 += gradientX; y1 += gradientY;
   float a = mip->lookupInterpolated(x0,y0);
   float b = mip->lookupInterpolated(x1,y1);
+  if (a <= mip->minLuma && b <= mip->minLuma) return 3;
+  if (a >= mip->maxLuma && b >= mip->maxLuma) return 3;
   return (a<0||b<0) ? 2 : (a > b ? 1 : 0);
 }
 
-void getGradients(FeatureMipMap *mip, float x, float y, DescriptorPositionPair *pair, float pairScale, float pairAngle, float gradientX, float gradientY, float *result0, float *result1) {
+__inline void getGradients(FeatureMipMap *mip, float x, float y, DescriptorPositionPair *pair, float pairScale, float pairAngle, float gradientX, float gradientY, float *result0, float *result1) {
   float x0 = x + (cos(pairAngle) * pair->x0 - sin(pairAngle) * pair->y0) * pairScale;
   float y0 = y + (sin(pairAngle) * pair->x0 + cos(pairAngle) * pair->y0) * pairScale;
   float x1 = x + (cos(pairAngle) * pair->x1 - sin(pairAngle) * pair->y1) * pairScale;
@@ -267,7 +302,7 @@ void getGradients(FeatureMipMap *mip, float x, float y, DescriptorPositionPair *
   if (grad1a<0 || grad1b<0) *result1 = 0; else *result1 = grad1a - grad1b;
 }
 
-float getMipLevelScale(FeatureImage *img, int level) {
+__inline float getMipLevelScale(FeatureImage *img, int level) {
   int w0 = img->mip(0)->width; // big image
   int wh = img->mip(level)->width; // small image
   return (float)w0/wh;
@@ -288,7 +323,7 @@ Descriptor *newDescriptor(FeatureImage *img) {
 
 class Feature {
 public:
-  Feature() : x(0), y(0), scale(0), angle(0), descriptor(NULL), lifeCounter(0) {}
+  Feature() : x(0), y(0), scale(1), angle(0), descriptor(NULL), lifeCounter(0) {}
   float x,y;
   float scale;
   float angle;
@@ -297,7 +332,7 @@ public:
 };
 Array<Feature> features;
 
-bool sampleDescriptor(FeatureImage *img, Feature *f, Descriptor *d, int onlyMipLevel = -1) {
+__inline bool sampleDescriptor(FeatureImage *img, Feature *f, Descriptor *d, int onlyMipLevel = -1) {
   bool ret = true;
   int mipCount = d->mipLevels.size();
   int start = ((int)img->mipMaps.size()-1)*MIPRATIO_DISTANCE;
@@ -318,6 +353,7 @@ bool sampleDescriptor(FeatureImage *img, Feature *f, Descriptor *d, int onlyMipL
     for (unsigned int p = 0; p < pairCount; p++) {
       int bit = getBitForPair(mipLevel, f->x, f->y, &pairs->pairs[p], pairScale, pairAngle, 0, 0);
       if (bit == 2) {bit = rand() & 1; d->mipLevels[m]->wasInvalid = true; ret = false;}
+      if (bit == 3) bit = 0; // a==b, but a and b are without image information (without HDR) (too bright/too dark)
       bits[p>>5] &= ~(1<<(p&31));
       if (bit!=0) bits[p>>5] |= (1<<(p&31));
     }
@@ -325,11 +361,11 @@ bool sampleDescriptor(FeatureImage *img, Feature *f, Descriptor *d, int onlyMipL
   return ret;
 }
 
-bool refineFeatureOneStep(FeatureImage *img, int mipLevel, Feature *f, Descriptor *d, float scaleMul, float angleAdd, float stepSize) {
-  FeatureMipMap *mip = img->mip(mipLevel); if (mip == NULL) return true; if (mipLevel >= descriptorPairs.size()) return true; if (mipLevel > d->mipLevels.size()) return true;
+float refineFeatureOneStep(FeatureImage *img, int mipLevel, Feature *f, Descriptor *d, float scaleMul, float angleAdd, float stepSize) {
+  FeatureMipMap *mip = img->mip(mipLevel); if (mip == NULL) return -1; if (mipLevel >= descriptorPairs.size()) return -1; if (mipLevel > d->mipLevels.size()) return -1;
   DescriptorMipLevelPairs *pairs = descriptorPairs[mipLevel]; int pairCount = pairs->pairs.size();
   unsigned int maxBitCount = d->mipLevels[mipLevel]->bits.size()*32;
-  if (d->mipLevels[mipLevel]->wasInvalid) return false;
+  if (d->mipLevels[mipLevel]->wasInvalid) return -1;
   if (pairCount > maxBitCount) pairCount = maxBitCount;
 
   unsigned int *bits = &d->mipLevels[mipLevel]->bits[0]; 
@@ -344,7 +380,7 @@ bool refineFeatureOneStep(FeatureImage *img, int mipLevel, Feature *f, Descripto
   for (unsigned int p = 0; p < pairCount; p++) {
     int bitRequired = (bits[p>>5] >> (p & 31)) & 1;
     int bitHere = getBitForPair(mip, f->x, f->y, &pairs->pairs[p], pairScale, angle, 0, 0);
-    if (bitHere == 2) continue;
+    if (bitHere >= 2) continue; // 2 means out of border, 3 means (no image information (too bright/too dark)
     if (bitHere != bitRequired) {
       float gradientX0, gradientX1; getGradients(mip, f->x, f->y, &pairs->pairs[p], scale, angle, 1, 0, &gradientX0, &gradientX1);
       float gradientY0, gradientY1; getGradients(mip, f->x, f->y, &pairs->pairs[p], scale, angle, 0, 1, &gradientY0, &gradientY1);
@@ -354,8 +390,8 @@ bool refineFeatureOneStep(FeatureImage *img, int mipLevel, Feature *f, Descripto
       if (deltaX > maxDeltaX) maxDeltaX = deltaX; if (deltaY > maxDeltaY) maxDeltaY = deltaY;
       if (deltaX < minDeltaX) minDeltaX = deltaX; if (deltaY < minDeltaY) minDeltaY = deltaY;
       float l = pairs->pairs[p].influence;
-      deltaX = pow(fabs(deltaX), STEPINTENSITY)*fsign(deltaX);
-      deltaY = pow(fabs(deltaY), STEPINTENSITY)*fsign(deltaY);
+      deltaX = deltaX*deltaX*deltaX; // ^x (e.g. 3) seems to be a tiny bit better
+      deltaY = deltaY*deltaY*deltaY; // ^x (e.g. 3) seems to be a tiny bit better
       deltaX *= l; deltaY *= l;
       moveX += deltaX;
       moveY += deltaY;
@@ -375,10 +411,11 @@ bool refineFeatureOneStep(FeatureImage *img, int mipLevel, Feature *f, Descripto
   //l = sqrt(moveX*moveX + moveY*moveY); 
   l = fabs(moveX)+fabs(moveY); // this manhatten distance seems to be better maybe because of x,y variance
   if (l != 0) l = 1.f/l;
-  if (overall > 0) l *= (float)changes/overall;
+  float change = 0; if (overall > 0) change = (float)changes/overall;
+  l *= change;
   f->x += moveX * l * stepSize * xVariance;
   f->y += moveY * l * stepSize * yVariance;
-  return true;
+  return change;
 } 
 
 bool refineFeature(FeatureImage *img, Feature *ft) {
@@ -388,10 +425,14 @@ bool refineFeature(FeatureImage *img, Feature *ft) {
     for (int m = ((int)img->mipMaps.size()-1)*MIPRATIO_DISTANCE; m >= ((int)img->mipMaps.size()-1)*MIPRATIO_FRONT; m--) {
       FeatureMipMap *mip = img->mip(m);  if (mip == NULL) continue;
       float mipMapStepSize = (float)1.f/mip->width;
+      bool keepRandomValues = true; float scaleMul = 1; float angleAdd = 0;
       for (int s = 0; s < STEPCOUNT; s++) {
-        float scaleMul = 1+_frandx_(-SCALEINVARIANCE, +SCALEINVARIANCE);
-        float angleAdd = _frandx_(-ROTATIONINVARIANCE, +ROTATIONINVARIANCE);
-        refineFeatureOneStep(img, m, &f[o], f[o].descriptor, scaleMul, angleAdd, mipMapStepSize * STEPSIZE);
+        if (!keepRandomValues) {        
+          scaleMul = 1 + _ifrand_(s*123+m*234,-SCALEINVARIANCE, +SCALEINVARIANCE);
+          angleAdd = _ifrand_(s*345+m*114,-ROTATIONINVARIANCE, +ROTATIONINVARIANCE);
+        }
+        float change = refineFeatureOneStep(img, m, &f[o], f[o].descriptor, scaleMul, angleAdd, mipMapStepSize * STEPSIZE);
+        keepRandomValues = false; if (change >= 0 && change <= (float)PAIRSTOSTAYNONRANDOM/PAIRSPERMIPLEVEL) keepRandomValues = true;
       }
     }
   }
