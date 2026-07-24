@@ -102,7 +102,7 @@ static void LU(double a[8][8], double *lu, int *p) {
     Akk = Ak[k];
 
     for (i = k + 1; i < n; i++) {
-      A[i][k] /= Akk;
+      if (Akk != 0) A[i][k] /= Akk;
     }
 
     for (i = k + 1; i < n; i++) {
