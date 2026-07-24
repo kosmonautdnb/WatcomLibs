@@ -116,6 +116,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - GLEGA.HPP - display WatcomGL in 16 Colors EGA modes instead of Vesa or VGA.
 - GLRECORD.HPP - lets you record the whole OpenGL state per frame and render it to a H264 MP4.
 - GTFLOG.CPP - just a temporary / very simple logger for CGLTF file structure.
+- HMAP.HPP - a homography mapper that maps a 2d polygon onto a 2d polygon by a perspective 3d matrix.
 - IMAGE.HPP - Image loading/saving/resizing PNG,JPG,BMP,TGA,GIF,PSD and others
 - JOMPEG.HPP - A rudimentary mpeg1 encoder. https://github.com/yui0/slibs
 - JSONREAD.HPP - a json reader https://github.com/rafagafe/tiny-json  
