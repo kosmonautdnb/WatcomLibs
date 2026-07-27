@@ -80,6 +80,15 @@ public:
     }
     data[pos]=element;    
   }
+
+  void fill(const T &element, int start = 0, int end = -1) {
+    if (end < 0) end = usedSize;
+    if (end > usedSize) end = usedSize;
+    if (start < 0) start = 0;
+    for (int i = start; i < end; i++) {
+      data[i]=element;
+    }
+  }
   
   void resize(size_t numElements) {
     if (numElements<allocatedSize) {
