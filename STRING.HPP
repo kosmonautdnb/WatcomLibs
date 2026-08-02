@@ -334,6 +334,8 @@ public:
     if (lastIndex < firstIndex) return "";
     if (firstIndex >= length()) return String(*this);
     String r;
+    if (lastIndex>length()) lastIndex = length();
+    if (lastIndex <= firstIndex) return "";
     r.resize(lastIndex-firstIndex);
     memcpy(&(r[0]),&((*this)[firstIndex]),r.length());
     return r;
