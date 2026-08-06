@@ -39,11 +39,11 @@ typedef signed int PCXLBM_S32;
 typedef unsigned short PCXLBM_U16;
 typedef unsigned char PCXLBM_U8;
 
-int loadLBM(const char *fileName, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height);
-int loadLBM(void *fileData, PCXLBM_U32 dataLength, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height);
+int loadLBM(const char *fileName, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height, PCXLBM_U32 **getPalette = NULL, PCXLBM_S32 *getPaletteSize = NULL);
+int loadLBM(void *fileData, PCXLBM_U32 dataLength, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height, PCXLBM_U32 **getPalette = NULL, PCXLBM_S32 *getPaletteSize = NULL);
 
-int loadPCX(const char *fileName, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height);
-int loadPCX(void *fileData, PCXLBM_U32 dataLength, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height);
+int loadPCX(const char *fileName, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height, PCXLBM_U32 **getPalette = NULL, PCXLBM_S32 *getPaletteSize = NULL);
+int loadPCX(void *fileData, PCXLBM_U32 dataLength, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height, PCXLBM_U32 **getPalette = NULL, PCXLBM_S32 *getPaletteSize = NULL);
 
 
 //---------
@@ -198,7 +198,9 @@ PCXLBM_S32 contains_icp(PCXLBM_U32 *pal_coord) {
   return 0;
 }
 
-int loadPCX(PCXLBM_U32 **destPixels, PCXLBM_U32 *destWidth, PCXLBM_U32 *destHeight) {
+int loadPCX(PCXLBM_U32 **destPixels, PCXLBM_U32 *destWidth, PCXLBM_U32 *destHeight, PCXLBM_U32 **getPalette, PCXLBM_S32 *getPaletteSize) {
+
+  if (getPaletteSize != NULL) *getPaletteSize = 0;
 
   lbmpcx_littleEndian = true;
 
@@ -437,15 +439,21 @@ int loadPCX(PCXLBM_U32 **destPixels, PCXLBM_U32 *destWidth, PCXLBM_U32 *destHeig
       pcxlbm_free(buf);
     }
 
+    if (getPalette != NULL) {
+      PCXLBM_U32 entryCount = 256; if (getPaletteSize != NULL) *getPaletteSize = entryCount;
+      *getPalette = (PCXLBM_U32*)pcxlbm_allocate(entryCount * sizeof(PCXLBM_U32));
+      memcpy(*getPalette,palette,entryCount * sizeof(PCXLBM_U32));
+    }
+
     pcxlbm_free(palette);
   }
   return 0;
 }
 
-int loadPCX(const char *fileName, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height) {
+int loadPCX(const char *fileName, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height, PCXLBM_U32 **getPalette, PCXLBM_S32 *getPaletteSize) {
   pcxlbm_file = fopen(fileName,"rb");
   if (pcxlbm_file != 0) {
-    int ret = loadPCX(dest, width, height);
+    int ret = loadPCX(dest, width, height, getPalette, getPaletteSize);
     fclose(pcxlbm_file);
     pcxlbm_file = 0;
     return ret;
@@ -453,11 +461,11 @@ int loadPCX(const char *fileName, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U
   return -3;
 }
 
-int loadPCX(void *fileData, PCXLBM_U32 dataLength, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height) {
+int loadPCX(void *fileData, PCXLBM_U32 dataLength, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height, PCXLBM_U32 **getPalette, PCXLBM_S32 *getPaletteSize) {
   pcxlbm_data = fileData;
   pcxlbm_size = dataLength;
   pcxlbm_pos = 0;
-  int ret = loadPCX(dest, width, height);
+  int ret = loadPCX(dest, width, height, getPalette, getPaletteSize);
   pcxlbm_data = 0;
   return ret;
 }
@@ -644,7 +652,9 @@ void PCXLBM_LBMDecompressData(ILBM_HEADER *header, PCXLBM_U8 *src, PCXLBM_U8 *de
   }
 }
 
-int loadLBM(PCXLBM_U32 **destPixels, PCXLBM_U32 *destWidth, PCXLBM_U32 *destHeight) {
+int loadLBM(PCXLBM_U32 **destPixels, PCXLBM_U32 *destWidth, PCXLBM_U32 *destHeight, PCXLBM_U32 **getPalette, PCXLBM_S32 *getPaletteSize) {
+
+  if (getPaletteSize != NULL) *getPaletteSize = 0;
 
   lbmpcx_littleEndian = false;
 
@@ -724,6 +734,12 @@ int loadLBM(PCXLBM_U32 **destPixels, PCXLBM_U32 *destWidth, PCXLBM_U32 *destHeig
           PCXLBM_U8 b = pcxlbm_readByte();
 
           header.cmap.palette[i] = r | (g<<8) | (b<<16) | 0xff000000;
+        }
+
+        if (getPalette != NULL) {
+          PCXLBM_U32 entryCount = num_of_colors; if (getPaletteSize != NULL) *getPaletteSize = entryCount;
+          *getPalette = (PCXLBM_U32*)pcxlbm_allocate(entryCount * sizeof(PCXLBM_U32));
+          memcpy(*getPalette,header.cmap.palette,entryCount * sizeof(PCXLBM_U32));
         }
       }
       else if(fourcc[0] == 'C' && fourcc[1] == 'L' && fourcc[2] == 'U' && fourcc[3] == 'T') {
@@ -872,10 +888,10 @@ int loadLBM(PCXLBM_U32 **destPixels, PCXLBM_U32 *destWidth, PCXLBM_U32 *destHeig
   return 0;
 }
 
-int loadLBM(const char *fileName, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height) {
+int loadLBM(const char *fileName, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height, PCXLBM_U32 **getPalette, PCXLBM_S32 *getPaletteSize) {
   pcxlbm_file = fopen(fileName,"rb");
   if (pcxlbm_file != 0) {
-    int ret = loadLBM(dest, width, height);
+    int ret = loadLBM(dest, width, height, getPalette, getPaletteSize);
     fclose(pcxlbm_file);
     pcxlbm_file = 0;
     return ret;
@@ -883,11 +899,11 @@ int loadLBM(const char *fileName, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U
   return -3;
 }
 
-int loadLBM(void *fileData, PCXLBM_U32 dataLength, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height) {
+int loadLBM(void *fileData, PCXLBM_U32 dataLength, PCXLBM_U32 **dest, PCXLBM_U32 *width, PCXLBM_U32 *height, PCXLBM_U32 **getPalette, PCXLBM_S32 *getPaletteSize) {
   pcxlbm_data = fileData;
   pcxlbm_size = dataLength;
   pcxlbm_pos = 0;
-  int ret = loadLBM(dest, width, height);
+  int ret = loadLBM(dest, width, height, getPalette, getPaletteSize);
   pcxlbm_data = 0;
   return ret;
 }
