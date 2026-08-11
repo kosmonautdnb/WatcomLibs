@@ -7,10 +7,10 @@
 #define STBIW_MALLOC(sz)           malloc(sz)
 #define STBIW_REALLOC(p,newsz)     realloc(p,newsz) // maybe this keeps being problematic here
 #define STBIW_FREE(p)              free(p)
-#ifdef STB_IMAGE_WRITE_IMPLEMENTATION
+#ifdef STB_IMAGE_WRITE_IMPLEMENTATION // !!
 #include <string.h>
 #include <stdlib.h>
-void *__realloc3__(void *a, int oldSize, int newSize) {
+static void *__realloc3__(void *a, int oldSize, int newSize) {
   void *b = malloc(newSize);
   int copySize = oldSize>newSize?newSize:oldSize;
   memcpy(b,a,copySize);
@@ -358,9 +358,22 @@ static int stbi__start_write_file(stbi__write_context *s, const char *filename)
    return f != NULL;
 }
 
+#ifdef __DJGPP__ // :mad:
+#include <unistd.h> // :mad:
+static void stbi__write_fclose(FILE *out) { // :mad:
+  fflush(out); // :mad:
+  fsync(fileno(out)); // :mad:
+  fclose(out); // :mad:
+} // :mad:
+#else // :mad:
+static void stbi__write_fclose(FILE *out) { // :mad:
+  fclose(out); // :mad:
+} // :mad:
+#endif // :mad:
+
 static void stbi__end_write_file(stbi__write_context *s)
 {
-   fclose((FILE *)s->context);
+   stbi__write_fclose((FILE *)s->context); // :mad:
 }
 
 #endif // !STBI_WRITE_NO_STDIO
@@ -1244,7 +1257,7 @@ STBIWDEF int stbi_write_png(char const *filename, int x, int y, int comp, const 
    f = stbiw__fopen(filename, "wb");
    if (!f) { STBIW_FREE(png); return 0; }
    fwrite(png, 1, len, f);
-   fclose(f);
+   stbi__write_fclose(f); // :mad:
    STBIW_FREE(png);
    return 1;
 }
