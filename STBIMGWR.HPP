@@ -1,6 +1,11 @@
 #include "types.hpp"
 #define _CRT_SECURE_NO_WARNINGS
 
+extern double imgWritePNGGamma; // added by :mad:
+#ifdef STB_IMAGE_WRITE_IMPLEMENTATION
+double imgWritePNGGamma = -1; // 1.0/2.2 would be standard SRGB
+#endif
+
 #define MEMORYMANAGERBUGFIX2
 #ifdef MEMORYMANAGERBUGFIX2 // WatcomC crashes with bigger images without this
 #define STBIW_REALLOC_SIZED(p,oldsz,newsz) __realloc3__(p,oldsz,newsz);
@@ -1212,10 +1217,15 @@ STBIWDEF unsigned char *stbi_write_png_to_mem(const unsigned char *pixels, int s
    STBIW_FREE(filt);
    if (!zlib) return 0;
 
+   int add = 0;
+   if (imgWritePNGGamma > 0) {
+     add = 12 + 4;
+   }
+
    // each tag requires 12 bytes of overhead
-   out = (unsigned char *) STBIW_MALLOC(8 + 12+13 + 12+zlen + 12);
+   out = (unsigned char *) STBIW_MALLOC(8 + 12+13 + 12+zlen + 12 + add);
    if (!out) return 0;
-   *out_len = 8 + 12+13 + 12+zlen + 12;
+   *out_len = 8 + 12+13 + 12+zlen + 12 + add;
 
    o=out;
    STBIW_MEMMOVE(o,sig,8); o+= 8;
@@ -1229,6 +1239,13 @@ STBIWDEF unsigned char *stbi_write_png_to_mem(const unsigned char *pixels, int s
    *o++ = 0;
    *o++ = 0;
    stbiw__wpcrc(&o,13);
+
+   if (imgWritePNGGamma > 0) {
+     stbiw__wp32(o,4);
+     stbiw__wptag(o, "gAMA");
+     stbiw__wp32(o,(unsigned int)(imgWritePNGGamma*100000.0));
+     stbiw__wpcrc(&o,4);
+   }
 
    stbiw__wp32(o, zlen);
    stbiw__wptag(o, "IDAT");

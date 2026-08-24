@@ -32,7 +32,7 @@ int main(int argc, const char *argv[]) {
   printf("-------------------------\n");
   if (argc != 2) {
     printf("usage: app_img.exe <imageFileName>\n");
-    printf("supported formats: JPEG,PNG,BMP,PSD,TGA,GIF,HDR,PIC,PNM\n");
+    printf("supported formats: JPEG,PNG,BMP,PSD,TGA,GIF,HDR,PIC,PNM,WEBP\n");
     printf("the source folder should contain a test.png\n");
     exit(0);
   }

@@ -8,6 +8,7 @@
 #endif
 
 // ANTIALIASING
+// FXAA3 by Timothy Lottes (of NVidia) is public domain
 
 bool USE_FXAA = true;
 
