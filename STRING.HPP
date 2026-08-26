@@ -433,6 +433,28 @@ public:
     resize(l+b.length());
     memcpy(data+l,b.data,b.length()+1);
   }
+
+  static int levenshteinDistance(const String &a, const String &b) {
+    int la = a.length(); int lb = b.length();
+    if (la == 0) return lb;
+    if (lb == 0) return la;
+    int *dist = new int[(la+1)*(lb+1)]; memset(dist, 0, sizeof(int)*(la+1)*(lb+1));
+    for (int y = 0; y < la+1; y++) dist[y*(lb+1)] = y;
+    for (int x = 0; x < lb+1; x++) dist[x] = x;
+    const char *sa = a.c_str(); const char *sb = b.c_str();
+    for (int i = 1; i < la+1; i++) {
+      for (int j = 1; j < lb+1; j++) {
+        int ins = dist[(i-1)*(lb+1)+j]+1;
+        int del = dist[i*(lb+1)+j-1]+1;
+        int repl = dist[(i-1)*(lb+1)+j-1] + (sa[i-1] != sb[j-1] ? 1 : 0);
+        int m = ins; m = del < m ? del : m; m = repl < m ? repl : m;
+        dist[i*(lb+1)+j] = m;
+      }
+    }
+    int ret = dist[la*(lb+1)+lb]; // levenshtein ratio would be (a+b-ret)/(a+b);
+    delete[] dist;
+    return ret;
+  }
 };
 
 String operator+(const String &a, const String &b);
