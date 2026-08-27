@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "vector.hpp"
 #include "matrix.hpp"
 #include "types.hpp"
@@ -693,17 +694,17 @@ static float __inline clamp(float v, float mn, float mx) {
 }
 
 unsigned int toRGBA(const Vector &a) {
-  int r = (int)clamp(a.x*255.f,0.f,255.f);
-  int g = (int)clamp(a.y*255.f,0.f,255.f);
-  int b = (int)clamp(a.z*255.f,0.f,255.f);
-  int a_ = (int)clamp(a.w*255.f,0.f,255.f);
+  int r = (int)clamp((float)(a.x*255.0),0.f,255.f);
+  int g = (int)clamp((float)(a.y*255.0),0.f,255.f);
+  int b = (int)clamp((float)(a.z*255.0),0.f,255.f);
+  int a_ = (int)clamp((float)(a.w*255.0),0.f,255.f);
   return r|(g<<8)|(b<<16)|(a_<<24);
 }
 
 unsigned int toRGB(const Vector &a) {
-  int r = (int)clamp(a.x*255.f,0.f,255.f);
-  int g = (int)clamp(a.y*255.f,0.f,255.f);
-  int b = (int)clamp(a.z*255.f,0.f,255.f);
+  int r = (int)clamp((float)(a.x*255.0),0.f,255.f);
+  int g = (int)clamp((float)(a.y*255.0),0.f,255.f);
+  int b = (int)clamp((float)(a.z*255.0),0.f,255.f);
   return r|(g<<8)|(b<<16)|0xff000000;
 }
 

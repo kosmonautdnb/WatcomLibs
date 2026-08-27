@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "string.hpp"
 
 uint32_t String::hash() const {

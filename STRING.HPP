@@ -114,7 +114,7 @@ public:
   String(const char *_data) {
     if (_data != NULL)
     {
-      dataLength = strlen(_data)+1;
+      dataLength = (int32_t)strlen(_data)+1;
       data = new  char[dataLength];
       memcpy(data,_data,dataLength);
     } else {
@@ -273,7 +273,7 @@ public:
     k.resize(16);
     //snprintf_x4(&(k[0]),16,"%f",v);
     sprintf(&(k[0]),"%f",v);
-    k.resize(strlen(k.c_str()));
+    k.resize((int)strlen(k.c_str()));
     return k;
   }
 
@@ -282,7 +282,7 @@ public:
     k.resize(32);
     //snprintf_x4(&(k[0]),32,"%f",v);
     sprintf(&(k[0]),"%f",v);
-    k.resize(strlen(k.c_str()));
+    k.resize((int)strlen(k.c_str()));
     return k;
   }
 

@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 /*
 <https://github.com/rafagafe/tiny-json>
 
@@ -292,12 +293,18 @@ char* json_double( char* dest, char const* name, double value ) {
 
 #include <stdio.h>
 
+#if defined(__WATCOMC__) || defined(__DJGPP__)
+#define JSONWRT_LOSTTYPE long
+#else
+#define JSONWRT_LOSTTYPE long long
+#endif
+
 #define ALL_TYPES \
     X( json_int,      int,           "%d"   ) \
     X( json_long,     long,          "%ld"  ) \
     X( json_uint,     unsigned int,  "%u"   ) \
     X( json_ulong,    unsigned long, "%lu"  ) \
-    X( json_verylong, long,     "%lld" ) \
+    X( json_verylong, JSONWRT_LOSTTYPE,     "%lld" ) \
     X( json_double,   double,        "%g"   ) \
 
 

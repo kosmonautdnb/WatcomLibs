@@ -33,6 +33,7 @@ typedef unsigned int UINT;
 typedef int ssize_t;
 #endif
 
+#ifndef NOT_DOS
 #define INT8_MAX (0x7f)
 #define INT8_MIN (-0x80)
 #define INT16_MAX (0x7fff)
@@ -50,6 +51,7 @@ typedef int ssize_t;
 #define UINT64_MAX (0xffffffffffffffff)
 #define UINT64_MIN (0x0000000000000000)
 #define SIZE_MAX UINT32_MAX
+#endif
 #define DOUBLE_MAX (1.79769E+306) // actually +308
 #define DOUBLE_MIN (-1.79769E+306) // actually +308
 #define DOUBLE_EPSILON (4.94065645841247E-306) // actually -324

@@ -89,7 +89,7 @@ PCXLBM_S32 pcxlbm_pos = 0;
 
 PCXLBM_S32 pcxlbm_read(void *dest, PCXLBM_U32 sizea, PCXLBM_U32 sizeb) {
   if (pcxlbm_file != 0) {
-    return fread(dest, sizea, sizeb, pcxlbm_file);
+    return (PCXLBM_S32)fread(dest, sizea, sizeb, pcxlbm_file);
   }
   if (pcxlbm_data != 0) {
     PCXLBM_U8 *write = (PCXLBM_U8 *)dest;

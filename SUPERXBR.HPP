@@ -61,7 +61,7 @@ void epx(unsigned int* source, unsigned int* dest, int sourceWidth, int sourceHe
 
 __inline float sxbr_df(float A, float B)
 {
-  return fabs(A - B);
+  return (float)fabs(A - B);
 }
 
 __inline float sxbr_min4(float a, float b, float c, float d)

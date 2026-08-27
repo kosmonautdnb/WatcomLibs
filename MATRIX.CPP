@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "matrix.hpp"
 #include <math.h>
 

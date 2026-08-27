@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "types.hpp"
 #include <direct.h>
 #include "dos.hpp"
@@ -24,7 +25,7 @@
 #include <fileapi.h>
 #include <filesystem>
 #include <sys/stat.h>
-#include <unistd.h>
+#include <direct.h>
 #endif
 #include <fcntl.h>
 
@@ -66,6 +67,9 @@ void dosCLI() {__asm__ __volatile__("cli");}
 void dosSTI() {__asm__ __volatile__("sti");}
 #endif // __DJGPP__
 
+#ifdef NOT_DOS
+int rtcRead(unsigned char reg) { return 0; }
+#else // NOT_DOS
 unsigned char dosCmosRead(unsigned char reg, bool maskNMI) {
   dosCLI();
   outp(0x70, reg | (maskNMI?0x80:00));
@@ -82,6 +86,7 @@ int rtcRead(unsigned char reg) {
   while(dosCmosUpdateInProgress()) {;}
   return (int)dosCmosRead(reg, true);
 }
+#endif
 
 static String hex(int v) {
   const char *h="0123456789ABCDEF";

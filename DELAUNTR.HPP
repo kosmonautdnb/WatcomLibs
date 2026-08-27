@@ -355,7 +355,7 @@ bool Delaunator::delaunator(Array<double> const* in_coords) {
   //std::sort(ids.begin(), ids.end(), compare{ coords, m_center_x, m_center_y }); :mad:
 
   // initialize a hash table for storing edges of the advancing convex hull
-  m_hash_size = static_cast<size_t>(llroundx2(ceil(sqrt(n))));
+  m_hash_size = static_cast<size_t>(llroundx2(ceil(sqrt((double)n))));
   m_hash.resize(m_hash_size);
   {for (int i = 0; i < (int)m_hash.size(); i++)  m_hash[i] = INVALID_INDEX;}
   //std::fill(m_hash.begin(), m_hash.end(), INVALID_INDEX); :mad:
@@ -585,7 +585,7 @@ int Delaunator::legalize(size_t a) {
       }
     }
   }
-  return ar;
+  return (int)ar;
 }
 
 INLINEX2 size_t Delaunator::hash_key(const double x, const double y) const {
@@ -610,7 +610,7 @@ int Delaunator::add_triangle(
   if (!link(t, a)) return -1;
   if (!link(t + 1, b)) return -1;
   if (!link(t + 2, c)) return -1;
-  return t;
+  return (int)t;
 }
 
 bool Delaunator::link(const size_t a, const size_t b) {

@@ -56,7 +56,7 @@ static void drawMouseArrow(int mouseX, int mouseY) {
           color = 0xff000000;
         if (c == '6')
           color = 0xffffffff;
-        glPixel(first,0.5+0.1,0.5+0.1,1,x+mouseX,y+mouseY,color);
+        glPixel(first,0.5f+0.1f,0.5f+0.1f,1,x+mouseX,y+mouseY,color);
         first = false;
       }
     }
@@ -247,12 +247,12 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
 
   int left = 0;
   int top = 0;
-  int right = R;
-  int bottom = B;
-  if (t0->ClipRect.x+SUBPIXEL > left) left = (int)t0->ClipRect.x+SUBPIXEL;
-  if (t0->ClipRect.z+SUBPIXEL < right) right = (int)t0->ClipRect.z+SUBPIXEL;
-  if (t0->ClipRect.y+SUBPIXEL > top) top = (int)t0->ClipRect.y+SUBPIXEL;
-  if (t0->ClipRect.w+SUBPIXEL < bottom) bottom = (int)t0->ClipRect.w+SUBPIXEL;
+  int right = (int)R;
+  int bottom = (int)B;
+  if (t0->ClipRect.x+SUBPIXEL > left) left = (int)((int)t0->ClipRect.x+SUBPIXEL);
+  if (t0->ClipRect.z+SUBPIXEL < right) right = (int)((int)t0->ClipRect.z+SUBPIXEL);
+  if (t0->ClipRect.y+SUBPIXEL > top) top = (int)((int)t0->ClipRect.y+SUBPIXEL);
+  if (t0->ClipRect.w+SUBPIXEL < bottom) bottom = (int)((int)t0->ClipRect.w+SUBPIXEL);
 
   if (px >= right) return;
   if (py >= bottom) return;
@@ -311,7 +311,7 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
       if (color == 0xffffffff) {
         for (int x = 0; x < lx; x++) {
           const unsigned int rgba = *write;
-          const unsigned int tex = ((unsigned int)txp<textureWidth2)?texp[txp>>12]:0xffffffff;
+          const unsigned int tex = ((unsigned int)txp<(unsigned int)textureWidth2)?texp[txp>>12]:0xffffffff;
           const int a = (tex>>24) & 255;
           const int r = ((((tex & 255) - (rgba & 255))*a)>>8)+(rgba & 255);
           const int g = (((((tex>>8) & 255) - ((rgba>>8) & 255))*a)>>8)+((rgba>>8) & 255);
@@ -322,7 +322,7 @@ static void drawIMRECT(const IMTRI *t0, const IMTRI *t1) {
       } else {
         for (int x = 0; x < lx; x++) {
           const unsigned int rgba = *write;
-          const unsigned int tex = ((unsigned int)txp<textureWidth2)?texp[txp>>12]:0xffffffff;
+          const unsigned int tex = ((unsigned int)txp<(unsigned int)textureWidth2)?texp[txp>>12]:0xffffffff;
           const int rc = ((tex & 255)*(color & 255))>>8;
           const int gc = (((tex>>8) & 255)*((color>>8) & 255))>>8;
           const int bc = (((tex>>16) & 255)*((color>>16) & 255))>>8;
@@ -421,7 +421,7 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
               glScissor((int)pcmd->ClipRect.x, (int)(height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
               //glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, GL_UNSIGNED_SHORT, idx_buffer);
                 glBegin(GL_TRIANGLES);
-                for (int j = 0; j < pcmd->ElemCount; j+=3) {
+                for (int j = 0; j < (int)pcmd->ElemCount; j+=3) {
                   int i;
                   bool noTexture = false;
                   int flags = 1 | 2 | 4 | 8 | 16;
@@ -466,7 +466,7 @@ static void ImImpl_RenderDrawLists(ImDrawData* draw_data)
   glDisable(GL_TEXTURE_2D); 
   glDisable(GL_SCISSOR_TEST);
   glScissor(0,0,glFrameBufferWidth,glFrameBufferHeight);
-  drawMouseArrow(mouseX, mouseY);
+  drawMouseArrow((int)mouseX, (int)mouseY);
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
   glMatrixMode(GL_PROJECTION);
@@ -569,11 +569,11 @@ void InitImGui(int w, int h)
   s.Colors[ImGuiCol_CloseButton] = ImVec4(0xff/255.f*0.15f,0,0x40/255.f*0.0f,1.f);
   s.Colors[ImGuiCol_Button] = ImVec4(0xff/255.f*0.45f,0,0x40/255.f*0.2f,1.f);
   s.Colors[ImGuiCol_Text] = ImVec4(1,1,1,1);
-  s.Colors[ImGuiCol_FrameBg] = ImVec4(0.3,0.3,0.3,1);
+  s.Colors[ImGuiCol_FrameBg] = ImVec4(0.3f,0.3f,0.3f,1);
   // these where added for EGA
-  s.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.8,0.8,0.8,1);
+  s.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.8f,0.8f,0.8f,1);
   s.Colors[ImGuiCol_CheckMark] = ImVec4(0.0,1.0,1.0,1);
-  s.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.5,0.5,1.0,1);
+  s.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.5f,0.5f,1.0,1);
 }
 
 static void ImGuiKeyBoardInput() {
@@ -610,7 +610,7 @@ void ImGuiNewFrame() {
   static double lastTime = glSeconds();
   double time = glSeconds();
   double deltaTime = time - lastTime;
-  io.DeltaTime = deltaTime > 0 ? deltaTime : 1.f/30.f;
+  io.DeltaTime = deltaTime > 0 ? (float)deltaTime : 1.f/30.f;
   lastTime = time;
   mouseButtons = glMouseButtons();
   glNextMouseDelta(&mouseDeltaX, &mouseDeltaY);
@@ -619,7 +619,7 @@ void ImGuiNewFrame() {
   if (mouseY < 0) mouseY = 0;
   if (mouseX > glFrameBufferWidth-1) mouseX = glFrameBufferWidth-1;
   if (mouseY > glFrameBufferHeight-1) mouseY = glFrameBufferHeight-1;
-  io.MousePos = ImVec2(mouseX,mouseY);
+  io.MousePos = ImVec2((float)mouseX,(float)mouseY);
   io.MouseDown[0] = (mouseButtons & 1) ? true:false;
   io.MouseDown[1] = (mouseButtons & 2) ? true:false;
   io.MouseWheel = (signed char)((mouseButtons>>8)&0xff);

@@ -482,7 +482,7 @@
 //#else
 //#include <stdint.h>     // intptr_t
 //#endif
-#if __WATCOMC__ < 1200
+#if __WATCOMC__ < 1200 && defined(__WATCOMC__)
 typedef int *  intptr_t;
 #else
 #include <stdint.h>
@@ -825,7 +825,7 @@ static inline float  ImLerp(float a, float b, float t)                          
 static inline ImVec2 ImLerp(const ImVec2& a, const ImVec2& b, const ImVec2& t)  { return ImVec2(a.x + (b.x - a.x) * t.x, a.y + (b.y - a.y) * t.y); }
 static inline float  ImLengthSqr(const ImVec2& lhs)                             { return lhs.x*lhs.x + lhs.y*lhs.y; }
 static inline float  ImLengthSqr(const ImVec4& lhs)                             { return lhs.x*lhs.x + lhs.y*lhs.y + lhs.z*lhs.z + lhs.w*lhs.w; }
-static inline float  ImInvLength(const ImVec2& lhs, float fail_value)           { float d = lhs.x*lhs.x + lhs.y*lhs.y; if (d > 0.0f) return 1.0f / sqrt(d); return fail_value; }
+static inline float  ImInvLength(const ImVec2& lhs, float fail_value)           { float d = lhs.x*lhs.x + lhs.y*lhs.y; if (d > 0.0f) return (float)(1.0f / sqrt(d)); return fail_value; }
 
 static bool ImIsPointInTriangle(const ImVec2& p, const ImVec2& a, const ImVec2& b, const ImVec2& c)
 {
@@ -982,7 +982,7 @@ void ImGui::ColorConvertRGBtoHSV(float r, float g, float b, float& out_h, float&
     }
 
     const float chroma = r - (g < b ? g : b);
-    out_h = fabs(K + (g - b) / (6.f * chroma + 1e-20f));
+    out_h = (float)(fabs(K + (g - b) / (6.f * chroma + 1e-20f)));
     out_s = chroma / (r + 1e-20f);
     out_v = r;
 }
@@ -998,7 +998,7 @@ void ImGui::ColorConvertHSVtoRGB(float h, float s, float v, float& out_r, float&
         return;
     }
 
-    h = fmod(h, 1.0f) / (60.0f/360.0f);
+    h = (float)(fmod(h, 1.0f) / (60.0f/360.0f));
     int   i = (int)h;
     float f = h - (float)i;
     float p = v * (1.0f - s);
@@ -1818,7 +1818,7 @@ static char testBuffer[0x4000]; // :mad: todo unreliably was vsnprintf(NULL,0
 // Helper: Text buffer for logging/accumulating text
 void ImGuiTextBuffer::appendv(const char* fmt, va_list args)
 {
-    va_list args_copy;
+    va_list args_copy = { 0 };
     args_copy[0] = args[0];
     //va_copy(args_copy, args);
 
@@ -3435,13 +3435,13 @@ bool ImGui::BeginChild(const char* str_id, const ImVec2& size_arg, bool border, 
     {
         if (size.x == 0.0f)
             flags |= ImGuiWindowFlags_ChildWindowAutoFitX;
-        size.x = ImMax(content_max.x - cursor_pos.x, 4.0f) - fabs(size.x); // Arbitrary minimum zeroish child size of 4.0f
+        size.x = (float)(ImMax(content_max.x - cursor_pos.x, 4.0f) - fabs(size.x)); // Arbitrary minimum zeroish child size of 4.0f
     }
     if (size.y <= 0.0f)
     {
         if (size.y == 0.0f)
             flags |= ImGuiWindowFlags_ChildWindowAutoFitY;
-        size.y = ImMax(content_max.y - cursor_pos.y, 4.0f) - fabs(size.y);
+        size.y = (float)(ImMax(content_max.y - cursor_pos.y, 4.0f) - fabs(size.y));
     }
     if (border)
         flags |= ImGuiWindowFlags_ShowBorders;
@@ -5943,10 +5943,10 @@ static inline float RoundScalar(float value, int decimal_precision)
     //    0: 1, 1: 0.1, 2: 0.01, etc.
     // So when our value is 1.99999 with a precision of 0.001 we'll end up rounding to 2.0
     // FIXME: Investigate better rounding methods
-    float min_step = 1.0f / pow(10.0f, (float)decimal_precision);
+    float min_step = (float)(1.0f / pow(10.0f, (float)decimal_precision));
     bool negative = value < 0.0f;
-    value = fabs(value);
-    float remainder = fmod(value, min_step);
+    value = (float)(fabs(value));
+    float remainder = (float)(fmod(value, min_step));
     if (remainder <= min_step*0.5f)
         value -= remainder;
     else
@@ -5983,8 +5983,8 @@ static bool SliderBehavior(const ImRect& frame_bb, ImGuiID id, float* v, float v
     if (v_min * v_max < 0.0f)
     {
         // Different sign
-        const float linear_dist_min_to_0 = pow(fabs(0.0f - v_min), 1.0f/power);
-        const float linear_dist_max_to_0 = pow(fabs(v_max - 0.0f), 1.0f/power);
+        const float linear_dist_min_to_0 = (float)pow(fabs(0.0f - v_min), 1.0f/power);
+        const float linear_dist_max_to_0 = (float)pow(fabs(v_max - 0.0f), 1.0f/power);
         linear_zero_pos = linear_dist_min_to_0 / (linear_dist_min_to_0+linear_dist_max_to_0);
     }
     else
@@ -6011,7 +6011,7 @@ static bool SliderBehavior(const ImRect& frame_bb, ImGuiID id, float* v, float v
                 {
                     // Negative: rescale to the negative range before powering
                     float a = 1.0f - (normalized_pos / linear_zero_pos);
-                    a = pow(a, power);
+                    a = (float)pow(a, power);
                     new_value = ImLerp(ImMin(v_max,0.0f), v_min, a);
                 }
                 else
@@ -6022,7 +6022,7 @@ static bool SliderBehavior(const ImRect& frame_bb, ImGuiID id, float* v, float v
                         a = (normalized_pos - linear_zero_pos) / (1.0f - linear_zero_pos);
                     else
                         a = normalized_pos;
-                    a = pow(a, power);
+                    a = (float)pow(a, power);
                     new_value = ImLerp(ImMax(v_min,0.0f), v_max, a);
                 }
             }
@@ -6054,12 +6054,12 @@ static bool SliderBehavior(const ImRect& frame_bb, ImGuiID id, float* v, float v
         if (v_clamped < 0.0f)
         {
             const float f = 1.0f - (v_clamped - v_min) / (ImMin(0.0f,v_max) - v_min);
-            grab_t = (1.0f - pow(f, 1.0f/power)) * linear_zero_pos;
+            grab_t = (float)((1.0f - pow(f, 1.0f/power)) * linear_zero_pos);
         }
         else
         {
             const float f = (v_clamped - ImMax(0.0f,v_min)) / (v_max - ImMax(0.0f,v_min));
-            grab_t = linear_zero_pos + pow(f, 1.0f/power) * (1.0f - linear_zero_pos);
+            grab_t = (float)(linear_zero_pos + pow(f, 1.0f/power) * (1.0f - linear_zero_pos));
         }
     }
     else
@@ -6356,10 +6356,10 @@ static bool DragBehavior(const ImRect& frame_bb, ImGuiID id, float* v, float v_s
                     // Logarithmic curve on both side of 0.0
                     float v0_abs = v_cur >= 0.0f ? v_cur : -v_cur;
                     float v0_sign = v_cur >= 0.0f ? 1.0f : -1.0f;
-                    float v1 = pow(v0_abs, 1.0f / power) + (delta * v0_sign);
+                    float v1 = (float)(pow(v0_abs, 1.0f / power) + (delta * v0_sign));
                     float v1_abs = v1 >= 0.0f ? v1 : -v1;
                     float v1_sign = v1 >= 0.0f ? 1.0f : -1.0f;          // Crossed sign line
-                    v_cur = pow(v1_abs, power) * v0_sign * v1_sign;    // Reapply sign
+                    v_cur = (float)(pow(v1_abs, power) * v0_sign * v1_sign);    // Reapply sign
                 }
                 else
                 {
@@ -8038,9 +8038,9 @@ bool ImGui::ListBoxHeader(const char* label, const ImVec2& size_arg)
     // FIXME: Wrap this pattern for re-use
     ImVec2 size = size_arg;
     if (size.x <= 0.0f)
-        size.x = (size.x == 0.0f) ? ImGui::CalcItemWidth() + style.FramePadding.x * 2.0f : ImMax(content_max.x - cursor_pos.x, 4.0f) - fabs(size.x);
+        size.x = (size.x == 0.0f) ? ImGui::CalcItemWidth() + style.FramePadding.x * 2.0f : ImMax(content_max.x - cursor_pos.x, 4.0f) - (float)fabs(size.x);
     if (size.y <= 0.0f)
-        size.y = (size.y == 0.0f) ? ImGui::GetTextLineHeightWithSpacing() * 7.4f + style.ItemSpacing.y : ImMax(content_max.y - cursor_pos.y, 4.0f) - fabs(size.y);
+        size.y = (size.y == 0.0f) ? ImGui::GetTextLineHeightWithSpacing() * 7.4f + style.ItemSpacing.y : ImMax(content_max.y - cursor_pos.y, 4.0f) - (float)fabs(size.y);
     ImVec2 frame_size = ImVec2(size.x, ImMax(size.y, label_size.y));
     ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + frame_size);
     ImRect bb(frame_bb.Min, frame_bb.Max + ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0.0f));
@@ -8280,7 +8280,7 @@ bool ImGui::BeginMenu(const char* label, bool enabled)
                 ImVec2 ta = g.IO.MousePos - g.IO.MouseDelta;
                 ImVec2 tb = (window->Pos.x < next_window->Pos.x) ? next_window_rect.GetTL() : next_window_rect.GetTR();
                 ImVec2 tc = (window->Pos.x < next_window->Pos.x) ? next_window_rect.GetBL() : next_window_rect.GetBR();
-                float extra = ImClamp(fabs(ta.x - tb.x) * 0.30f, 5.0f, 30.0f); // add a bit of extra slack.
+                float extra = ImClamp((float)fabs(ta.x - tb.x) * 0.30f, 5.0f, 30.0f); // add a bit of extra slack.
                 ta.x += (window->Pos.x < next_window->Pos.x) ? -0.5f : +0.5f;   // to avoid numerical issues
                 tb.y = ta.y + ImMax((tb.y - extra) - ta.y, -100.0f);            // triangle is maximum 200 high to limit the slope and the bias toward large sub-menus
                 tc.y = ta.y + ImMin((tc.y + extra) - ta.y, +100.0f);
@@ -9487,8 +9487,8 @@ void ImDrawList::PathArcToFast(const ImVec2& centre, float radius, int amin, int
         for (int i = 0; i < circle_vtx_count; i++)
         {
             const float a = ((float)i / (float)circle_vtx_count) * 2*IM_PI;
-            circle_vtx[i].x = cos(a + IM_PI);
-            circle_vtx[i].y = sin(a + IM_PI);
+            circle_vtx[i].x = (float)cos(a + IM_PI);
+            circle_vtx[i].y = (float)sin(a + IM_PI);
         }
         circle_vtx_builds = true;
     }
@@ -9517,15 +9517,15 @@ void ImDrawList::PathArcTo(const ImVec2& centre, float radius, float amin, float
     for (int i = 0; i <= num_segments; i++)
     {
         const float a = amin + ((float)i / (float)num_segments) * (amax - amin);
-        _Path.push_back(ImVec2(centre.x + cos(a + IM_PI) * radius, centre.y + sin(a + IM_PI) * radius));
+        _Path.push_back(ImVec2(centre.x + (float)cos(a + IM_PI) * radius, centre.y + (float)sin(a + IM_PI) * radius));
     }
 }
 
 void ImDrawList::PathRect(const ImVec2& a, const ImVec2& b, float rounding, int rounding_corners)
 {
     float r = rounding;
-    r = ImMin(r, fabs(b.x-a.x) * ( ((rounding_corners&(1|2))==(1|2)) || ((rounding_corners&(4|8))==(4|8)) ? 0.5f : 1.0f ) - 1.0f);
-    r = ImMin(r, fabs(b.y-a.y) * ( ((rounding_corners&(1|8))==(1|8)) || ((rounding_corners&(2|4))==(2|4)) ? 0.5f : 1.0f ) - 1.0f);
+    r = ImMin(r, (float)fabs(b.x-a.x) * ( ((rounding_corners&(1|2))==(1|2)) || ((rounding_corners&(4|8))==(4|8)) ? 0.5f : 1.0f ) - 1.0f);
+    r = ImMin(r, (float)fabs(b.y-a.y) * ( ((rounding_corners&(1|8))==(1|8)) || ((rounding_corners&(2|4))==(2|4)) ? 0.5f : 1.0f ) - 1.0f);
 
     if (r == 0.0f || rounding_corners == 0)
     {
@@ -11792,7 +11792,7 @@ void ImGui::ShowTestWindow(bool* opened)
             for (; ImGui::GetTime() > refresh_time + 1.0f/60.0f; refresh_time += 1.0f/60.0f)
             {
                 static float phase = 0.0f;
-                values[values_offset] = cos(phase); 
+                values[values_offset] = (float)cos(phase); 
                 values_offset = (values_offset+1)%values.Size; 
                 phase += 0.10f*values_offset; 
             }
