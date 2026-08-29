@@ -452,7 +452,7 @@ String getExtension(const String &fileName) {
   return fileName.substr(fileName.findLast("."));
 }
 
-#ifdef __DJGPP__
+#ifndef __WATCOMC__
 // it's said that DJGPP features long filenames by default, lets see..
 bool doslfnCreateDirectory(const char *name) {(void)(name); return false;}
 bool doslfnDeleteDirectory(const char *name) {(void)(name); return false;}
@@ -472,8 +472,7 @@ bool doslfnClose(int32_t fileHandle) {(void)(fileHandle); return false;}
 uint32_t doslfnTell(int32_t fileHandle) {(void)(fileHandle); return 0;}
 uint32_t doslfnSize(int32_t fileHandle) {(void)(fileHandle); return 0;}
 LFNFILEINFO doslfnInfo(int32_t fileHandle) {(void)(fileHandle); return LFNFILEINFO();}
-#endif // __DJGPP__
-
+#endif // __WATCOMC__
 
 #ifdef __WATCOMC__
 
