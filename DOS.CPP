@@ -279,7 +279,7 @@ Array<File> dosGetFiles(const String &filePath) {
   for (const auto& entry : std::filesystem::directory_iterator(path)) {
     File r;
     r.name = toFileName(filePath, entry.path().filename().string().c_str());
-    r.size = entry.file_size();
+    r.size = (FileSize)entry.file_size();
     FileTime fileTime = dosGetFileTime(dosFileName(r.name.full));
     r.date = fileTime;
     r.attributes = (entry.is_directory() ? DOS_ATTR_SUBDIR : 0);
@@ -334,15 +334,16 @@ bool dosHasDrive(const char driveLetter) {
 #ifdef ON_WINDOWS
   std::vector<std::string> arrayOfDrives;
   wchar_t* szDrives = new wchar_t[MAX_PATH]();
-  if (GetLogicalDriveStringsW(MAX_PATH, szDrives));
-  for (int i = 0; i < ('Z'-'A')*4; i += 4) {
-    if (szDrives[i] != (char)0) {
-    wchar_t q = szDrives[i];
-      if (q == (L'A' + (driveLetter - 'A'))) {
-        delete[] szDrives;
-        return true;
+  if (GetLogicalDriveStringsW(MAX_PATH, szDrives)) {
+      for (int i = 0; i < ('Z' - 'A') * 4; i += 4) {
+          if (szDrives[i] != (char)0) {
+              wchar_t q = szDrives[i];
+              if (q == (L'A' + (driveLetter - 'A'))) {
+                  delete[] szDrives;
+                  return true;
+              }
+          }
       }
-    }
   }
   delete[] szDrives;
   return false;
@@ -406,15 +407,20 @@ void dosRenameFile(const String &oldFileName, const String &newFileName) {
 
 #ifdef ON_WINDOWS
 void dosCreateFolder(const String &folderName) {
+  _mkdir(dosFileName(folderName).c_str());
 }
 
-void dosDeleteFolder(const String &folderName) {
+void dosDeleteFolder(const String& folderName) {
+  _rmdir(dosFileName(folderName).c_str());
 }
+
 
 void dosRemoveFile(const String &fileName) {
+  remove(dosFileName(fileName).c_str());
 }
 
 void dosRenameFile(const String &oldFileName, const String &newFileName) {
+  rename(dosFileName(oldFileName).c_str(), dosFileName(newFileName).c_str());
 }
 #endif // ON_WINDOWS
 
