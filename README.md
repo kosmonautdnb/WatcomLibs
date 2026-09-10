@@ -129,7 +129,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 - MPEG1.HPP - mpeg1 wrapper for PLMPEG.hpp
 - NANOSVG.HPP - a SVG (Vector Graphics) loader // https://github.com/memononen/nanosvg
 - NSVGRAST.HPP - a SVG (Vector Graphics) renderer // https://github.com/memononen/nanosvg
-- OCTREE.HPP - a more or less dilentantic Octree but it paints with occlusion culling. Here around 2mio polygons.
+- OCTREE.HPP - a more or less diletantic Octree but it paints with occlusion culling. Here around 2mio polygons.
 - OPENGLFX.HPP - Some post processing OpenGL effects like antialiasing(FXAA(https://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/ )), toon shader, motion blur, bloom, SSAO  
 - PARSON.HPP - another json reader/writer https://github.com/kgabis/parson
 - PCXLBML.HPP - a simple PCX and LBM loader supporting many subsets of these formats. (Source somehow converted from: https://github.com/RyandracusCodesGames/AGIDL)
