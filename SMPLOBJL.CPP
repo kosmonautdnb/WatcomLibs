@@ -1,6 +1,7 @@
-#include "gl.h" // for SMPL_File::genVertexColors
-#include "smplobjl.hpp"
-#include "set.hpp"
+#include "GL.H" // for SMPL_File::genVertexColors
+#include "SMPLOBJL.HPP"
+#include "SET.HPP"
+#include "DOS.HPP"
 
 #define SMPL_BUFFSIZE 1024
 #define SMPL_ERROR {printf("SMPLOBJL.CPP LINE:%d FILELINE:%d\n",__LINE__,line);getchar();delete ret; return NULL;}
@@ -40,7 +41,9 @@ void addTexture(SMPL_Texture &t, const String &params, const String &materialLib
 
 bool loadMaterialLib(SMPL_File *f,const String &fileName) {
   String currentMaterial;
-  FILE *in = fopen(fileName.c_str(), "r");
+  char *nbuffer = new char[MAX_LFN_PATH]; sprintf(nbuffer, "%s", fileName.c_str()); doslfnShortPath(nbuffer, fileName.c_str());
+  FILE *in = fopen(nbuffer, "r");
+  delete[] nbuffer;
   if (in == NULL) return false;
   while(fgets(buffer,SMPL_BUFFSIZE,in)) {
     char *s = buffer;

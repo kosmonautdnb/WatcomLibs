@@ -3,10 +3,10 @@
 #ifndef __SMPLOBJL_HPP__
 #define __SMPLOBJL_HPP__
 
-#include "types.hpp"
-#include "vector.hpp"
-#include "string.hpp"
-#include "hashmap.hpp"
+#include "TYPES.HPP"
+#include "VECTOR.HPP"
+#include "STRING.HPP"
+#include "HASHMAP.HPP"
 #include <string.h>
 
 #define SMPL_MAXV 4
@@ -63,21 +63,20 @@ public:
 // ...->loadTextures(SMPL_loadTexture);
 typedef unsigned int(*TextureLoad_t)(const String &fileName, const String &type);
 #define SMPL_LOADTEXTURE \
-unsigned int SMPL_loadTexture(const String &fileName, const String &type) {\
-  uint32_t texture = 0;\
+GLuint SMPL_loadTexture(const String &fileName, const String &type) {\
+  GLuint texture = 0;\
   if (type != "map_Kd") return texture;\
-  char *buffer = new char[MAX_LFN_PATH];\
-  if (doslfnShortPath(buffer, fileName.c_str())) {\
-    RGBAImage image = RGBAImage::fromFile(buffer);\
-    glGenTextures(1, &texture);\
-    glBindTexture(GL_TEXTURE_2D, texture);\
-    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,image.width,image.height,0,GL_RGBA,GL_UNSIGNED_BYTE,image.data);\
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);\
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);\
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);\
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);\
-    image.free();\
-  }\
+  char *buffer = new char[MAX_LFN_PATH]; sprintf(buffer, "%s", fileName.c_str()); doslfnShortPath(buffer, fileName.c_str());\
+  RGBAImage image = RGBAImage::fromFile(buffer);\
+  if (image.data == NULL) {delete[] buffer; return 0;}\
+  glGenTextures(1, &texture);\
+  glBindTexture(GL_TEXTURE_2D, texture);\
+  glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,image.width,image.height,0,GL_RGBA,GL_UNSIGNED_BYTE,image.data);\
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);\
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);\
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);\
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);\
+  image.free();\
   delete[] buffer;\
   return texture;\
 }
