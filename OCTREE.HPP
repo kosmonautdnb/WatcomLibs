@@ -20,10 +20,12 @@ public:
 
 class OctreeData {
 public:
-  OctreeData() : entityCount(0), entityIds(NULL) {;}
-  void freeIt() {if (entityIds != NULL) {delete[] entityIds; entityIds = NULL;} entityCount = 0;}
+  OctreeData() : entityCount(0), entityIds(NULL), dynamicEntityCount(0), dynamicEntityIds(NULL) {;}
+  void freeIt() {if (entityIds != NULL) {delete[] entityIds; entityIds = NULL;} entityCount = 0; if (dynamicEntityIds != NULL) {delete[] dynamicEntityIds; dynamicEntityIds = NULL;} dynamicEntityCount = 0;}
   int entityCount;
   unsigned int *entityIds;
+  int dynamicEntityCount;
+  unsigned int *dynamicEntityIds;
 };
 
 class OctreeNode {
