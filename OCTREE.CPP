@@ -221,7 +221,7 @@ void OctreeFrustum::update() {
   planeNormalIt(XYZ(1,1,0),XYZ(0,1,0),XYZ(0,0,0),XYZ(1,0,0), planePoint[4], planeNormal[4]); // near
   planeNormalIt(XYZ(1,0,1),XYZ(0,0,1),XYZ(0,1,1),XYZ(1,1,1), planePoint[5], planeNormal[5]); // far
 #undef XYZ
-  center = Vector(0,0,0); for (int i = 0; i < 8; i++) center += points[i]; center /= 8; if (!isPointInside(center)) exit(0);
+  center = Vector(0,0,0); for (int i = 0; i < 8; i++) center += points[i]; center /= 8; //if (!isPointInside(center)) exit(0);
 }
 
 void OctreeFrustum::frustumFromOpenGL(double nearPlane, double farPlane) {

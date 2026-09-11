@@ -443,6 +443,28 @@ Matrix rotationMatrixFromNormal(const Vector &a) {
   return ret;
 }
 
+Matrix reflectionMatrixOnPlane(const Vector &planePoint, const Vector &planeNormal) {
+  Vector n = normalize(planeNormal);
+  double nxny = -2 * n.x * n.y;
+  double nxnz = -2 * n.x * n.z;
+  double nynz = -2 * n.y * n.z;
+  // row/column = column/row here
+  Matrix refl;
+  MAT(refl.m,0,0) = 1 - 2 * n.x * n.x; 
+  MAT(refl.m,0,1) = nxny; 
+  MAT(refl.m,0,2) = nxnz;
+  MAT(refl.m,1,0) = nxny; 
+  MAT(refl.m,1,1) = 1 - 2 * n.y * n.y; 
+  MAT(refl.m,1,2) = nynz;
+  MAT(refl.m,2,0) = nxnz; 
+  MAT(refl.m,2,1) = nynz; 
+  MAT(refl.m,2,2) = 1 - 2 * n.z * n.z;
+  Matrix t; t.translate(planePoint);
+  // Chirality is changed here, so maybe polygons look destructed / plane side checks are flipped
+  return t * refl * inverse(t);
+  // reflected = this * source (planePoint and planeNormal may need to be in viewspace (translated from worldspace))
+}
+
 Matrix transpose(const Matrix &a) {
   Matrix c = a;
   c.transpose();

@@ -81,6 +81,7 @@ Matrix rotationMatrixZ(double a);
 Matrix rotationMatrixAngleAxis(double a, double x, double y, double z);
 Matrix rotationMatrixAngleAxis(double a, const Vector &b);
 Matrix rotationMatrixFromNormal(const Vector &a);
+Matrix reflectionMatrixOnPlane(const Vector &planePoint, const Vector &planeNormal);
 
 Matrix inverse(const Matrix &a);
 Matrix transpose(const Matrix &a);
