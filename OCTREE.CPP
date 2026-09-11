@@ -354,6 +354,7 @@ static bool isOccluded(OctreeFrustum *frustum, const Vector &bbMin, const Vector
   }
   glSomeDepthPassed = GL_FALSE; glBreakOnSomeDepthPassed = GL_TRUE;
   // face culling is enabled
+  GLboolean clipOn[GLMAXCLIPPLANES]; for(int a = 0; a < GLMAXCLIPPLANES; a++) {clipOn[a] = glIsEnabled(GL_CLIP_PLANE0+a); glDisable(GL_CLIP_PLANE0+a);}
   glBegin(GL_QUADS);
 #define XYZ_(__x__, __y__, __z__) Vector((__x__) ? bbMax.x : bbMin.x, (__y__) ? bbMax.y : bbMin.y, (__z__) ? bbMax.z : bbMin.z)
   ocQuad(XYZ_(0,0,1),XYZ_(0,0,0),XYZ_(0,1,0),XYZ_(0,1,1)); // left
@@ -363,6 +364,7 @@ static bool isOccluded(OctreeFrustum *frustum, const Vector &bbMin, const Vector
   ocQuad(XYZ_(1,1,0),XYZ_(0,1,0),XYZ_(0,0,0),XYZ_(1,0,0)); // near
   ocQuad(XYZ_(1,0,1),XYZ_(0,0,1),XYZ_(0,1,1),XYZ_(1,1,1)); // far
   glEnd();
+  for(int b = 0; b < GLMAXCLIPPLANES; b++) {if (clipOn[b]) glEnable(GL_CLIP_PLANE0+b);}
   bool yes = glSomeDepthPassed ? true : false; glBreakOnSomeDepthPassed = GL_FALSE; glSomeDepthPassed = GL_FALSE;
   return !yes; // if no pixel was painted this is occluded
 }
