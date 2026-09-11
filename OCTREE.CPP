@@ -156,7 +156,7 @@ void OctreeBase::generate() {
     if (i == 0 || octreePos[i].z > bbBoxMax.z) bbBoxMax.z = octreePos[i].z;
   }
   Array<unsigned int> entityIds; entityIds.resize(octreeEntities.size()); {for (int i = 0; i < (int)entityIds.size(); i++) entityIds[i] = i;}
-  octreeNodes.resize(1); octreeDatas.resize(1); octreeEntities.resize(1); // first (0) is terminator
+  octreeNodes.resize(1); octreeDatas.resize(1); // first (0) is terminator
   unsigned int rootid = buildOctreeNodeFromEntityIds(entityIds, bbBoxMin, bbBoxMax);
   Array<unsigned int> stack1; stack1.push_back(rootid); Array<Vector> stack2; stack2.push_back(bbBoxMin); Array<Vector> stack3; stack3.push_back(bbBoxMax);
   while(!stack1.empty()) {
