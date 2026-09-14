@@ -104,6 +104,7 @@ void OctreeBase::eraseOctreeData(unsigned int index) {
 }
 
 void OctreeBase::generateOctreeChilds(unsigned int parent, const Vector &parentMin, const Vector &parentMax) {
+  if ((parentMax.x-parentMin.x)<minChildSize.x||(parentMax.y-parentMin.y)<minChildSize.y||(parentMax.z-parentMin.z)<minChildSize.z) return;
   if (parent == 0) {return;}
   OctreeNode *parent2 = &octreeNodes[parent]; // this is a bit problematic since pointers may change on octreeNodes.push_back();
   if (parent2 == 0 || parent2->data == 0) return;

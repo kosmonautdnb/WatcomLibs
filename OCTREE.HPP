@@ -2,6 +2,7 @@
 #define __OCTREE_HPP__
 
 // here you need -D__GLSOMEDEPTHPASSED__=1 as compiler switch with glimpl.cpp to enable Occlusion Query/Culling in WatcomGL
+// many many polys on the more or less exact place can be problematic
 
 #include "ARRAY.HPP"
 #include "VECTOR.HPP"
@@ -40,8 +41,9 @@ public:
 
 class OctreeBase {
 public:
-  OctreeBase() : minPolysPerNode(32), root(NULL), octreeEntities2(NULL), octreeDatas2(NULL), octreeNodes2(NULL), octreePos2(NULL), octreeTex2(NULL), paintFrame(0) {;}
-  int minPolysPerNode;
+  OctreeBase() : minPolysPerNode(32), minChildSize(0.001,0.001,0.001), root(NULL), octreeEntities2(NULL), octreeDatas2(NULL), octreeNodes2(NULL), octreePos2(NULL), octreeTex2(NULL), paintFrame(0) {;}
+  int minPolysPerNode; // if a child would have less polys the parent is taken instead and no child created
+  Vector minChildSize; // the childs get not smaller than this, (it's important to be bigger 0)
   Vector bbBoxMin; // min of octrees axis aligned bounding box (AABB)
   Vector bbBoxMax; // max of  octrees axis aligned bounding box (AABB)
   OctreeNode *root; // the root node of the octree (using the complete AABB)
