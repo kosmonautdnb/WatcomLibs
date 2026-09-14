@@ -326,7 +326,9 @@ static void displayColoredBoundingBox(unsigned short color, const Vector &bbMin,
 
 static void displayPolys(OctreeBase *base, OctreeData *data) {
   for (int i = 0; i < (int)data->entityCount; i++) {
-    OctreeEntity *e = &base->octreeEntities2[data->entityIds[i]]; if (e->paintFrame == base->paintFrame) continue;
+    OctreeEntity *e = &base->octreeEntities2[data->entityIds[i]]; 
+    if (!(e->flags & OCTREEFLAG_VISIBLE)) continue;
+    if (e->paintFrame == base->paintFrame) continue;
     e->paintFrame = base->paintFrame;
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, e->texHandle);

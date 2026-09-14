@@ -7,16 +7,24 @@
 #include "ARRAY.HPP"
 #include "VECTOR.HPP"
 
+// Octree flags
+// -----------
+#define OCTREEFLAG_VISIBLE 1
+#define OCTREEFLAG_TRANSPARENCYSORT 2
+#define OCTREEFLAG_COLLIDER 4
+
 // Octree structures
 // -----------
 class OctreeEntity {
 public:
-  OctreeEntity() : faceColor(0), texHandle(0), paintFrame(0) {memset(pos, 0, sizeof(pos)); memset(tex, 0, sizeof(tex));}
+  OctreeEntity() : faceColor(0), texHandle(0), paintFrame(0), value(0), flags(OCTREEFLAG_VISIBLE)  {memset(pos, 0, sizeof(pos)); memset(tex, 0, sizeof(tex));}
   unsigned int pos[3];
   unsigned int tex[3];
   unsigned int faceColor;
   unsigned int texHandle;
   unsigned char paintFrame; // counter to tell if the entity was already drawn this frame
+  unsigned char value;
+  unsigned short flags;
 };
 
 class OctreeData {
