@@ -254,13 +254,19 @@ void defaultDescriptorPairs() {
     descriptorPairs.push_back(level);
     for (int p = 0; p < PAIRSPERMIPLEVEL; p++) {
       DescriptorPositionPair r;
-      r.x0 = _ifrand_(randomSeed*1300,-1,1);
-      r.y0 = _ifrand_(randomSeed*1512,-1,1);
-      r.x1 = _ifrand_(randomSeed*1777,-1,1);
-      r.y1 = _ifrand_(randomSeed*1332,-1,1);
+      for (int i = 0; i < 40; i++) {
+        r.x0 = _ifrand_(randomSeed*1300,-1,1);
+        r.y0 = _ifrand_(randomSeed*1512,-1,1);
+        r.x1 = _ifrand_(randomSeed*1777,-1,1);
+        r.y1 = _ifrand_(randomSeed*1332,-1,1);
+        double d0 = sqrt(r.x0*r.x0+r.y0*r.y0);
+        double d1 = sqrt(r.x1*r.x1+r.y1*r.y1);
+        if (d0 < 1 && d1 < 1) break;
+        randomSeed += 13;
+      }
       float dx = r.x1 - r.x0;
       float dy = r.y1 - r.y0;
-      float d0 = sqrt(r.x0*r.x0+r.y0*r.y0); float d1 = sqrt(r.x1*r.x1+r.y1*r.y1); float k = d0*d1;
+      float d0 = sqrt(r.x0*r.x0+r.y0*r.y0); float d1 = sqrt(r.x1*r.x1+r.y1*r.y1); float k = sqrt(r.x0*r.x0+r.y0*r.y0+r.x1*r.x1+r.y1*r.y1);
       if (d0 != 0) d0 = 1.f/d0;
       if (d1 != 0) d1 = 1.f/d1;
       float a = r.x0*d0*r.x1*d1+r.y0*d0*r.y1*d1;
