@@ -62,7 +62,7 @@ const char* saveFileNames = "c:/video/4/a%04d.png";
 #define STEPSIZE 0.025f
 #define MIPRATIO_FRONT (0)
 #define MIPRATIO_DISTANCE (0.5f) // this has to be <= 0.5 currently (pictures maybe have to be 1280x720)
-#define SCALEINVARIANCE (0.25)
+#define SCALEINVARIANCE (0.5)
 #define ROTATIONINVARIANCE (20.f/2.f*3.14159f/180.f)
 #define ITERATIVE 1 // 0 or 1 (non iterative not working, yet)
 #define LUMAR (0.25)
@@ -458,7 +458,7 @@ bool refineFeature(FeatureImage *img, Feature *ft) {
     float d = sqrt(dx*dx+dy*dy);
     if (d > maxRad) maxRad = d;
   }
-  if (kbhit()) exit(0);
+  if (kbhit()) {glDone(); exit(0);}
   return maxRad < (float)ALLOWEDVARIANCE/img->width/2.f;
 }
 
