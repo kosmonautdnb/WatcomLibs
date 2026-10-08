@@ -431,14 +431,14 @@ bool refineFeature(FeatureImage *img, Feature *ft) {
     for (int m = ((int)img->mipMaps.size()-1)*MIPRATIO_DISTANCE; m >= ((int)img->mipMaps.size()-1)*MIPRATIO_FRONT; m--) {
       FeatureMipMap *mip = img->mip(m);  if (mip == NULL) continue;
       float mipMapStepSize = (float)1.f/mip->width;
-      bool keepRandomValues = true; float scaleMul = 1; float angleAdd = 0;
+      //bool keepRandomValues = true; float scaleMul = 1; float angleAdd = 0;
       for (int s = 0; s < STEPCOUNT; s++) {
-        if (!keepRandomValues) {        
-          scaleMul = 1 + _ifrand_(s*123+m*234,-SCALEINVARIANCE, +SCALEINVARIANCE);
-          angleAdd = _ifrand_(s*345+m*114,-ROTATIONINVARIANCE, +ROTATIONINVARIANCE);
-        }
+        //if (!keepRandomValues) {        
+          float scaleMul = 1 + _ifrand_(s*123+m*234,-SCALEINVARIANCE, +SCALEINVARIANCE);
+          float angleAdd = _ifrand_(s*345+m*114,-ROTATIONINVARIANCE, +ROTATIONINVARIANCE);
+        //}
         float change = refineFeatureOneStep(img, m, &f[o], f[o].descriptor, scaleMul, angleAdd, mipMapStepSize * STEPSIZE * ft->scale * img->width * scaleMul);
-        keepRandomValues = false; if (change >= 0 && change <= (float)PAIRSTOSTAYNONRANDOM/PAIRSPERMIPLEVEL) keepRandomValues = true;
+        //keepRandomValues = false; if (change >= 0 && change <= (float)PAIRSTOSTAYNONRANDOM/PAIRSPERMIPLEVEL) keepRandomValues = true;
       }
     }
   }
