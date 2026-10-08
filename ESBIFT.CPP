@@ -59,7 +59,7 @@ const char* saveFileNames = "c:/video/4/a%04d.png";
 #define PAIRSPERMIPLEVEL 64
 #define PAIRSTOSTAYNONRANDOM 8
 #define STEPCOUNT 40
-#define STEPSIZE 0.25f
+#define STEPSIZE 0.025f
 #define MIPRATIO_FRONT (0)
 #define MIPRATIO_DISTANCE (0.5f) // this has to be <= 0.5 currently (pictures maybe have to be 1280x720)
 #define SCALEINVARIANCE (0.25)
@@ -437,7 +437,7 @@ bool refineFeature(FeatureImage *img, Feature *ft) {
           scaleMul = 1 + _ifrand_(s*123+m*234,-SCALEINVARIANCE, +SCALEINVARIANCE);
           angleAdd = _ifrand_(s*345+m*114,-ROTATIONINVARIANCE, +ROTATIONINVARIANCE);
         }
-        float change = refineFeatureOneStep(img, m, &f[o], f[o].descriptor, scaleMul, angleAdd, mipMapStepSize * STEPSIZE);
+        float change = refineFeatureOneStep(img, m, &f[o], f[o].descriptor, scaleMul, angleAdd, mipMapStepSize * STEPSIZE * ft->scale * img->width * scaleMul);
         keepRandomValues = false; if (change >= 0 && change <= (float)PAIRSTOSTAYNONRANDOM/PAIRSPERMIPLEVEL) keepRandomValues = true;
       }
     }
