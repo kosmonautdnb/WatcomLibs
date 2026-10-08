@@ -392,6 +392,10 @@ float refineFeatureOneStep(FeatureImage *img, int mipLevel, Feature *f, Descript
       float gradientY0, gradientY1; getGradients(mip, f->x, f->y, &pairs->pairs[p], scale, angle, 0, 1, &gradientY0, &gradientY1);
       float deltaX = gradientX1 - gradientX0;
       float deltaY = gradientY1 - gradientY0;
+      float deltaB;
+      getGradients(mip, f->x, f->y, &pairs->pairs[p], scale, angle, 1, 1, &gradientX0, &gradientX1); deltaB = gradientX1 - gradientX0; deltaX += deltaB; deltaY += deltaB;
+      getGradients(mip, f->x, f->y, &pairs->pairs[p], scale, angle, -1, 1, &gradientX0, &gradientX1); deltaB = gradientX1 - gradientX0; deltaX -= deltaB; deltaY += deltaB;
+
       if (bitHere == 0) {deltaX = -deltaX; deltaY = -deltaY;}
       if (deltaX > maxDeltaX) maxDeltaX = deltaX; if (deltaY > maxDeltaY) maxDeltaY = deltaY;
       if (deltaX < minDeltaX) minDeltaX = deltaX; if (deltaY < minDeltaY) minDeltaY = deltaY;
