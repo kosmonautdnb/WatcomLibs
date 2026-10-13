@@ -263,6 +263,21 @@ void FileDialog::filter() {
     files.erase(i,1);
   }
 }
+
+static char _lower(char v) {
+  if (v>='A'&&v<='Z') return (char)(v-'A'+'a');
+  return v;
+}
+static bool caseInsensitiveLesser(const String &a, const String &b) {
+  int32_t l = a.length();
+  if (b.length()<l) l = b.length();
+  for (int32_t i = 0; i < l; i++) {
+    if (_lower(b[i])==_lower(a[i])) continue;
+    return _lower(b[i])<_lower(a[i]);
+  }
+  return b.length()<a.length();
+}
+
  
 void FileDialog::sort() {
   for (int i = 0; i < files.size(); i++) {
@@ -270,8 +285,8 @@ void FileDialog::sort() {
       bool bigger = false;
       String nameHere = (files[i].name.name + files[i].name.extension);
       switch(sortType) {
-      case SORT_NAME: bigger = nameHere < (files[j].name.name + files[j].name.extension); break;
-      case SORT_EXT: bigger = (files[i].name.extension + files[i].name.name) < (files[j].name.extension + files[j].name.name); break;
+      case SORT_NAME: bigger = caseInsensitiveLesser(nameHere, (files[j].name.name + files[j].name.extension)); break;
+      case SORT_EXT: bigger = caseInsensitiveLesser((files[i].name.extension + files[i].name.name), (files[j].name.extension + files[j].name.name)); break;
       case SORT_DATE: bigger = files[i].date < files[j].date; break;
       case SORT_ATTR: bigger = files[i].attributes < files[j].attributes; break;
       case SORT_SIZE: bigger = files[i].size < files[j].size; break;
