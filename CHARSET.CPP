@@ -37,8 +37,8 @@ void glDrawText2(float scale, float xp, float yp, float zp, int xa, int ya, cons
     width2 += 1;
   }
   const char *s = text;
-  int x2 = -width * anchorX;
-  int y2 = -height * anchorY;
+  int x2 = (int)(-width * anchorX);
+  int y2 = (int)(-height * anchorY);
   int x3 = x2;
   while(*s!=0) {
     Letter *l = getLetter(*s);
