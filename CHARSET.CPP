@@ -65,7 +65,7 @@ void glDrawText2(float scale, float xp, float yp, float zp, int xa, int ya, cons
                   return;
                 }
               }
-              newXYZ = false;
+              newXYZ = GL_FALSE;
             }
           }
         }
@@ -77,7 +77,7 @@ void glDrawText2(float scale, float xp, float yp, float zp, int xa, int ya, cons
 }
 
 void glDrawText(bool clip,float xp, float yp, float zp, const float scale, const char *text, uint32_t color, float anchorX, float anchorY) {
-  newXYZ = true;
+  newXYZ = GL_TRUE;
   isVisible = true;
   shouldClip = clip;
   bool outlined = true;
@@ -88,7 +88,7 @@ void glDrawText(bool clip,float xp, float yp, float zp, const float scale, const
     glDrawText2(scale,xp,yp,zp,0,+1,text,0xff000000,anchorX,anchorY);
   }
   glDrawText2(scale,xp,yp,zp,0,0,text,color,anchorX,anchorY);
-  newXYZ = false;
+  newXYZ = GL_FALSE;
 }
 
 Letter charset[] = {

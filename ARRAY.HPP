@@ -104,7 +104,7 @@ public:
       data[usedSize] = elem;
       usedSize++;
     } else {
-      reAlloc((size_t)(allocatedSize*1.5));
+      reAlloc((size_t)((usedSize+1)*1.5));
       data[usedSize] = elem;
       usedSize++;
     }
