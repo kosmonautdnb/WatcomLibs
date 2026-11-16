@@ -36,6 +36,7 @@ wpp386 /mf -fosa.obj sa2.cpp
 wpp386 /mf -foapp_ldir.obj app_ldir.cpp 
 wpp386 /mf -foas.obj app_scal.cpp 
 wcl.exe APP_SPPL.C
+wcl.exe APP_C.CPP
 wcl386 /mf APP_SVG.CPP GLIMPL.CPP
 wlink @appkeys.lnk OPTION QUIET OPTION STack = 65536 NAME APP_KEYS.EXE
 wlink @appvid.lnk OPTION QUIET OPTION STack = 65536 NAME APP_VID.EXE
@@ -93,3 +94,4 @@ del sa.obj
 del sa2.obj
 del app_ldir.obj
 del as.obj
+del app_c.obj

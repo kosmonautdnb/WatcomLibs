@@ -36,6 +36,7 @@ gpp -c -O3 -osa.obj sa2.cpp
 gpp -c -O3 -osa2.obj app_sa2.cpp
 gpp -c -O3 -oapp_ldir.obj app_ldir.cpp
 gpp -c -O3 -oapp_scal.obj app_scal.cpp
+gpp -o APP_C.EXE app_c.cpp
 gpp -o APP_KEYS.EXE gl.obj keys.obj keymtrix.obj
 gpp -o APP_VID.EXE gl.obj e.obj vid.obj
 gpp -o APP_SPKT.EXE gl.obj i1.obj i2.obj o.obj s.obj sp.obj d.obj f.obj e.obj spk.obj

@@ -79,6 +79,7 @@ https://www.youtube.com/watch?v=eVba98jsNVs
 
 ## Some useful applications
 **Use APPDJGPP.BAT to build the APPs with DJGPP and APPWAT.BAT to build the APPs with WatcomC/OpenWatcom.**
+- APP_C.CPP - a very very simple calculator (by generating code for the c-compiler)
 - APP_GLTF.CPP - a 3D model viewer for GLB/GLTF files, also supporting animations and skinning.
 - APP_IMG.CPP - a simple image / picture viewer.
 - APP_LDIR.CPP - a simple recursive long filename dir command to look for file extensions.
