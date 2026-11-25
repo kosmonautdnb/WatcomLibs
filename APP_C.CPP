@@ -3,6 +3,8 @@
 // usage: app_c 5*5
 // or: app_c.exe and typing several lines followed by an empty line (just a simple return or a 'q')
 // you have to configure here atleast the BASE_FOLDER first.
+// if you have int values over 32767 the calculations lead to wrong results in WatcomC (due to WatcomC real mode), 
+// better use floats e.g. "40000.0" instead of "40000"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,7 +31,7 @@ int main(int argc, const char *argv[]) {
   fprintf(out,"int main(int argc, const char *argv[]) {\n");
 
   if (argc > 1) {
-    fprintf(out,"printf(\"%%f\\n\",(double)(");
+    fprintf(out,"printf(\"%%f\\n\", (double)(");
     for (int i = 1; i < argc; i++) {
       fprintf(out," %s",argv[i]);
     }
