@@ -610,7 +610,7 @@ void ImGuiNewFrame() {
   static double lastTime = glSeconds();
   double time = glSeconds();
   double deltaTime = time - lastTime;
-  io.DeltaTime = deltaTime > 0 ? (float)deltaTime : 1.f/30.f;
+  io.DeltaTime = deltaTime >= 0 ? (float)deltaTime : 1.f/30.f;
   lastTime = time;
   mouseButtons = glMouseButtons();
   glNextMouseDelta(&mouseDeltaX, &mouseDeltaY);

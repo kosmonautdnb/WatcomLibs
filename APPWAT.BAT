@@ -35,6 +35,7 @@ wpp386 /mf -fosa2.obj app_sa2.cpp
 wpp386 /mf -fosa.obj sa2.cpp
 wpp386 /mf -foapp_ldir.obj app_ldir.cpp 
 wpp386 /mf -foas.obj app_scal.cpp 
+wpp386 /mf -foacsv.obj app_csv.cpp 
 wcl.exe APP_SPPL.C
 wcl.exe APP_C.CPP
 wcl386 /mf APP_SVG.CPP GLIMPL.CPP
@@ -53,6 +54,7 @@ wlink @appzip.lnk OPTION QUIET OPTION STack = 65536 NAME APP_ZIP.EXE
 wlink FILE sa2.obj FILE sa.obj FILE sb.obj OPTION QUIET OPTION STack = 65536 NAME APP_SA2.EXE
 wlink FILE app_ldir.obj FILE d.obj FILE s.obj FILE o.obj OPTION QUIET OPTION STack = 65536 NAME APP_LDIR.EXE
 wlink FILE as.obj FILE image.obj OPTION QUIET OPTION STack = 65536 NAME APP_SCAL.EXE
+wlink @appcsv.lnk OPTION QUIET OPTION STack = 65536 NAME APP_CSV.EXE
 @echo off
 del keys.obj
 del spk.obj
@@ -95,3 +97,4 @@ del sa2.obj
 del app_ldir.obj
 del as.obj
 del app_c.obj
+del acsv.obj
