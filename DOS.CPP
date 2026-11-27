@@ -886,6 +886,7 @@ typedef struct {
 
 #endif // __WATCOMC__
 
+#if defined(__WATCOMC__) || defined(__DJGPP__)
 uint16_t dosInt386x(uint32_t intno, REGS16 *in, REGS16 *out) {
 #ifdef __WATCOMC__
   _REGS16 rmregs;
@@ -948,3 +949,4 @@ uint16_t dosInt386x(uint32_t intno, REGS16 *in, REGS16 *out) {
   return out->ax;
 #endif
 }
+#endif // defined(__WATCOMC__) || defined(__DJGPP__)
