@@ -17,6 +17,8 @@
 #include <unistd.h>
 #include <signal.h>
 #include <dirent.h>
+#include <go32.h>
+#include <dpmi.h>
 #endif // __DJGPP__
 #ifdef ON_WINDOWS
 #include <vector>
@@ -355,13 +357,26 @@ bool dosIsDriveReady(const char driveLetter) {
   int d = -1;
   if (driveLetter >= 'A' && driveLetter <= 'Z') d = driveLetter - 'A' + 1;
   if (driveLetter >= 'a' && driveLetter <= 'z') d = driveLetter - 'a' + 1;
+  d -= 1; if (d > 1) return true; // this function currently is just for floppy drives. (the dl value is 0=a or 1=b)                                   
   if (d < 0) return false;
-
-  union REGS r;
-  r.h.ah = 0x04;
-  r.h.dl = (unsigned char)(d & 255);
-  int386(0x13,&r,&r);
-  return !(r.x.cflag);
+  //union REGS r;
+  //r.h.ah = 0x04;
+  //r.bx = 0x7c00; // 0000:0x7c00 should be unused memory
+  //r.al = 1; // number of sectors to verify
+  //r.ch = 0; // start at cylinder
+  //r.cl = 1; // sector (start at 1 not 0)
+  //r.dh = 0; // head number
+  //r.h.dl = (unsigned char)(d & 255); // 0 = 'a' 1 = 'b'
+  //int386(0x13,&r,&r);
+  REGS16 r;
+  memset(&r,0,sizeof(r));
+  r.ax = (unsigned short)((0x04<<8)|0x01);
+  r.bx = 0x7c00; // 0000:0x7c00 should be unused memory
+  r.cx = 0x01;
+  r.dx = (unsigned short)(d & 255);
+  r.es = 0x0000;
+  dosInt386x(0x13, &r, &r);
+  return !(r.cflag);
 #endif // defined(__WATCOMC__) || defined(__DJGPP__)
 #ifdef ON_WINDOWS
   return true;
@@ -869,7 +884,10 @@ typedef struct {
   unsigned short es,ds,fs,gs,ip,cs,sp,ss;
 } _REGS16;
 
+#endif // __WATCOMC__
+
 uint16_t dosInt386x(uint32_t intno, REGS16 *in, REGS16 *out) {
+#ifdef __WATCOMC__
   _REGS16 rmregs;
   union REGS r;
   struct SREGS sr;
@@ -903,5 +921,30 @@ uint16_t dosInt386x(uint32_t intno, REGS16 *in, REGS16 *out) {
   out->ds = (unsigned short)rmregs.ds;
   out->cflag = (rmregs.flags & 0x01) ? true : false;
   return out->ax;
-}
 #endif // __WATCOMC__
+#ifdef __DJGPP__
+  __dpmi_regs regs;
+  regs.d.eax = in->ax;
+  regs.d.ebx = in->bx;
+  regs.d.ecx = in->cx;
+  regs.d.edx = in->dx;
+  regs.d.esi = in->si;
+  regs.d.edi = in->di;
+  regs.x.ds = in->ds;
+  regs.x.es = in->es;
+  regs.x.flags = in->cflag ? 0x01 : 0x00;
+  __dpmi_simulate_real_mode_interrupt(intno, &regs);
+  out->ax = (unsigned short)regs.d.eax;
+  out->bx = (unsigned short)regs.d.ebx;
+  out->cx = (unsigned short)regs.d.ecx;
+  out->dx = (unsigned short)regs.d.edx;
+  out->si = (unsigned short)regs.d.esi;
+  out->di = (unsigned short)regs.d.edi;
+  out->es = (unsigned short)regs.x.es;
+  out->cs = (unsigned short)regs.x.cs;
+  out->ss = (unsigned short)regs.x.ss;
+  out->ds = (unsigned short)regs.x.ds;
+  out->cflag = (regs.x.flags & 0x01) ? true : false;
+  return out->ax;
+#endif
+}
